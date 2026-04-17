@@ -5,7 +5,7 @@ hidden: false
 metadata:
   robots: index
 ---
-# Authentication
+<br />
 
 This API is secured using an **API Key** provided by **SSTrader**.
 
