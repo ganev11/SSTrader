@@ -16,10 +16,24 @@
         "description": "",
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {}
           }
         },
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "upcoming",
+                "all"
+              ]
+            },
+            "description": "Filter leagues by their status (if omitted, all leagues are returned)."
+          }
+        ],
         "operationId": "get_regions",
         "security": [
           {
