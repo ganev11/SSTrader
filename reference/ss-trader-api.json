@@ -20,7 +20,24 @@
           }
         },
         "parameters": [],
-        "operationId": "get_regions"
+        "operationId": "get_regions",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-readme": {
+          "code-samples": [
+            {
+              "code": "{\n  \"regions\": [\n    {\n      \"region\": {\n        \"id\": 6,\n        \"name\": \"International\"\n      },\n      \"country\": {\n        \"id\": 244,\n        \"name\": \"Africa\",\n        \"alpha3\": \"\" // ISO Alpha-3 country code\n      },\n      \"league\": {\n        \"id\": 381,\n        \"name\": \"CAF Champions League\"\n      },\n      \"sport\": {\n        \"id\": 1,\n        \"name\": \"Football\"\n      },\n      \"count\": 8, // Number of upcoming fixtures in this league.\n      \"live\": 0, // Number of live fixtures in this league.\n      \"popular\": false, // Whether this league is marked as popular.\n      \"level\": 3 // League level (1 = top tier, 2 = second tier, etc.)\n    }\n  ]\n}",
+              "language": "json",
+              "name": ""
+            }
+          ],
+          "samples-languages": [
+            "json"
+          ]
+        }
       }
     }
   },
