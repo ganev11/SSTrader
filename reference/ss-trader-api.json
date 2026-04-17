@@ -115,7 +115,7 @@
               ],
               "default": "upcoming"
             },
-            "description": "Filter leagues by their status (if omitted, all leagues are returned)."
+            "description": "Filter leagues by their status (optional). Possible values: 'upcoming' — leagues with upcoming fixtures; 'all' — leagues that are covered by us. If omitted, all leagues are returned."
           },
           {
             "in": "query",
