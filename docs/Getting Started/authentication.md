@@ -28,7 +28,7 @@ Send the API key in the `Authorization` header as a Bearer token.
 
 ### Request Header
 
-```http
+```curl
 Authorization: Bearer YOUR_API_KEY
 ```
 
