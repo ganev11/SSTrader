@@ -24,9 +24,6 @@
                   "properties": {
                     "name": {
                       "type": "string"
-                    },
-                    "name1": {
-                      "type": "string"
                     }
                   },
                   "required": [
