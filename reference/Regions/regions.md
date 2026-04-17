@@ -1,6 +1,6 @@
 ---
 title: Regions
-excerpt: This endpoint retrieves a list of regions and leagues available in the system.
+excerpt: Returns a list of regions, countries, and leagues.
 api:
   file: ss-trader-api.json
   operationId: get_regions
