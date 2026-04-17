@@ -11,7 +11,18 @@
   ],
   "tags": [],
   "paths": {
-    "/new-endpoint": {}
+    "/regions": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "parameters": [],
+        "operationId": "get_regions"
+      }
+    }
   },
   "components": {
     "securitySchemes": {
