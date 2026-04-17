@@ -43,7 +43,8 @@
               "enum": [
                 "upcoming",
                 "all"
-              ]
+              ],
+              "default": "upcoming"
             },
             "description": "Filter leagues by their status (if omitted, all leagues are returned)."
           },
