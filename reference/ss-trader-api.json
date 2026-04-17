@@ -1,0 +1,44 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "SSTrader API"
+  },
+  "servers": [
+    {
+      "url": "https://api.sstrader.com/v1"
+    }
+  ],
+  "tags": [],
+  "paths": {
+    "/new-endpoint": {
+      "get": {
+        "summary": "New Endpoint",
+        "description": "This is your first endpoint! Edit this page to start documenting your API.",
+        "operationId": "get_new-endpoint",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "x-readme": {
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}
