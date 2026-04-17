@@ -32,6 +32,20 @@
               ]
             },
             "description": "Filter leagues by their status (if omitted, all leagues are returned)."
+          },
+          {
+            "in": "query",
+            "name": "param",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es",
+                "bg"
+              ],
+              "default": "en"
+            },
+            "description": "language"
           }
         ],
         "operationId": "get_regions",
