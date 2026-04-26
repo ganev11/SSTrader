@@ -10,7 +10,7 @@ hidden: false
 
   <Card title="API Reference" href="/reference" icon="fa-duotone fa-code-simple">Explore endpoints and build your integration</Card>
 
-  <Card title="Build with AI" href="#" icon="fa-duotone fa-sparkles">Use LLM features to automate your workflow</Card>
+  <Card title="Build with AI" href="build-with-llms" icon="fa-duotone fa-sparkles">Use LLM features to automate your workflow</Card>
 </Cards>
 
 <br />
