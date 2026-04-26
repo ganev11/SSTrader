@@ -11,10 +11,12 @@
   ],
   "tags": [
     {
-      "name": "Fixtures"
+      "name": "Fixtures",
+      "description": "Operations related to match fixtures"
     },
     {
-      "name": "Regions"
+      "name": "Regions",
+      "description": "Geographic regions data"
     }
   ],
   "paths": {
@@ -24,7 +26,13 @@
           "Regions"
         ],
         "summary": "Get all regions, countries and leagues",
+        "description": "Returns a list of regions, countries, and leagues.",
         "operationId": "getRegions",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "query",
@@ -36,7 +44,8 @@
                 "all"
               ],
               "default": "upcoming"
-            }
+            },
+            "description": "Filter leagues by their status."
           },
           {
             "in": "query",
@@ -49,7 +58,8 @@
                 "bg"
               ],
               "default": "en"
-            }
+            },
+            "description": "Language for the response."
           }
         ],
         "responses": {
@@ -59,44 +69,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RegionsResponse"
-                },
-                "example": {
-                  "regions": [
-                    {
-                      "region": {
-                        "id": 6,
-                        "name": "International"
-                      },
-                      "country": {
-                        "id": 244,
-                        "name": "Africa",
-                        "alpha3": ""
-                      },
-                      "league": {
-                        "id": 381,
-                        "name": "CAF Champions League",
-                        "level": 1
-                      },
-                      "sport": {
-                        "id": 1,
-                        "name": "Football"
-                      },
-                      "count": 8,
-                      "live": 0,
-                      "popular": false,
-                      "level": 3
-                    }
-                  ]
                 }
               }
             }
           }
-        },
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ]
+        }
       }
     },
     "/fixtures": {
@@ -105,28 +82,45 @@
           "Fixtures"
         ],
         "summary": "Get fixtures with participants, scores and periods",
+        "description": "Returns a list of fixtures with participants, scores and periods.",
         "operationId": "getFixtures",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "query",
             "name": "sport_id",
             "schema": {
               "type": "integer"
-            }
+            },
+            "description": "The ID of the sport. Defaults to 1."
           },
           {
             "in": "query",
             "name": "league_id",
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Comma-separated list of league IDs."
+          },
+          {
+            "in": "query",
+            "name": "fixture_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of specific fixture IDs."
           },
           {
             "in": "query",
             "name": "date",
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Date in ISO 8601 YYYY-MM-DD format."
           },
           {
             "in": "query",
@@ -135,7 +129,24 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 1
-            }
+            },
+            "description": "Set to 1 to filter for currently active matches."
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Localization code (default: en)."
+          },
+          {
+            "in": "query",
+            "name": "include",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Data modules to expand (e.g., metrics, odds)."
           }
         ],
         "responses": {
@@ -145,34 +156,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FixturesResponse"
-                },
-                "example": {
-                  "fixtures": [
-                    {
-                      "id": 123,
-                      "date_time": "2024-10-25T19:45:00.000Z",
-                      "status": "INPLAY_1ST_HALF",
-                      "is_live": true,
-                      "participants": [
-                        {
-                          "id": 1,
-                          "name": "Man Utd",
-                          "position": 5,
-                          "location": "home"
-                        }
-                      ]
-                    }
-                  ]
                 }
               }
             }
           }
-        },
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ]
+        }
       }
     }
   },
@@ -186,6 +174,9 @@
     "schemas": {
       "RegionsResponse": {
         "type": "object",
+        "required": [
+          "regions"
+        ],
         "properties": {
           "regions": {
             "type": "array",
@@ -219,16 +210,84 @@
             "$ref": "#/components/schemas/Sport"
           },
           "count": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Upcoming fixtures count"
           },
           "live": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Live fixtures count"
           },
           "popular": {
             "type": "boolean"
           },
           "level": {
+            "type": "integer",
+            "description": "League level"
+          }
+        }
+      },
+      "FixturesResponse": {
+        "type": "object",
+        "required": [
+          "fixtures"
+        ],
+        "properties": {
+          "fixtures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Fixture"
+            }
+          }
+        }
+      },
+      "Fixture": {
+        "type": "object",
+        "properties": {
+          "id": {
             "type": "integer"
+          },
+          "date_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "is_live": {
+            "type": "boolean"
+          },
+          "language": {
+            "type": "string"
+          },
+          "sport": {
+            "$ref": "#/components/schemas/Sport"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "league": {
+            "$ref": "#/components/schemas/League"
+          },
+          "season": {
+            "$ref": "#/components/schemas/Season"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Participant"
+            }
+          },
+          "scores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Score"
+            }
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Period"
+            }
           }
         }
       },
@@ -299,49 +358,13 @@
           }
         }
       },
-      "Fixture": {
+      "Score": {
         "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "date_time": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "status": {
-            "type": "string"
-          },
-          "is_live": {
-            "type": "boolean"
-          },
-          "sport": {
-            "$ref": "#/components/schemas/Sport"
-          },
-          "country": {
-            "$ref": "#/components/schemas/Country"
-          },
-          "league": {
-            "$ref": "#/components/schemas/League"
-          },
-          "participants": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Participant"
-            }
-          }
-        }
+        "additionalProperties": true
       },
-      "FixturesResponse": {
+      "Period": {
         "type": "object",
-        "properties": {
-          "fixtures": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Fixture"
-            }
-          }
-        }
+        "additionalProperties": true
       }
     }
   }
