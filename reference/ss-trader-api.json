@@ -9,10 +9,23 @@
       "url": "https://api.sstrader.com/v1"
     }
   ],
-  "tags": [],
+  "tags": [
+    {
+      "name": "Fixtures",
+      "description": "Operations related to match fixtures"
+    },
+    {
+      "name": "Regions",
+      "description": "Geographic regions data"
+    }
+  ],
   "paths": {
     "/regions": {
       "get": {
+        "tags": [
+          "Regions"
+        ],
+        "summary": "Get all regions, countries and leagues",
         "description": "Returns a list of regions, countries, and leagues.",
         "responses": {
           "200": {
@@ -136,7 +149,7 @@
             "description": "Language for the response (default: English)"
           }
         ],
-        "operationId": "get_regions",
+        "operationId": "getRegions",
         "security": [
           {
             "BearerAuth": []
@@ -158,6 +171,10 @@
     },
     "/fixtures": {
       "get": {
+        "tags": [
+          "Fixtures"
+        ],
+        "summary": "Get fixtures with participants, scores and periods",
         "description": "Returns a list of fixtures with participants, scores and periods.",
         "responses": {
           "200": {
@@ -312,7 +329,7 @@
             "description": "Filter only live fixtures when true."
           }
         ],
-        "operationId": "get_fixtures",
+        "operationId": "getFixtures",
         "security": [
           {
             "BearerAuth": []

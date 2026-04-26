@@ -1,4 +1,0 @@
----
-title: /fixtures
-hidden: false
----
