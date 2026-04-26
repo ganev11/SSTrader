@@ -25,6 +25,9 @@ The API supports translations for entities containing text, such as names. The l
 
 > Please note: if a translation is unavailable, the API defaults to English.
 
-<br />
+## How does it work?
 
-<br />
+Integrating translations is straightforward. Use the **language** parameter with your desired country's shortcode to retrieve data in that language. The API will automatically return the translated content.
+
+For example, to display league names in Spanish from the leagues endpoint:
+
