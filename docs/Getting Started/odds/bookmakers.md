@@ -46,4 +46,4 @@ In a match currently at 0–0:
 - Asian Market: You will see lines like 2.25 or 2.75 with odds close to 1.90.
 - European Market: You can find lines like "Over 5.5" with very high odds (e.g., 20.00+).
 
-## Note: Even on the same line (e.g., Over 2.5), the odds will often differ between Bookmaker 2 and Bookmaker 3 due to different margin structures and market liquidity.
+> Note: Even on the same line (e.g., Over 2.5), the odds will often differ between Bookmaker 2 and Bookmaker 3 due to different margin structures and market liquidity.
