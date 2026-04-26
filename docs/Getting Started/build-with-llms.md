@@ -23,6 +23,9 @@ https://sstrader.readme.io/mcp
 
 More details how to connect to this MCP Server can be found on [https://docs.readme.com/main/docs/mcp-servers](https://docs.readme.com/main/docs/mcp-servers)
 
+## Skills
+> This file is under development
+
 ## LLMs.txt
 [LLMs.txt](https://llmstxt.org/) works as a configuration file at the root of your documentation site that AI language models can access and interpret. This [llms.txt](/llms.txt) file functions as a technical guide that instructs AI systems on how to properly read and reference your content.
 
