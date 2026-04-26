@@ -1,10 +1,13 @@
 ---
 title: States
+excerpt: Fixture status definitions
 deprecated: false
 hidden: false
 metadata:
   robots: index
 ---
+Fixtures transition through various **statuses** — including scheduled, finished, or cancelled — identified by unique state codes (developer_name). These states allow for real-time tracking of match progress and enable data filtering via the API.
+
 | State              | Description                                         |
 | ------------------ | --------------------------------------------------- |
 | `ABANDONED`        | Match abandoned and will resume later.              |
