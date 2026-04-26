@@ -182,122 +182,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "fixtures": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "date_time": {
-                            "type": "string",
-                            "format": "date-time"
-                          },
-                          "status": {
-                            "type": "string"
-                          },
-                          "is_live": {
-                            "type": "boolean"
-                          },
-                          "language": {
-                            "type": "string"
-                          },
-                          "sport": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "integer"
-                              },
-                              "name": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "country": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "integer"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "alpha3": {
-                                "type": "string",
-                                "description": "ISO Alpha-3 country code"
-                              }
-                            }
-                          },
-                          "league": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "integer"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "level": {
-                                "type": "integer"
-                              }
-                            }
-                          },
-                          "season": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "integer"
-                              },
-                              "name": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "participants": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "id": {
-                                  "type": "integer"
-                                },
-                                "name": {
-                                  "type": "string"
-                                },
-                                "position": {
-                                  "type": "integer"
-                                },
-                                "location": {
-                                  "type": "string",
-                                  "description": "home or away"
-                                }
-                              }
-                            }
-                          },
-                          "scores": {
-                            "type": "array",
-                            "description": "Array of score objects (may be empty).",
-                            "items": {
-                              "type": "object"
-                            }
-                          },
-                          "periods": {
-                            "type": "array",
-                            "description": "Array of period objects (may be empty).",
-                            "items": {
-                              "type": "object"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "required": [
-                    "fixtures"
-                  ]
+                  "$ref": "#/components/schemas/FixturesResponse"
                 }
               }
             }
@@ -340,9 +225,11 @@
             "in": "query",
             "name": "is_live",
             "schema": {
-              "type": "boolean"
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
             },
-            "description": "Set to true to filter for currently active matches."
+            "description": "Set to 1 to filter for currently active matches."
           },
           {
             "in": "query",
@@ -384,6 +271,150 @@
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Sport": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Country": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "alpha3": {
+            "type": "string",
+            "description": "ISO Alpha-3 country code"
+          }
+        }
+      },
+      "League": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "level": {
+            "type": "integer"
+          }
+        }
+      },
+      "Season": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Participant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "location": {
+            "type": "string",
+            "description": "home or away"
+          }
+        }
+      },
+      "Score": {
+        "type": "object",
+        "description": "Generic score object — fields depend on score type"
+      },
+      "Period": {
+        "type": "object",
+        "description": "Generic period object — fields depend on period type"
+      },
+      "Fixture": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "date_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "is_live": {
+            "type": "boolean"
+          },
+          "language": {
+            "type": "string"
+          },
+          "sport": {
+            "$ref": "#/components/schemas/Sport"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "league": {
+            "$ref": "#/components/schemas/League"
+          },
+          "season": {
+            "$ref": "#/components/schemas/Season"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Participant"
+            }
+          },
+          "scores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Score"
+            }
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Period"
+            }
+          }
+        }
+      },
+      "FixturesResponse": {
+        "type": "object",
+        "properties": {
+          "fixtures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Fixture"
+            }
+          }
+        },
+        "required": [
+          "fixtures"
+        ]
       }
     }
   },
