@@ -14,6 +14,11 @@ You can leverage Large Language Models (LLMs) to streamline the development of S
 | **Skill**      | Teaches your assistant how to approach SSTrader integration tasks       | Pairing with MCP for deeper guidance on workflows and common mistakes |
 | **llms.txt**   | Plain-text index of the documentation                                   | Pasting context into ChatGPT, Gemini, or claude.ai conversations      |
 
+## MCP
+**Model Context Protocol** (MCP) is an open standard that gives AI assistants a live connection to external tools and data. Think of it like a USB port for AI — instead of pasting your docs into a chat window, your AI tool connects directly and can read, search, and act on your content in real time.
+
+
+
 ## LLMs.txt
 [LLMs.txt](https://llmstxt.org/) works as a configuration file at the root of your documentation site that AI language models can access and interpret. This [llms.txt](/llms.txt) file functions as a technical guide that instructs AI systems on how to properly read and reference your content.
 
