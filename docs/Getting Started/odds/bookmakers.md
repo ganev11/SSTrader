@@ -15,7 +15,7 @@ SSTrader categorizes odds by provider type to help you distinguish between marke
 | 2            | European (Soft) | Aggregated averages from major European consumer bookmakers. |
 | 3            | Asian (Sharp)   | High-liquidity pricing from professional Asian bookmakers.   |
 
-> ⚠️ Reference Note: All odds provided are for informational and reference purposes only.
+> Reference Note: All odds provided are for informational and reference purposes only.
 
 ***
 
