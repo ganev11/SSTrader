@@ -8,7 +8,7 @@ hidden: false
   {/* Edit the props below to customize these components */}
   <Card title="Quick Start" href="#" icon="fa-duotone fa-rocket-launch">Learn how to get started with our product</Card>
 
-  <Card title="API Reference" href="reference" icon="fa-duotone fa-code-simple">Explore endpoints and build your integration</Card>
+  <Card title="API Reference" href="/reference" icon="fa-duotone fa-code-simple">Explore endpoints and build your integration</Card>
 
   <Card title="Build with AI" href="#" icon="fa-duotone fa-sparkles">Use LLM features to automate your workflow</Card>
 </Cards>
