@@ -9,7 +9,6 @@ hidden: false
 metadata:
   robots: index
 ---
-
 ## Example Odd Object
 
 ```json
@@ -29,10 +28,12 @@ metadata:
   "home_score": 0,
   "away_score": 0,
   "status": -1,
+  "raw": {},
+	"player_id": null,
   "outcome": "Lost",
-  "marketName": "Asian Total Cards",
-  "marketDescription": "Total number of cards in the match",
-  "selection": "Over 3.5"
+	"market_description": "Total number of cards in the match",
+  "market_name": "Asian Total Cards",
+  "label_name": "Over 3.5"
 }
 ```
 
@@ -42,13 +43,14 @@ Here are the field definitions for the **Odd Object** in Markdown format, organi
 
 ### Core Identifiers
 
-| Field          | Type    | Description                                                               |
-| :------------- | :------ | :------------------------------------------------------------------------ |
-| `odd_id`       | Integer | Unique identifier for this specific odd record.                           |
-| `fixture_id`   | Integer | Identifier of the match (fixture) this odd belongs to.                    |
-| `market_id`    | Integer | The category of the bet (e.g., `1` for Match Winner, `22` for Next Goal). |
-| `bookmaker_id` | Integer | The ID of the bookmaker providing this price.                             |
-| `label_id`     | Integer | Internal identifier for the specific selection type within a market.      |
+| Field          | Type           | Description                                                                                                                                                           |
+| :------------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `odd_id`       | Integer        | Unique identifier for this specific odd record.                                                                                                                       |
+| `fixture_id`   | Integer        | Identifier of the match (fixture) this odd belongs to.                                                                                                                |
+| `market_id`    | Integer        | The category of the bet (e.g., `1` for Match Winner, `22` for Next Goal).                                                                                             |
+| `bookmaker_id` | Integer        | The ID of the bookmaker providing this price.                                                                                                                         |
+| `label_id`     | Integer        | Internal identifier for the specific selection type within a market.                                                                                                  |
+| `player_id`     | Integer / null | Nullable. The unique identifier for a player. This is only populated when the odd is related to a specific player performance (e.g., First Goalscorer, Player Shots). |
 
 ### Pricing & Lines
 
@@ -71,13 +73,13 @@ Here are the field definitions for the **Odd Object** in Markdown format, organi
 
 ### Localized Display Fields (Enriched)
 
-| Field               | Type    | Description                                                       |
-| :------------------ | :------ | :---------------------------------------------------------------- |
-| `status`            | Integer | The numerical result code of the bet.                             |
-| `outcome`           | String  | Localized name of the status (e.g., "Won", "Half Lost", "Void").  |
-| `marketName`        | String  | Localized name of the betting market (e.g., "Asian Total Cards"). |
-| `marketDescription` | String  | A brief localized explanation of the market rules.                |
-| `selection`         | String  | The human-readable name of the specific pick (e.g., "Over 3.5").  |
+| Field                | Type    | Description                                                       |
+| :------------------- | :------ | :---------------------------------------------------------------- |
+| `status`             | Integer | The numerical result code of the bet.                             |
+| `outcome`            | String  | Localized name of the status (e.g., "Won", "Half Lost", "Void").  |
+| `market_name`        | String  | Localized name of the betting market (e.g., "Asian Total Cards"). |
+| `market_description` | String  | A brief localized explanation of the market rules.                |
+| `label_name`          | String  | The human-readable name of the specific pick (e.g., "Over 3.5").  |
 
 ### Settlement Status Codes (`status`)
 
