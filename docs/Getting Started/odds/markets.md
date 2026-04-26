@@ -45,6 +45,3 @@ Use the table below to map `market_id` to the correct human-readable market name
 * Next Goal (ID 22): The specific goal number (1st, 2nd, etc.) is found in the line property of the Odd object.
 * Correct Score (ID 7/17): The logic is always 1 followed by the score. To parse, remove the leading 1.
 * Compound IDs (ID 56/57/59): The first digit represents the team (1=Home, 2=Away) and the second represents the outcome.
-
-Would you like me to create a JSON mapping file for these IDs so you can import them directly into your application?
-
