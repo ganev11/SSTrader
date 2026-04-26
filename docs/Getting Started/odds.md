@@ -100,6 +100,21 @@ The raw property is designed for advanced integrations where you need to interac
 | :----- | :-----------: | :------------------------------------------------------ |
 | raw	| Object |	A container for external provider data. Returns {} (empty object) by default if no deep integration data is available.|
 
+Example **raw** payload:
+
+```json
+"raw": {
+    "event_id": 13936816,
+    "market_id": 1339290698,
+    "selection_id": 3314639099,
+    "market_type_id": 18,
+    "selection_type_id": 12
+}
+```
+> Deep Linking Note
+> Use the IDs found within the raw object to map SSTrader selections to the bookmaker's internal IDs. This is essential for features like Add to Betslip or navigating users directly to a specific event on the bookmaker's platform.
+
+
 ***
 
 ## Odds Entity Filters
