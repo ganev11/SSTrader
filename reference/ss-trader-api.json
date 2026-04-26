@@ -306,11 +306,19 @@
         "parameters": [
           {
             "in": "query",
+            "name": "sport_id",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the sport. Defaults to 1 (Football/Soccer)."
+          },
+          {
+            "in": "query",
             "name": "league_id",
             "schema": {
               "type": "string"
             },
-            "description": "Comma-separated league ids to filter fixtures by."
+            "description": "Comma-separated list of league IDs (e.g., 12,45)."
           },
           {
             "in": "query",
@@ -318,7 +326,16 @@
             "schema": {
               "type": "string"
             },
-            "description": "Comma-separated fixture ids to filter by."
+            "description": "Comma-separated list of specific fixture IDs."
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Date in ISO 8601 YYYY-MM-DD format."
           },
           {
             "in": "query",
@@ -326,7 +343,23 @@
             "schema": {
               "type": "boolean"
             },
-            "description": "Filter only live fixtures when true."
+            "description": "Set to true to filter for currently active matches."
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Localization code for names (default: en)."
+          },
+          {
+            "in": "query",
+            "name": "include",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of data modules to expand (e.g., metrics, odds, seasons)."
           }
         ],
         "operationId": "getFixtures",
