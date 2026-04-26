@@ -332,8 +332,7 @@
             "in": "query",
             "name": "date",
             "schema": {
-              "type": "string",
-              "format": "date"
+              "type": "string"
             },
             "description": "Date in ISO 8601 YYYY-MM-DD format."
           },
