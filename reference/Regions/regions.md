@@ -1,6 +1,4 @@
 ---
-title: Regions
-excerpt: Returns a list of regions, countries, and leagues.
 api:
   file: ss-trader-api.json
   operationId: get_regions

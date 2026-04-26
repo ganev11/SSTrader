@@ -119,7 +119,7 @@
           },
           {
             "in": "query",
-            "name": "param",
+            "name": "language",
             "schema": {
               "type": "string",
               "enum": [
