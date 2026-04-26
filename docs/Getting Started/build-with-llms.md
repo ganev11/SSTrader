@@ -15,6 +15,7 @@ You can leverage Large Language Models (LLMs) to streamline the development of S
 | **llms.txt**   | Plain-text index of the documentation                                   | Pasting context into ChatGPT, Gemini, or claude.ai conversations      |
 
 ## LLMs.txt
-LLMs.txt works as a configuration file at the root of your documentation site that AI language models can access and interpret. This file functions as a technical guide that instructs AI systems on how to properly read and reference your content.
+[LLMs.txt](https://llmstxt.org/) works as a configuration file at the root of your documentation site that AI language models can access and interpret. This file functions as a technical guide that instructs AI systems on how to properly read and reference your content.
 
+[llms.txt](/llms.txt)
 <br />
