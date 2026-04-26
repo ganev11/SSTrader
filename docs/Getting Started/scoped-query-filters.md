@@ -1,16 +1,14 @@
 ---
 title: Scoped Query Filters
+excerpt: >-
+  This system uses URL query parameters to pass structured filters to the
+  backend. It groups criteria by entity (like `odds`) to ensure your queries
+  remain organized and easy to parse.
 deprecated: false
 hidden: false
 metadata:
   robots: index
 ---
-# Scoped Query Filters
-
-This system uses URL query parameters to pass structured filters to the backend. It groups criteria by entity (like `odds`) to ensure your queries remain organized and easy to parse.
-
-***
-
 ## 1. URL Pattern
 
 To apply filters, use the following syntax:
