@@ -94,6 +94,12 @@ The `status` integer indicates the result of the selection. The `outcome` string
 | **-2** | **Half Lost** | Half of the stake was lost; half was returned.          |
 | **-3** |    **Void**   | The bet was cancelled and the stake was returned.       |
 
+### Deep Integration (raw object)
+The raw property is designed for advanced integrations where you need to interact directly with a bookmaker's native system (e.g., for betslip injection or deep-linking).
+|Field	|Type	|Description|
+| :----- | :-----------: | :------------------------------------------------------ |
+| raw	| Object |	A container for external provider data. Returns {} (empty object) by default if no deep integration data is available.|
+
 ***
 
 ## Odds Entity Filters
