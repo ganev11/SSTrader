@@ -31,3 +31,8 @@ Integrating translations is straightforward. Use the **language** parameter with
 
 For example, to display league names in Spanish from the leagues endpoint:
 
+```text
+https://api.sstrader.com/v1/regions?language=es
+```
+
+<br />
