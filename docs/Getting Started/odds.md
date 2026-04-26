@@ -29,9 +29,9 @@ metadata:
   "away_score": 0,
   "status": -1,
   "raw": {},
-	"player_id": null,
+  "player_id": null,
   "outcome": "Lost",
-	"market_description": "Total number of cards in the match",
+  "market_description": "Total number of cards in the match",
   "market_name": "Asian Total Cards",
   "label_name": "Over 3.5"
 }
