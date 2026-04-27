@@ -10,7 +10,7 @@ metadata:
 
 This JSON object represents a typical response for a Participants following your schema.
 
-``` JSON
+```json
 {
 "participants": [
         {
