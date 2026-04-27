@@ -18,7 +18,7 @@ metadata:
 | `league_id`  | `string`  | Comma-separated list of league IDs (e.g., `12,45`).     |
 | `fixture_id` | `string`  | Comma-separated list of specific fixture IDs.           |
 | `date`       | `string`  | Date in `DD-MM-YYYY-MM-DD` format.                      |
-| `is_live`    | `integer` | Set to `1` to filter for currently active matches.   |
+| `is_live`    | `integer` | Set to `1` to filter for currently active matches.      |
 | `language`   | `string`  | Localization code for names (default: `en`).            |
 | `include`    | `string`  | Comma-separated list of data modules to expand.         |
 
@@ -50,8 +50,7 @@ Retrieve all matches for a specific date with current betting market data:
 
 ### 2. Live Match Analysis
 
-Get live matches with real-time statistics to track performance:
-`GET /fixtures?is_live=true&include=statistics`
+Get live matches with real-time statistics to track performance:<br />`GET /fixtures?is_live=1&include=statistics`
 
 ### 3. Deep Analytical View
 
