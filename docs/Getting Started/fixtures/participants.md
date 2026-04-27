@@ -11,20 +11,22 @@ metadata:
 This JSON object represents a typical response for a Participants following your schema.
 
 ```json
-"participants": [
-        {
-          "id": 1,
-          "name": "Manchester United",
-          "position": 5,
-          "location": "home"
-        },
-        {
-          "id": 2,
-          "name": "Liverpool",
-          "position": 2,
-          "location": "away"
-        }
-]
+{
+  "participants": [
+    {
+      "id": 1,
+      "name": "Manchester United",
+      "position": 5,
+      "location": "home"
+    },
+    {
+      "id": 2,
+      "name": "Liverpool",
+      "position": 2,
+      "location": "away"
+    }
+  ]
+}
 ```
 ***
 
