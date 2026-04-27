@@ -378,6 +378,145 @@
       "Period": {
         "type": "object",
         "additionalProperties": true
+      },
+      "OddObject": {
+        "type": "object",
+        "description": "Core entity for pricing, settlement, and market data.  Note: Use `filter[odds]` in the query to refine this list.\n",
+        "example": {
+          "odd_id": 72919503,
+          "fixture_id": 946305,
+          "market_id": 203,
+          "bookmaker_id": 2,
+          "is_live": 0,
+          "label_id": 2,
+          "value": 2.1,
+          "handicap": 3.5,
+          "line": 3.5,
+          "last_update": 1768081284,
+          "suspend": 1,
+          "sp": 1.8,
+          "home_score": 0,
+          "away_score": 0,
+          "status": -1,
+          "raw": {},
+          "player_id": null,
+          "outcome": "Lost",
+          "market_description": "Total number of cards in the match",
+          "market_name": "Asian Total Cards",
+          "label_name": "Over 3.5"
+        },
+        "properties": {
+          "odd_id": {
+            "type": "integer",
+            "description": "Unique identifier for this specific odd record."
+          },
+          "fixture_id": {
+            "type": "integer",
+            "description": "Identifier of the match (fixture) this odd belongs to."
+          },
+          "market_id": {
+            "type": "integer",
+            "description": "The category of the bet (e.g., 1 for Match Winner, 22 for Next Goal)."
+          },
+          "bookmaker_id": {
+            "type": "integer",
+            "description": "The ID of the bookmaker providing this price."
+          },
+          "label_id": {
+            "type": "integer",
+            "description": "Internal identifier for the specific selection type within a market."
+          },
+          "player_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Unique identifier for a player. Populated for performance markets (e.g., Shots, Goalscorer)."
+          },
+          "value": {
+            "type": "number",
+            "format": "float",
+            "description": "The current decimal odds (price)."
+          },
+          "line": {
+            "type": "number",
+            "format": "float",
+            "description": "The numerical threshold for the bet (e.g., 2.5 in an Over/Under market)."
+          },
+          "handicap": {
+            "type": "number",
+            "format": "float",
+            "description": "The point spread or goal handicap (if applicable)."
+          },
+          "sp": {
+            "type": "number",
+            "format": "float",
+            "description": "Starting Price. The opening odds recorded for the event."
+          },
+          "suspend": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Boolean flag. If 1, the odd is currently locked and not tradable."
+          },
+          "is_live": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "1 for live/in-play events; 0 for pre-match."
+          },
+          "home_score": {
+            "type": "integer",
+            "description": "Home team score at generation. Used as 'base score' for Asian markets."
+          },
+          "away_score": {
+            "type": "integer",
+            "description": "Away team score at generation. Used as 'base score' for Asian markets."
+          },
+          "last_update": {
+            "type": "integer",
+            "description": "Unix timestamp of the last modification."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              2,
+              1,
+              0,
+              -1,
+              -2,
+              -3
+            ],
+            "description": "Numerical result code: - **2**: Half Won - **1**: Won - **0**: Pending - **-1**: Lost - **-2**: Half Lost - **-3**: Void\n"
+          },
+          "outcome": {
+            "type": "string",
+            "description": "Localized name of the status (e.g., 'Won', 'Half Lost')."
+          },
+          "market_name": {
+            "type": "string",
+            "description": "Localized name of the betting market."
+          },
+          "market_description": {
+            "type": "string",
+            "description": "Brief localized explanation of the market rules."
+          },
+          "label_name": {
+            "type": "string",
+            "description": "Human-readable name of the specific pick (e.g., 'Over 3.5')."
+          },
+          "raw": {
+            "type": "object",
+            "description": "Container for external provider data. Use these IDs for betslip injection  or deep-linking to bookmaker platforms.\n",
+            "example": {
+              "event_id": 13936816,
+              "market_id": 1339290698,
+              "selection_id": 3314639099
+            }
+          }
+        }
       }
     }
   }
