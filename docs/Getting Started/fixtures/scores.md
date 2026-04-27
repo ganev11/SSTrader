@@ -23,10 +23,16 @@ The `scores` array provides a granular breakdown of points or goals scored by ea
 ## Developer Name Values
 The developer_name field uses the following constant values to describe the match state:
 
-* 1ST_HALF: Total goals scored during the first half.
-* 2ND_HALF: The score at the end of the second half (usually includes 1st half goals).
-* 2ND_HALF_ONLY: Goals scored exclusively during the second half period.
-* CURRENT: The total live score for the team at the current moment.
+| Value | Description |
+|---|---|
+| 1ST_HALF | Total goals scored during the first half. |
+| 2ND_HALF | The total score at the end of the second half. |
+| 2ND_HALF_ONLY | Goals scored exclusively during the second half period. |
+| ET_1ST_HALF | Goals scored during the first period of extra time. |
+| ET_2ND_HALF | Goals scored during the second period of extra time. |
+| ET | Total score at the conclusion of all extra time periods. |
+| PENALTY_SHOOTOUT | Total successful penalties recorded in a shootout. |
+| CURRENT | The total live score for the team at the current moment. |
 
 ------------------------------
 ## Example Implementation
