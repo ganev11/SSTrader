@@ -8,11 +8,6 @@ hidden: false
 metadata:
   robots: index
 ---
-## Score Schema Documentation
-
-The `scores` array provides a granular breakdown of points or goals scored by each team, categorized by specific periods of the match.
-
-------------------------------
 ## Field Definitions
 
 | Field | Type | Description |
