@@ -10,8 +10,9 @@ metadata:
 
 This JSON object represents a typical response for a Participants following your schema.
 
-```JSON
-{"participants": [
+``` JSON
+{
+"participants": [
         {
           "id": 1,
           "name": "Manchester United",
@@ -24,7 +25,8 @@ This JSON object represents a typical response for a Participants following your
           "position": 2,
           "location": "away"
         }
-]}
+]
+}
 ```
 ***
 
