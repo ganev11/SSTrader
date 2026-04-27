@@ -143,10 +143,23 @@
           {
             "in": "query",
             "name": "include",
+            "style": "form",
+            "explode": false,
             "schema": {
-              "type": "string"
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "odds",
+                  "statistics",
+                  "metrics",
+                  "fair_odds",
+                  "movement",
+                  "seasons"
+                ]
+              }
             },
-            "description": "Data modules to expand (e.g., metrics, odds)."
+            "description": "Comma-separated list of modules to include.  Example: `include=odds,metrics`.  Note: Using an include unlocks the corresponding `filter[entity]` parameter.\n"
           }
         ],
         "responses": {
@@ -287,6 +300,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Period"
+            }
+          },
+          "odds": {
+            "description": "Included when `include=odds` is passed.",
+            "type": "array",
+            "items": {
+              "type": "object"
             }
           }
         }
