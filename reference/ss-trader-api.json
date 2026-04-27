@@ -340,13 +340,16 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Unique identifier for the league."
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Official name of the league."
           },
           "level": {
-            "type": "integer"
+            "type": "integer",
+            "description": "The tier of the league (e.g., 1 for top-flight, 2 for second division)."
           }
         }
       },
@@ -389,7 +392,47 @@
       },
       "Score": {
         "type": "object",
-        "additionalProperties": true
+        "description": "Detailed scoring breakdown for a specific team and match period.",
+        "properties": {
+          "fixture_id": {
+            "type": "integer",
+            "description": "Unique identifier for the match."
+          },
+          "team_id": {
+            "type": "integer",
+            "description": "Unique identifier for the team."
+          },
+          "value": {
+            "type": "integer",
+            "description": "The number of goals or points recorded."
+          },
+          "developer_name": {
+            "type": "string",
+            "description": "The machine-readable identifier for the match period.",
+            "enum": [
+              "1ST_HALF",
+              "2ND_HALF",
+              "ET",
+              "PENALTY_SHOOTOUT",
+              "ET_2ND_HALF",
+              "CURRENT",
+              "ET_1ST_HALF",
+              "2ND_HALF_ONLY"
+            ]
+          }
+        },
+        "required": [
+          "fixture_id",
+          "team_id",
+          "value",
+          "developer_name"
+        ],
+        "example": {
+          "fixture_id": 1033370,
+          "team_id": 3585,
+          "value": 2,
+          "developer_name": "1ST_HALF"
+        }
       },
       "Period": {
         "type": "object",
