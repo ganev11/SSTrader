@@ -36,8 +36,8 @@ The table below breaks down the requirements and constraints for each field in t
 | -------- | ------- | ------------------------------------------------- |
 | id       | integer | Unique identifier for the participant.            |
 | name     | string  | Localized name of the team or competitor.         |
-| position | integer | The team's current standing/rank in their league.rank. |
-| location | string  | Indicates if the team is hosting or visiting.      |
+| position | integer | The team's current standing/rank in their league |
+| location | string  | Indicates if the team is hosting (home) or visiting (away).      |
 
 ***
 
