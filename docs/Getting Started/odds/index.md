@@ -50,7 +50,7 @@ Here are the field definitions for the **Odd Object** in Markdown format, organi
 | `market_id`    | Integer        | The category of the bet (e.g., `1` for Match Winner, `22` for Next Goal).                                                                                             |
 | `bookmaker_id` | Integer        | The ID of the bookmaker providing this price.                                                                                                                         |
 | `label_id`     | Integer        | Internal identifier for the specific selection type within a market.                                                                                                  |
-| `player_id`     | Integer / null | Nullable. The unique identifier for a player. This is only populated when the odd is related to a specific player performance (e.g., First Goalscorer, Player Shots). |
+| `player_id`    | Integer / null | Nullable. The unique identifier for a player. This is only populated when the odd is related to a specific player performance (e.g., First Goalscorer, Player Shots). |
 
 ### Pricing & Lines
 
@@ -79,11 +79,12 @@ Here are the field definitions for the **Odd Object** in Markdown format, organi
 | `outcome`            | String  | Localized name of the status (e.g., "Won", "Half Lost", "Void").  |
 | `market_name`        | String  | Localized name of the betting market (e.g., "Asian Total Cards"). |
 | `market_description` | String  | A brief localized explanation of the market rules.                |
-| `label_name`          | String  | The human-readable name of the specific pick (e.g., "Over 3.5").  |
+| `label_name`         | String  | The human-readable name of the specific pick (e.g., "Over 3.5").  |
 
 ### Settlement Status Codes (`status`)
 
-The `status` integer indicates the result of the selection. The `outcome` string provides the localized translation of this code.
+> Settlement Status Tip
+> The `status` integer and `outcome` string are linked. For example, a status of `-1` will always return an outcome of "Lost".
 
 | Status |    Outcome    | Description                                             |
 | :----- | :-----------: | :------------------------------------------------------ |
@@ -95,10 +96,12 @@ The `status` integer indicates the result of the selection. The `outcome` string
 | **-3** |    **Void**   | The bet was cancelled and the stake was returned.       |
 
 ### Deep Integration (raw object)
+
 The raw property is designed for advanced integrations where you need to interact directly with a bookmaker's native system (e.g., for betslip injection or deep-linking).
-|Field	|Type	|Description|
-| :----- | :-----------: | :------------------------------------------------------ |
-| raw	| Object |	A container for external provider data. Returns {} (empty object) by default if no deep integration data is available.|
+
+| Field |  Type  | Description                                                                                                            |
+| :---- | :----: | :--------------------------------------------------------------------------------------------------------------------- |
+| raw   | Object | A container for external provider data. Returns {} (empty object) by default if no deep integration data is available. |
 
 Example **raw** payload:
 
@@ -111,9 +114,9 @@ Example **raw** payload:
     "selection_type_id": 12
 }
 ```
+
 > Deep Linking Note
 > Use the IDs found within the raw object to map SSTrader selections to the bookmaker's internal IDs. This is essential for features like Add to Betslip or navigating users directly to a specific event on the bookmaker's platform.
-
 
 ***
 
