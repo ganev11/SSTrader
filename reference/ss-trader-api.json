@@ -301,6 +301,13 @@
             "items": {
               "$ref": "#/components/schemas/Period"
             }
+          },
+          "odds": {
+            "description": "Included when `include=odds` is passed.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OddObject"
+            }
           }
         }
       },
