@@ -436,7 +436,73 @@
       },
       "Period": {
         "type": "object",
-        "additionalProperties": true
+        "description": "Timing and clock details for a specific match segment.",
+        "properties": {
+          "period_id": {
+            "type": "integer"
+          },
+          "fixture_id": {
+            "type": "integer"
+          },
+          "started": {
+            "type": "integer",
+            "description": "Unix timestamp"
+          },
+          "ended": {
+            "type": "integer",
+            "description": "Unix timestamp"
+          },
+          "counts_from": {
+            "type": "integer"
+          },
+          "ticking": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ]
+          },
+          "sort_order": {
+            "type": "integer"
+          },
+          "time_added": {
+            "type": "integer"
+          },
+          "period_length": {
+            "type": "integer"
+          },
+          "minutes": {
+            "type": "integer"
+          },
+          "seconds": {
+            "type": "integer"
+          },
+          "developer_name": {
+            "type": "string",
+            "enum": [
+              "1ST_HALF",
+              "2ND_HALF",
+              "ET",
+              "PENALTY_SHOOTOUT",
+              "ET_2ND_HALF",
+              "ET_1ST_HALF"
+            ]
+          }
+        },
+        "example": {
+          "period_id": 2045635,
+          "fixture_id": 1033370,
+          "started": 1776875170,
+          "ended": 1776878125,
+          "counts_from": 0,
+          "ticking": 0,
+          "sort_order": 1,
+          "time_added": 4,
+          "period_length": 45,
+          "minutes": 49,
+          "seconds": 15,
+          "developer_name": "1ST_HALF"
+        }
       },
       "OddObject": {
         "type": "object",
