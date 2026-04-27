@@ -17,7 +17,7 @@ metadata:
 | `sport_id`   | `integer` | The ID of the sport. Defaults to `1` (Football/Soccer). |
 | `league_id`  | `string`  | Comma-separated list of league IDs (e.g., `12,45`).     |
 | `fixture_id` | `string`  | Comma-separated list of specific fixture IDs.           |
-| `date`       | `string`  | Date in `DD-MM-YYYY-MM-DD` format.                      |
+| `date`       | `string`  | Date in `YYYY-MM-DD` format.                            |
 | `is_live`    | `integer` | Set to `1` to filter for currently active matches.      |
 | `language`   | `string`  | Localization code for names (default: `en`).            |
 | `include`    | `string`  | Comma-separated list of data modules to expand.         |
