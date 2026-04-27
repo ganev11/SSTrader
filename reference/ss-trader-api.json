@@ -308,6 +308,13 @@
             "items": {
               "$ref": "#/components/schemas/OddObject"
             }
+          },
+          "seasons": {
+            "description": "Included when `include=seasons` is passed.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonsObject"
+            }
           }
         }
       },
@@ -641,6 +648,43 @@
               "selection_id": 3314639099
             }
           }
+        }
+      },
+      "SeasonsObject": {
+        "type": "object",
+        "description": "Season details including a breakdown of active match days.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the season."
+          },
+          "name": {
+            "type": "string",
+            "description": "The label for the season year(s)."
+          },
+          "days": {
+            "type": "array",
+            "description": "List of match dates in ISO 8601 format.",
+            "items": {
+              "type": "string",
+              "format": "date",
+              "example": "2025-09-11"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "days"
+        ],
+        "example": {
+          "id": 17004,
+          "name": "2025/2026",
+          "days": [
+            "2025-09-11",
+            "2025-09-12",
+            "2025-09-13"
+          ]
         }
       }
     }
