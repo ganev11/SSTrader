@@ -1,5 +1,6 @@
 ---
 title: Participants
+excerpt: Details about a specific team or competitor involved in the match.
 deprecated: false
 hidden: false
 metadata:
@@ -10,7 +11,7 @@ metadata:
 This JSON object represents a typical response for a Participants following your schema.
 
 ```JSON
-"participants": [
+{"participants": [
         {
           "id": 1,
           "name": "Manchester United",
@@ -23,7 +24,7 @@ This JSON object represents a typical response for a Participants following your
           "position": 2,
           "location": "away"
         }
-]
+]}
 ```
 ***
 
