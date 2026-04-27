@@ -1,7 +1,7 @@
 ---
 title: Periods
 excerpt: >-
-  The `periods` array provides technical timing data for each segment of the
+  The periods array provides technical timing data for each segment of the
   match, including timestamps, added time, and clock state.
 deprecated: false
 hidden: false
@@ -25,5 +25,28 @@ metadata:
 | minutes         | integer | Total minutes elapsed since the start of the match.                       |
 | seconds         | integer | Additional seconds elapsed beyond the full minutes.                       |
 | developer\_name | enum    | Machine-readable name (matches the keys in the Score schema).             |
+
+## Example JSON
+
+```json
+{
+    "periods": [
+        {
+            "period_id": 2045635,
+            "fixture_id": 1033370,
+            "started": 1776875170,
+            "ended": 1776878125,
+            "counts_from": 0,
+            "ticking": 0,
+            "sort_order": 1,
+            "time_added": 4,
+            "period_length": 45,
+            "minutes": 49,
+            "seconds": 15,
+            "developer_name": "1ST_HALF"
+        }
+    ]
+}
+```
 
 <br />
