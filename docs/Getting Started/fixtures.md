@@ -64,4 +64,58 @@ Get fixtures for a league along with the list of available historical seasons:
 
 ***
 
+## Example Base Response
+
+`GET /fixtures?fixture_id=123`
+
+```json
+{
+  "fixtures": [
+    {
+      "id": 123,
+      "date_time": "2024-10-25T19:45:00.000Z",
+      "status": "INPLAY_1ST_HALF",
+      "is_live": true,
+      "language": "en",
+      "sport": {
+        "id": 1,
+        "name": "Football"
+      },
+      "country": {
+        "id": 42,
+        "name": "England",
+        "alpha3": "GBR"
+      },
+      "league": {
+        "id": 8,
+        "name": "Premier League",
+        "level": 1
+      },
+      "season": {
+        "id": 21024,
+        "name": "2024/2025"
+      },
+      "participants": [
+        {
+          "id": 1,
+          "name": "Manchester United",
+          "position": 5,
+          "location": "home"
+        },
+        {
+          "id": 2,
+          "name": "Liverpool",
+          "position": 2,
+          "location": "away"
+        }
+      ],
+      "scores": [],
+      "periods": []
+    }
+  ]
+}
+```
+
+> **Note:** If no score or period data is currently available for a fixture, these fields will return as empty arrays `[]`. Advanced data like **statistics** or **odds** are only appended when using the `include` parameter.
+
 <br />
