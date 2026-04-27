@@ -25,6 +25,7 @@ The dates within the days array are strings formatted according to ISO 8601 stan
 ------------------------------
 ## Example JSON Response
 
+```json
 {
   "seasons": [
     {
@@ -46,3 +47,4 @@ The dates within the days array are strings formatted according to ISO 8601 stan
     }
   ]
 }
+```
