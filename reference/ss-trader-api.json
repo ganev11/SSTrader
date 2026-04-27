@@ -363,18 +363,27 @@
       },
       "Participant": {
         "type": "object",
+        "description": "Details about a specific team or competitor involved in the match.",
         "properties": {
           "id": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Unique identifier for the participant."
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Localized name of the team or competitor."
           },
           "position": {
-            "type": "integer"
+            "type": "integer",
+            "description": "The team's current standing/rank in their respective league table."
           },
           "location": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "home",
+              "away"
+            ],
+            "description": "Indicates the venue role. `home` for the hosting team and `away` for the visiting team."
           }
         }
       },
