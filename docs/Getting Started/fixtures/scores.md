@@ -1,5 +1,8 @@
 ---
 title: Scores
+excerpt: >-
+  The `scores` array provides a granular breakdown of points or goals scored by
+  each team, categorized by specific periods of the match.
 deprecated: false
 hidden: false
 metadata:
