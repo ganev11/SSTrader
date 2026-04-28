@@ -47,7 +47,7 @@ To ensure you are comparing the same outcome, match the objects using these keys
 
 ------------------------------
 
-## 🛠️ Documentation: Identifying a Value Bet
+## Documentation: Identifying a Value Bet
 
 A Value Bet exists when the real_value (bookmaker odds) is higher than the fair_value.
 
