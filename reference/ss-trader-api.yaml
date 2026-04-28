@@ -143,19 +143,24 @@ paths:
               - 1
       responses:
         '200':
-          description: A list of fixtures with embedded insights.
+          description: A list of fixtures with insights.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FixtureWithInsights'
+                $ref: '#/components/schemas/InsightsResponse'
 components:
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
   schemas:
+    InsightsResponse:
+      type: object
+      properties:
+        fixtures:
+          type: array
+          items:
+            $ref: '#/components/schemas/FixtureWithInsights'
     RegionsResponse:
       type: object
       required:
