@@ -1,4 +1,0 @@
----
-title: Fixtures
-hidden: false
----
