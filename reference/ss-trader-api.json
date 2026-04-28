@@ -322,6 +322,13 @@
             "items": {
               "$ref": "#/components/schemas/FairOdd"
             }
+          },
+          "movement": {
+            "description": "Included when `include=movement` is passed.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Movement"
+            }
           }
         }
       },
@@ -742,6 +749,45 @@
           "value": 4.984,
           "handicap": 1.5,
           "line": 1.5
+        }
+      },
+      "Movement": {
+        "type": "object",
+        "description": "A historical snapshot of an odd's value and status at a specific time.",
+        "properties": {
+          "odd_id": {
+            "type": "integer",
+            "description": "Identifier for the specific odd."
+          },
+          "value": {
+            "type": "number",
+            "format": "float",
+            "description": "The decimal value of the odd at this timestamp."
+          },
+          "suspend": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Indicates if the market was suspended (1) or active (0)."
+          },
+          "last_update": {
+            "type": "integer",
+            "description": "Unix timestamp of the update."
+          }
+        },
+        "required": [
+          "odd_id",
+          "value",
+          "suspend",
+          "last_update"
+        ],
+        "example": {
+          "odd_id": 88782664,
+          "value": 1.43,
+          "suspend": 0,
+          "last_update": 1776785331
         }
       }
     }
