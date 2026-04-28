@@ -367,10 +367,32 @@ components:
       properties:
         id:
           type: integer
+        market_id:
+          type: integer
+        value:
+          description: The current decimal odd
+          type: number
+          format: float
+        sp:
+          description: >-
+            The starting price. The odd value at the exact time the insight was
+            generated.
+          type: number
+          format: float
         content:
           type: object
           description: Flexible container for AI-generated data.
           additionalProperties: true
+        model:
+          description: The AI model that generated this insight.
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            color:
+              type: string
         bet:
           $ref: '#/components/schemas/Odd'
     Sport:
