@@ -1,0 +1,648 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: SSTrader API
+servers:
+  - url: https://api.sstrader.com/v1
+tags:
+  - name: Fixtures
+    description: Operations related to match fixtures
+  - name: Regions
+    description: Geographic regions data
+  - name: Insights
+    description: AI-driven match insights and recommended bets
+paths:
+  /regions:
+    get:
+      tags:
+        - Regions
+      summary: Get all regions, countries and leagues
+      description: Returns a list of regions, countries, and leagues.
+      operationId: getRegions
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum:
+              - upcoming
+              - all
+            default: upcoming
+          description: Filter leagues by their status.
+        - in: query
+          name: language
+          schema:
+            type: string
+            enum:
+              - en
+              - es
+              - bg
+            default: en
+          description: Language for the response.
+      responses:
+        '200':
+          description: A list of regions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionsResponse'
+  /fixtures:
+    get:
+      tags:
+        - Fixtures
+      summary: Get fixtures with participants, scores and periods
+      description: Returns a list of fixtures with participants, scores and periods.
+      operationId: getFixtures
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: sport_id
+          schema:
+            type: integer
+          description: The ID of the sport. Defaults to 1.
+        - in: query
+          name: league_id
+          schema:
+            type: string
+          description: Comma-separated list of league IDs.
+        - in: query
+          name: fixture_id
+          schema:
+            type: string
+          description: Comma-separated list of specific fixture IDs.
+        - in: query
+          name: date
+          schema:
+            type: string
+          description: Date in ISO 8601 YYYY-MM-DD format.
+        - in: query
+          name: is_live
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 1
+          description: Set to 1 to filter for currently active matches.
+        - in: query
+          name: language
+          schema:
+            type: string
+          description: 'Localization code (default: en).'
+        - in: query
+          name: include
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - odds
+                - statistics
+                - metrics
+                - fair_odds
+                - movement
+                - seasons
+          description: >
+            Comma-separated list of modules to include.  Example:
+            `include=odds,metrics`.  Note: Using an include unlocks the
+            corresponding `filter[entity]` parameter.
+      responses:
+        '200':
+          description: A list of fixtures
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FixturesResponse'
+  /insights:
+    get:
+      tags:
+        - Insights
+      summary: Retrieve Match Insights
+      description: >-
+        Returns a list of fixtures containing AI-driven analysis and recommended
+        bets.
+      operationId: getInsights
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: market_id
+          in: query
+          description: Comma-separated list of market IDs.
+          schema:
+            type: string
+        - name: is_live
+          in: query
+          description: Filter for currently active matches.
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+      responses:
+        '200':
+          description: A list of fixtures with embedded insights.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FixtureWithInsights'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    RegionsResponse:
+      type: object
+      required:
+        - regions
+      properties:
+        regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegionItem'
+    RegionItem:
+      type: object
+      properties:
+        region:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+        country:
+          $ref: '#/components/schemas/Country'
+        league:
+          $ref: '#/components/schemas/League'
+        sport:
+          $ref: '#/components/schemas/Sport'
+        count:
+          type: integer
+          description: Upcoming fixtures count
+        live:
+          type: integer
+          description: Live fixtures count
+        popular:
+          type: boolean
+        level:
+          type: integer
+          description: League level
+    FixturesResponse:
+      type: object
+      required:
+        - fixtures
+      properties:
+        fixtures:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fixture'
+    Fixture:
+      type: object
+      properties:
+        id:
+          type: integer
+        date_time:
+          type: string
+          format: date-time
+        status:
+          type: string
+        is_live:
+          type: boolean
+        language:
+          type: string
+        sport:
+          $ref: '#/components/schemas/Sport'
+        country:
+          $ref: '#/components/schemas/Country'
+        league:
+          $ref: '#/components/schemas/League'
+        season:
+          $ref: '#/components/schemas/Season'
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/Score'
+        periods:
+          type: array
+          items:
+            $ref: '#/components/schemas/Period'
+        odds:
+          description: Included when `include=odds` is passed.
+          type: array
+          items:
+            $ref: '#/components/schemas/Odd'
+        seasons:
+          description: Included when `include=seasons` is passed.
+          type: array
+          items:
+            $ref: '#/components/schemas/SeasonsObject'
+        fair_odds:
+          description: Included when `include=fair_odds` is passed.
+          type: array
+          items:
+            $ref: '#/components/schemas/FairOdd'
+        movement:
+          description: Included when `include=movement` is passed.
+          type: array
+          items:
+            $ref: '#/components/schemas/Movement'
+    FixtureWithInsights:
+      allOf:
+        - $ref: '#/components/schemas/Fixture'
+        - type: object
+          properties:
+            insights:
+              type: array
+              items:
+                $ref: '#/components/schemas/Insight'
+    Insight:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: object
+          description: Flexible container for AI-generated data.
+          additionalProperties: true
+        bet:
+          $ref: '#/components/schemas/Odd'
+    Sport:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Country:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        alpha3:
+          type: string
+    League:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the league.
+        name:
+          type: string
+          description: Official name of the league.
+        level:
+          type: integer
+          description: >-
+            The tier of the league (e.g., 1 for top-flight, 2 for second
+            division).
+    Season:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Participant:
+      type: object
+      description: Details about a specific team or competitor involved in the match.
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the participant.
+        name:
+          type: string
+          description: Localized name of the team or competitor.
+        position:
+          type: integer
+          description: The team's current standing/rank in their respective league table.
+        location:
+          type: string
+          enum:
+            - home
+            - away
+          description: >-
+            Indicates the venue role. `home` for the hosting team and `away` for
+            the visiting team.
+    Score:
+      type: object
+      description: Detailed scoring breakdown for a specific team and match period.
+      properties:
+        fixture_id:
+          type: integer
+          description: Unique identifier for the match.
+        team_id:
+          type: integer
+          description: Unique identifier for the team.
+        value:
+          type: integer
+          description: The number of goals or points recorded.
+        developer_name:
+          type: string
+          description: The machine-readable identifier for the match period.
+          enum:
+            - 1ST_HALF
+            - 2ND_HALF
+            - ET
+            - PENALTY_SHOOTOUT
+            - ET_2ND_HALF
+            - CURRENT
+            - ET_1ST_HALF
+            - 2ND_HALF_ONLY
+      required:
+        - fixture_id
+        - team_id
+        - value
+        - developer_name
+      example:
+        fixture_id: 1033370
+        team_id: 3585
+        value: 2
+        developer_name: 1ST_HALF
+    Period:
+      type: object
+      description: Timing and clock details for a specific match segment.
+      properties:
+        period_id:
+          type: integer
+        fixture_id:
+          type: integer
+        started:
+          type: integer
+          description: Unix timestamp
+        ended:
+          type: integer
+          description: Unix timestamp
+        counts_from:
+          type: integer
+        ticking:
+          type: integer
+          enum:
+            - 0
+            - 1
+        sort_order:
+          type: integer
+        time_added:
+          type: integer
+        period_length:
+          type: integer
+        minutes:
+          type: integer
+        seconds:
+          type: integer
+        developer_name:
+          type: string
+          enum:
+            - 1ST_HALF
+            - 2ND_HALF
+            - ET
+            - PENALTY_SHOOTOUT
+            - ET_2ND_HALF
+            - ET_1ST_HALF
+      example:
+        period_id: 2045635
+        fixture_id: 1033370
+        started: 1776875170
+        ended: 1776878125
+        counts_from: 0
+        ticking: 0
+        sort_order: 1
+        time_added: 4
+        period_length: 45
+        minutes: 49
+        seconds: 15
+        developer_name: 1ST_HALF
+    Odd:
+      type: object
+      description: >
+        Core entity for pricing, settlement, and market data.  Note: Use
+        `filter[odds]` in the query to refine this list.
+      example:
+        odd_id: 72919503
+        fixture_id: 946305
+        market_id: 203
+        bookmaker_id: 2
+        is_live: 0
+        label_id: 2
+        value: 2.1
+        handicap: 3.5
+        line: 3.5
+        last_update: 1768081284
+        suspend: 1
+        sp: 1.8
+        home_score: 0
+        away_score: 0
+        status: -1
+        raw: {}
+        player_id: null
+        outcome: Lost
+        market_description: Total number of cards in the match
+        market_name: Asian Total Cards
+        label_name: Over 3.5
+      properties:
+        odd_id:
+          type: integer
+          description: Unique identifier for this specific odd record.
+        fixture_id:
+          type: integer
+          description: Identifier of the match (fixture) this odd belongs to.
+        market_id:
+          type: integer
+          description: >-
+            The category of the bet (e.g., 1 for Match Winner, 22 for Next
+            Goal).
+        bookmaker_id:
+          type: integer
+          description: The ID of the bookmaker providing this price.
+        label_id:
+          type: integer
+          description: Internal identifier for the specific selection type within a market.
+        player_id:
+          type: integer
+          nullable: true
+          description: >-
+            Unique identifier for a player. Populated for performance markets
+            (e.g., Shots, Goalscorer).
+        value:
+          type: number
+          format: float
+          description: The current decimal odds (price).
+        line:
+          type: number
+          format: float
+          description: >-
+            The numerical threshold for the bet (e.g., 2.5 in an Over/Under
+            market).
+        handicap:
+          type: number
+          format: float
+          description: The point spread or goal handicap (if applicable).
+        sp:
+          type: number
+          format: float
+          description: Starting Price. The opening odds recorded for the event.
+        suspend:
+          type: integer
+          enum:
+            - 0
+            - 1
+          description: Boolean flag. If 1, the odd is currently locked and not tradable.
+        is_live:
+          type: integer
+          enum:
+            - 0
+            - 1
+          description: 1 for live/in-play events; 0 for pre-match.
+        home_score:
+          type: integer
+          description: >-
+            Home team score at generation. Used as 'base score' for Asian
+            markets.
+        away_score:
+          type: integer
+          description: >-
+            Away team score at generation. Used as 'base score' for Asian
+            markets.
+        last_update:
+          type: integer
+          description: Unix timestamp of the last modification.
+        status:
+          type: integer
+          enum:
+            - 2
+            - 1
+            - 0
+            - -1
+            - -2
+            - -3
+          description: >
+            Numerical result code: - **2**: Half Won - **1**: Won - **0**:
+            Pending - **-1**: Lost - **-2**: Half Lost - **-3**: Void
+        outcome:
+          type: string
+          description: Localized name of the status (e.g., 'Won', 'Half Lost').
+        market_name:
+          type: string
+          description: Localized name of the betting market.
+        market_description:
+          type: string
+          description: Brief localized explanation of the market rules.
+        label_name:
+          type: string
+          description: Human-readable name of the specific pick (e.g., 'Over 3.5').
+        raw:
+          type: object
+          description: >
+            Container for external provider data. Use these IDs for betslip
+            injection  or deep-linking to bookmaker platforms.
+          example:
+            event_id: 13936816
+            market_id: 1339290698
+            selection_id: 3314639099
+    SeasonsObject:
+      type: object
+      description: Season details including a breakdown of active match days.
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the season.
+        name:
+          type: string
+          description: The label for the season year(s).
+        days:
+          type: array
+          description: List of match dates in ISO 8601 format.
+          items:
+            type: string
+            format: date
+            example: '2025-09-11'
+      required:
+        - id
+        - name
+        - days
+      example:
+        id: 17004
+        name: 2025/2026
+        days:
+          - '2025-09-11'
+          - '2025-09-12'
+          - '2025-09-13'
+    FairOdd:
+      type: object
+      description: Mathematical 'true' odds and probability for a specific market outcome.
+      properties:
+        market_id:
+          type: integer
+          description: Identifier for the betting market.
+        label_id:
+          type: integer
+          description: Identifier for the specific outcome label.
+        probability:
+          type: number
+          format: float
+          description: The percentage probability of this outcome (0-100).
+        value:
+          type: number
+          format: float
+          description: The fair price in decimal odds format.
+        handicap:
+          type: number
+          format: float
+          nullable: true
+          description: The handicap value, if applicable to the market.
+        line:
+          type: number
+          format: float
+          nullable: true
+          description: The points/goals line, if applicable to the market.
+      required:
+        - market_id
+        - label_id
+        - probability
+        - value
+      example:
+        market_id: 4
+        label_id: 1
+        probability: 20.07
+        value: 4.984
+        handicap: 1.5
+        line: 1.5
+    Movement:
+      type: object
+      description: A historical snapshot of an odd's value and status at a specific time.
+      properties:
+        odd_id:
+          type: integer
+          description: Identifier for the specific odd.
+        value:
+          type: number
+          format: float
+          description: The decimal value of the odd at this timestamp.
+        suspend:
+          type: integer
+          enum:
+            - 0
+            - 1
+          description: Indicates if the market was suspended (1) or active (0).
+        last_update:
+          type: integer
+          description: Unix timestamp of the update.
+      required:
+        - odd_id
+        - value
+        - suspend
+        - last_update
+      example:
+        odd_id: 88782664
+        value: 1.43
+        suspend: 0
+        last_update: 1776785331
