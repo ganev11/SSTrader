@@ -32,7 +32,7 @@ To ensure you are comparing the same outcome, match the objects using these keys
 
    1. market_id: Ensures both objects refer to the same market (e.g., Asian Total Cards).
    2. label_id: Ensures you are looking at the same outcome (e.g., Over 3.5).
-   3. line / handicap: Ensures the threshold is identical (e.g., 3.5).
+   3. line : Ensures the threshold is identical (e.g., 3.5).
 
 ------------------------------
 ## Comparison Table
@@ -44,3 +44,13 @@ To ensure you are comparing the same outcome, match the objects using these keys
 | Line | 3.5 | 3.5 | Match ✅ |
 | Value (Odds) | 4.984 | 2.10 | -57.8% (No Value) |
 | Probability | 20.07% | 47.62% | +27.55% Market Bias |
+
+------------------------------
+
+## 🛠️ Documentation: Identifying a Value Bet
+
+A Value Bet exists when the real_value (bookmaker odds) is higher than the fair_value.
+
+* Formula: (Real Odds / Fair Odds) - 1
+* In this example: (2.1 / 4.984) - 1 = -0.57.
+* Result: This is not a value bet. The bookmaker is offering a much lower price than the statistical probability suggests.
