@@ -17,6 +17,10 @@
     {
       "name": "Regions",
       "description": "Geographic regions data"
+    },
+    {
+      "name": "Insights",
+      "description": "AI-driven match insights and recommended bets"
     }
   ],
   "paths": {
@@ -175,6 +179,52 @@
           }
         }
       }
+    },
+    "/insights": {
+      "get": {
+        "summary": "Retrieve Match Insights",
+        "description": "Returns a list of fixtures containing AI-driven analysis and recommended bets.",
+        "tags": [
+          "Insights"
+        ],
+        "parameters": [
+          {
+            "name": "market_id",
+            "in": "query",
+            "description": "Comma-separated list of market IDs.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_live",
+            "in": "query",
+            "description": "Filter for currently active matches.",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of fixtures with embedded insights.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FixtureWithInsights"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -306,7 +356,7 @@
             "description": "Included when `include=odds` is passed.",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OddObject"
+              "$ref": "#/components/schemas/Odd"
             }
           },
           "seasons": {
@@ -329,6 +379,40 @@
             "items": {
               "$ref": "#/components/schemas/Movement"
             }
+          }
+        }
+      },
+      "FixtureWithInsights": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Fixture"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "insights": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Insight"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Insight": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "content": {
+            "type": "object",
+            "description": "Flexible container for AI-generated data.",
+            "additionalProperties": true
+          },
+          "bet": {
+            "$ref": "#/components/schemas/Odd"
           }
         }
       },
@@ -525,7 +609,7 @@
           "developer_name": "1ST_HALF"
         }
       },
-      "OddObject": {
+      "Odd": {
         "type": "object",
         "description": "Core entity for pricing, settlement, and market data.  Note: Use `filter[odds]` in the query to refine this list.\n",
         "example": {
