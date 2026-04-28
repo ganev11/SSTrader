@@ -14,12 +14,13 @@ metadata:
 The Insights endpoint returns AI-generated analysis and betting recommendations. Each insight pairs a natural language explanation with a specific market selection (the `bet`).
 
 ------------------------------
-## 🛠️ Query Parameters
+## Query Parameters
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
+| model_ids | string | | Comma-separated list of Models IDs (e.g., 1,2,3). |
 | market_id | string | | Comma-separated list of Market IDs (e.g., 1,3). |
-| status | string | See below | Filter by match Status. |
+| status | string | See below | Comma-separated list of Statuses to filter by. |
 | is_live | integer | 0 | Use 1 to filter only for events currently in-play. |
 | expired | integer | 0 | Use 1 to include outdated insights (useful for backend sync). |
 | league_id | string | | Comma-separated list of League IDs. |
@@ -29,13 +30,13 @@ The Insights endpoint returns AI-generated analysis and betting recommendations.
 | value_to | number | | Maximum decimal odd value. |
 | limit | integer | 100 | Max results (1–1000). |
 
-## 📋 Default Statuses
+## Default Statuses
 
 If no status is provided, the API filters by these active match states:
 INPLAY_1ST_HALF, INPLAY_2ND_HALF, INPLAY_ET, INPLAY_PENALTIES, HT, EXTRA_TIME_BREAK, PEN_BREAK, NOT_STARTED.
 
 ------------------------------
-## 📦 Response Schema## Insight Object
+## Response Schema## Insight Object
 
 | Field | Type | Description |
 |---|---|---|
