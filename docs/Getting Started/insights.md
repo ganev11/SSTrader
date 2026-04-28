@@ -9,9 +9,10 @@ hidden: false
 metadata:
   robots: index
 ---
-## 💡 Insights Endpoint Documentation (/insights)
+## Insights Endpoint Documentation (/insights)
 
-The Insights endpoint returns AI-generated analysis and betting recommendations. Each insight pairs a natural language explanation with a specific market selection (the bet).
+The Insights endpoint returns AI-generated analysis and betting recommendations. Each insight pairs a natural language explanation with a specific market selection (the `bet`).
+
 ------------------------------
 ## 🛠️ Query Parameters
 
