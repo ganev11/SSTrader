@@ -36,7 +36,8 @@ If no status is provided, the API filters by these active match states:
 INPLAY_1ST_HALF, INPLAY_2ND_HALF, INPLAY_ET, INPLAY_PENALTIES, HT, EXTRA_TIME_BREAK, PEN_BREAK, NOT_STARTED.
 
 ------------------------------
-## Response Schema## Insight Object
+
+## Insight Object
 
 | Field | Type | Description |
 |---|---|---|
