@@ -315,6 +315,13 @@
             "items": {
               "$ref": "#/components/schemas/SeasonsObject"
             }
+          },
+          "fair_odds": {
+            "description": "Included when `include=fair_odds` is passed.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FairOdd"
+            }
           }
         }
       },
@@ -685,6 +692,56 @@
             "2025-09-12",
             "2025-09-13"
           ]
+        }
+      },
+      "FairOdd": {
+        "type": "object",
+        "description": "Mathematical 'true' odds and probability for a specific market outcome.",
+        "properties": {
+          "market_id": {
+            "type": "integer",
+            "description": "Identifier for the betting market."
+          },
+          "label_id": {
+            "type": "integer",
+            "description": "Identifier for the specific outcome label."
+          },
+          "probability": {
+            "type": "number",
+            "format": "float",
+            "description": "The percentage probability of this outcome (0-100)."
+          },
+          "value": {
+            "type": "number",
+            "format": "float",
+            "description": "The fair price in decimal odds format."
+          },
+          "handicap": {
+            "type": "number",
+            "format": "float",
+            "nullable": true,
+            "description": "The handicap value, if applicable to the market."
+          },
+          "line": {
+            "type": "number",
+            "format": "float",
+            "nullable": true,
+            "description": "The points/goals line, if applicable to the market."
+          }
+        },
+        "required": [
+          "market_id",
+          "label_id",
+          "probability",
+          "value"
+        ],
+        "example": {
+          "market_id": 4,
+          "label_id": 1,
+          "probability": 20.07,
+          "value": 4.984,
+          "handicap": 1.5,
+          "line": 1.5
         }
       }
     }
