@@ -48,3 +48,4 @@ INPLAY_1ST_HALF, INPLAY_2ND_HALF, INPLAY_ET, INPLAY_PENALTIES, HT, EXTRA_TIME_BR
 | content | object | Contains the text field with the AI analysis. |
 | model | object | Metadata about the AI model used (id, name, color). |
 | bet | object | The recommended selection. Follows the Odd Schema. |
+
