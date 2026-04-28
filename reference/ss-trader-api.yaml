@@ -128,11 +128,58 @@ paths:
       security:
         - BearerAuth: []
       parameters:
+        - name: model_id
+          in: query
+          description: >-
+            Comma-separated list of model IDs to filter insights by. Example:
+            `model_id=1,2`.
+          schema:
+            type: string
         - name: market_id
           in: query
           description: Comma-separated list of market IDs.
           schema:
             type: string
+        - name: status
+          in: query
+          description: >
+            Filter by match status. 
+
+
+            👉 **[View State
+            Definitions](https://sstrader.readme.io/docs/states)**
+          x-llm-hint: Full state definitions available at /docs/states
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - ABANDONED
+                - AWAITING_UPDATES
+                - AWARDED
+                - BREAK
+                - CANCELLED
+                - DELETED
+                - DELAYED
+                - EXTRA_TIME_BREAK
+                - FT
+                - FT_AET
+                - FT_PEN
+                - HT
+                - INPLAY_1ST_HALF
+                - INPLAY_2ND_HALF
+                - INPLAY_ET
+                - INPLAY_PENALTIES
+                - INTERRUPTED
+                - NOT_STARTED
+                - PENDING
+                - PEN_BREAK
+                - POSTPONED
+                - SUSPENDED
+                - TBA
+                - WALKOVER
         - name: is_live
           in: query
           description: Filter for currently active matches.
