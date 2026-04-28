@@ -48,7 +48,7 @@ INPLAY_1ST_HALF, INPLAY_2ND_HALF, INPLAY_ET, INPLAY_PENALTIES, HT, EXTRA_TIME_BR
 | value | number | The current decimal odd value for the recommendation. |
 | sp | number | Starting Price: The odd value at the exact time the insight was generated. |
 | created_at | string | ISO 8601 timestamp of generation. |
-| content | object | Contains the text field with the AI analysis. |
+| content | object | Dynamic. This can hold any key-value pairs. |
 | model | object | Metadata about the AI model used (id, name, color). |
 | bet | object | The recommended selection. Follows the Odd Schema. |
 
