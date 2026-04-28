@@ -6,8 +6,11 @@ metadata:
   robots: index
 ---
 ## Fair Odds Schema Documentation
+
 The `fair_odds` object represents the mathematically calculated "true" value of a betting market, removing the bookmaker's margin (overround). This data is used to identify value bets and understand the raw statistical probability of an outcome.
+
 ------------------------------
+
 ## Field Definitions
 
 | Field | Type | Description |
