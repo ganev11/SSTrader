@@ -17,7 +17,7 @@ Availability: This data is only included in the response when explicitly request
 
 ------------------------------
 
-## 📊 Field Definitions
+## Field Definitions
 
 | Field | Type | Description |
 |---|---|---|
@@ -28,7 +28,7 @@ Availability: This data is only included in the response when explicitly request
 
 ------------------------------
 
-## 📝 Backtesting Example
+## Backtesting Example
 
 By sorting the movement array by last_update, you can visualize the market trend:
 
