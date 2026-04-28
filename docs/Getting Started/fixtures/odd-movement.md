@@ -12,8 +12,7 @@ metadata:
 
 The `movement` array tracks the historical fluctuations of a specific odd over time. This chronological log is essential for backtesting strategies, identifying "steam" (sharp money moves), and analyzing market closing lines.
 
-[!IMPORTANT]
-Availability: This data is only included in the response when explicitly requested using the query parameter include=movement.
+> Availability: This data is only included in the response when explicitly requested using the query parameter include=movement.
 
 ------------------------------
 
