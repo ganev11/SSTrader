@@ -35,3 +35,19 @@ By sorting the movement array by last_update, you can visualize the market trend
 * Opening Odd: 1.403 (1776776759)
 * Drift: The price increased over time to 1.50.
 * Closing State: The final entry shows the market suspended (suspend: 1) at 1.50, likely just before the event started or during a major match incident.
+
+
+## Example JSON response
+
+```json
+{
+   "movement": [
+        {
+          "odd_id": 88782664,
+          "value": 1.403,
+          "suspend": 0,
+          "last_update": 1776776759
+        }
+   ]
+}
+```
