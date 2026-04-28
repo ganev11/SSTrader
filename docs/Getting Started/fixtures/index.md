@@ -46,7 +46,7 @@ Use the `include` parameter to customize the data payload. This allows you to fe
 ### 1. Match Day Overview with Odds
 
 Retrieve all matches for a specific date with current betting market data:
-`GET /fixtures?date=25-10-2024&include=odds`
+`GET /fixtures?date=2024-10-254&include=odds`
 
 ### 2. Live Match Analysis
 
