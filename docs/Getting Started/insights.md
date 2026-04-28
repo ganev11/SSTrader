@@ -45,10 +45,10 @@ INPLAY\_1ST\_HALF, INPLAY\_2ND\_HALF, INPLAY\_ET, INPLAY\_PENALTIES, HT, EXTRA\_
 | Field       | Type    | Description                                                                |
 | ----------- | ------- | -------------------------------------------------------------------------- |
 | id          | integer | Unique internal identifier for the insight.                                |
-| market\_id  | integer | The ID of the market the insight refers to.                                |
-| value       | number  | The current decimal odd value for the recommendation.                      |
-| sp          | number  | Starting Price: The odd value at the exact time the insight was generated. |
-| created\_at | string  | ISO 8601 timestamp of generation.                                          |
+| `market_id`  | integer | The ID of the market the insight refers to.                                |
+| `value`       | number  | The current decimal odd value for the recommendation.                      |
+| `sp`          | number  | Starting Price: The odd value at the exact time the insight was generated. |
+| `created_at` | string  | ISO 8601 timestamp of generation.                                          |
 | content     | object  | Dynamic. This can hold any key-value pairs.                                |
 | model       | object  | Metadata about the AI model used (id, name, color).                        |
 | bet         | object  | The recommended selection. Follows the Odd Schema.                         |
