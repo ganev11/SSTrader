@@ -206,7 +206,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Fixture'
-    Fixture:
+    FixtureBase:
       type: object
       properties:
         id:
@@ -240,29 +240,34 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Period'
-        odds:
-          description: Included when `include=odds` is passed.
-          type: array
-          items:
-            $ref: '#/components/schemas/Odd'
-        seasons:
-          description: Included when `include=seasons` is passed.
-          type: array
-          items:
-            $ref: '#/components/schemas/SeasonsObject'
-        fair_odds:
-          description: Included when `include=fair_odds` is passed.
-          type: array
-          items:
-            $ref: '#/components/schemas/FairOdd'
-        movement:
-          description: Included when `include=movement` is passed.
-          type: array
-          items:
-            $ref: '#/components/schemas/Movement'
+    Fixture:
+      allOf:
+        - $ref: '#/components/schemas/FixtureBase'
+        - type: object
+          properties:
+            odds:
+              description: Included when `include=odds` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/Odd'
+            seasons:
+              description: Included when `include=seasons` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/SeasonsObject'
+            fair_odds:
+              description: Included when `include=fair_odds` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/FairOdd'
+            movement:
+              description: Included when `include=movement` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/Movement'
     FixtureWithInsights:
       allOf:
-        - $ref: '#/components/schemas/Fixture'
+        - $ref: '#/components/schemas/FixtureBase'
         - type: object
           properties:
             insights:
