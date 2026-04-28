@@ -182,10 +182,16 @@
     },
     "/insights": {
       "get": {
-        "summary": "Retrieve Match Insights",
-        "description": "Returns a list of fixtures containing AI-driven analysis and recommended bets.",
         "tags": [
           "Insights"
+        ],
+        "summary": "Retrieve Match Insights",
+        "description": "Returns a list of fixtures containing AI-driven analysis and recommended bets.",
+        "operationId": "getInsights",
+        "security": [
+          {
+            "BearerAuth": []
+          }
         ],
         "parameters": [
           {
