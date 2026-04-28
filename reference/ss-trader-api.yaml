@@ -188,6 +188,47 @@ paths:
             enum:
               - 0
               - 1
+        - name: expired
+          in: query
+          description: >-
+            Set to 1 to include include outdated insights (useful for backend
+            sync).
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+        - name: league_id
+          in: query
+          description: Comma-separated list of league IDs to filter insights by.
+          schema:
+            type: string
+        - name: fixture_id
+          in: query
+          description: Restrict results to a specific single fixture.
+          schema:
+            type: integer
+        - name: language
+          in: query
+          description: 'Localization code (default: en).'
+          schema:
+            type: string
+        - name: value_from
+          in: query
+          description: 'Minimum decimal odd value. Example: `value_from=1.5`.'
+          schema:
+            type: number
+            format: float
+            minimum: 1
+            maximum: 1000
+        - name: value_to
+          in: query
+          description: 'Maximum decimal odd value. Example: `value_to=2.5`.'
+          schema:
+            type: number
+            format: float
+            minimum: 1
+            maximum: 1000
       responses:
         '200':
           description: A list of fixtures with insights.
