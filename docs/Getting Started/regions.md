@@ -12,7 +12,7 @@ metadata:
 
 Use the Regions endpoint to retrieve a comprehensive, hierarchical list of all available betting areas. This endpoint maps the relationships between global regions, specific countries, and their respective sports leagues, making it the primary tool for building navigation menus or league filters in your application.
 
-To see how these regions are structured, check out the [/reference/getregions](Regions API Reference).
+To see how these regions are structured, check out the [Regions API Reference](/reference/getregions).
 
 ***
 
