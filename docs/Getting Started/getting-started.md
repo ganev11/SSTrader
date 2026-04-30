@@ -1,12 +1,10 @@
 ---
-title: Welcome to sstrader
+title: Welcome to SSTrader
 hidden: false
 ---
-> 📘 **Template:**  Delete this callout and edit this page with your content and links.
+## 🏆 Hey there!
 
-<Cards>
-  {/* Edit the props below to customize these components */}
-  <Card title="Quick Start" href="#" icon="fa-duotone fa-rocket-launch">Learn how to get started with our product</Card>
+Welcome to the SSTrader community! We’re pumped to have you on board. Take a look through our sports docs to get all the details you need to start building with the SSTrader Sport API.
 
   <Card title="API Reference" href="/reference" icon="fa-duotone fa-code-simple">Explore endpoints and build your integration</Card>
 
