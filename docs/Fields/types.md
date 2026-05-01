@@ -7,7 +7,8 @@ metadata:
   robots: index
 ---
 ## Get Types
-Use this endpoint to retrieve a list of available Types supported by the SSTrader Football API. Types are used to categorize data points like periods, positions, and statistics.
+Use this endpoint `/types` to retrieve a list of available Types supported by the SSTrader Football API. Types are used to categorize data points like periods, positions, and statistics.
+
 ## Query Parameters
 
 | Parameter | Type | Description |
@@ -29,6 +30,7 @@ The response is a JSON array of objects, each containing:
 
 ## Example Response
 
+```json
 [
   {
     "type_id": 1,
@@ -43,3 +45,4 @@ The response is a JSON array of objects, each containing:
     "developer_type": "period"
   }
 ]
+```
