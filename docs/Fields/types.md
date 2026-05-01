@@ -9,7 +9,7 @@ metadata:
 ## Get Types
 Use this endpoint `/types` to retrieve a list of available Types supported by the SSTrader Football API. Types are used to categorize data points like periods, positions, and statistics.
 
-To see how these types are structured, check out the [Types API Reference](/add me).
+To see how these types are structured, check out the [Types API Reference](/add_me).
 
 ## Query Parameters
 
