@@ -12,10 +12,10 @@ metadata:
 
 | Field | Type | Description |
 |---|---|---|
-| fixture_id | integer | Unique identifier for the specific match/event. |
-| team_id | integer | Unique identifier for the team the score belongs to. |
-| value | integer | The numerical score/goals recorded for the period. |
-| developer_name | enum | A machine-readable string identifying the time period. |
+| `fixture_id` | integer | Unique identifier for the specific match/event. |
+| `team_id` | integer | Unique identifier for the team the score belongs to. |
+| `value` | integer | The numerical score/goals recorded for the period. |
+| `developer_name` | enum | A machine-readable string identifying the time period. |
 
 ------------------------------
 ## Developer Name Values
