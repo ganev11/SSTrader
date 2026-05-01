@@ -21,16 +21,18 @@ metadata:
 ## Developer Name Values
 The developer_name field uses the following constant values to describe the match state:
 
-| Value | Description |
-|---|---|
-| 1ST_HALF | Total goals scored during the first half. |
-| 2ND_HALF | The total score at the end of the second half. |
-| 2ND_HALF_ONLY | Goals scored exclusively during the second half period. |
-| ET_1ST_HALF | Goals scored during the first period of extra time. |
-| ET_2ND_HALF | Goals scored during the second period of extra time. |
-| ET | Total score at the conclusion of all extra time periods. |
-| PENALTY_SHOOTOUT | Total successful penalties recorded in a shootout. |
-| CURRENT | The total live score for the team at the current moment. |
+| type_id | Value | Description |
+|---|---|---|
+| 1 | 1ST_HALF | Total goals scored during the first half. |
+| 2 | 2ND_HALF | The total score at the end of the second half. |
+| 3 | 2ND_HALF_ONLY | Goals scored exclusively during the second half period. |
+| 4 | ET_1ST_HALF | Goals scored during the first period of extra time. |
+| 5 | ET_2ND_HALF | Goals scored during the second period of extra time. |
+| 6 | ET | Total score at the conclusion of all extra time periods. |
+| 7 | PENALTY_SHOOTOUT | Total successful penalties recorded in a shootout. |
+| 8 | CURRENT | The total live score for the team at the current moment. |
+
+> This types are from developer_type: period
 
 ------------------------------
 ## Example Implementation
