@@ -11,6 +11,8 @@ tags:
     description: Geographic regions data
   - name: Insights
     description: AI-driven match insights and recommended bets
+  - name: Types
+    description: Domain-specific data types and metrics
 paths:
   /regions:
     get:
@@ -236,6 +238,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InsightsResponse'
+  /types:
+    get:
+      tags:
+        - Types
+      summary: Get all types
+      description: >-
+        Returns a list of available Types supported by the SSTrader Football
+        API, used to categorize data points like periods, positions, and
+        statistics.
+      operationId: getTypes
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: developer_type
+          schema:
+            type: string
+          description: >-
+            Filter types by their domain-specific group (e.g., 'period').
+            Supports comma-separated lists.
+      responses:
+        '200':
+          description: A list of types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Type'
 components:
   securitySchemes:
     BearerAuth:
@@ -766,3 +797,22 @@ components:
         value: 1.43
         suspend: 0
         last_update: 1776785331
+    Type:
+      type: object
+      properties:
+        type_id:
+          type: integer
+          example: 1
+          description: The unique ID for the type.
+        developer_name:
+          type: string
+          example: 1ST_HALF
+          description: The unique, constant-style identifier.
+        developer_description:
+          type: string
+          example: First half of the match
+          description: A brief explanation of the type's purpose.
+        developer_type:
+          type: string
+          example: period
+          description: The category or domain this type belongs to.
