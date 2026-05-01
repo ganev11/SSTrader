@@ -6,21 +6,40 @@ hidden: false
 metadata:
   robots: index
 ---
-## Types Reference
+## Get Types
+Use this endpoint to retrieve a list of available Types supported by the SSTrader Football API. Types are used to categorize data points like periods, positions, and statistics.
+## Query Parameters
 
-In SSTrader, Types provide a standardized way to categorize and identify data points across the Football API. Each type serves as a unique identifier for specific metrics, periods, or entity roles.
+| Parameter | Type | Description |
+|---|---|---|
+| developer_type | string | Optional. Filter types by their domain-specific group (e.g., period). You can provide a single value or a comma-separated list (e.g., period,statistics). |
 
-## Schema Definition
-Every type object returned by the API includes the following core attributes:
+## Endpoint Behavior
 
-* type_id: integer
-The unique numeric identifier for the specific type.
-* developer_name: string (Unique)
-A constant-style, unique string identifier (e.g., PENALTIES). This is the most reliable field for use in your application logic.
-* developer_description: string
-A short, human-readable explanation of what this type represents and how it should be interpreted.
-* developer_type: string
-The domain-specific grouping for the type. This categorizes the type into a functional area, such as period, statistic, or event.
+* Filtering: If the developer_type parameter is provided, the API returns only the types belonging to those specific groups.
+* Response: Returns an array of type objects.
 
-## Implementation Example
-When processing statistics or match data, you should map these types to your internal models using the developer_name (or type_id) to ensure your integration remains robust even if display names are updated.
+## Response Schema
+The response is a JSON array of objects, each containing:
+
+* type_id integer: The unique ID for the type.
+* developer_name string: The unique, constant-style identifier used for programming logic.
+* developer_description string: A brief explanation of the type's purpose.
+* developer_type string: The category or domain this type belongs to (e.g., period).
+
+## Example Response
+
+[
+  {
+    "type_id": 1,
+    "developer_name": "1ST_HALF",
+    "developer_description": "First half of the match",
+    "developer_type": "period"
+  },
+  {
+    "type_id": 2,
+    "developer_name": "2ND_HALF",
+    "developer_description": "Second half of the match",
+    "developer_type": "period"
+  }
+]
