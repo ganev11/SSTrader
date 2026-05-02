@@ -52,11 +52,11 @@ The statistics include provides granular match data for each team. These metrics
 
 You can narrow down the returned statistics to specific metrics by applying a filter. This is highly recommended to reduce payload size and improve performance if you only need specific data points (like Corners or Possession).
 ## Filter Pattern
-Use the filter[statistics]=types: key followed by a comma-separated list of type_id values.
 
-| Parameter | Format | Description |
-|---|---|---|
-| filter[statistics] | types:id1,id2,id3 | Filters the statistics array to only include the specified type_id values. |
+You can filter statistics by specific IDs or entire domain groups using the following patterns:
+
+* By Type IDs: filter[statistics]=types:1,2,3
+* By Developer Types: filter[statistics]=developer_types:statistics,statistics_last_20
 
 ## Example Request
 
