@@ -1,12 +1,15 @@
 ---
 title: Statistics
+excerpt: >-
+  The statistics include provides granular, real-time and post-match performance
+  metrics, such as possession and shots, for each team.
 deprecated: false
 hidden: false
 metadata:
   robots: index
 ---
 
-## Statistics
+## Statistics Schema Documentation
 The statistics include provides granular match data for each team. These metrics allow you to track performance indicators such as possession, shots, and corners in real-time or post-match.
 
 > Availability: This data is only included in the response when explicitly requested using the query parameter include=statistics.
