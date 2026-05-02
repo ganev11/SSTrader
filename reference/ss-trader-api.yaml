@@ -384,6 +384,11 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Movement'
+            statistics:
+              description: Included when `include=statistics` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/Statistic'
     FixtureWithInsights:
       allOf:
         - $ref: '#/components/schemas/FixtureBase'
@@ -816,3 +821,24 @@ components:
           type: string
           example: period
           description: The category or domain this type belongs to.
+    Statistic:
+      type: object
+      description: Represents a specific performance metric for a team during a match.
+      properties:
+        team_id:
+          type: integer
+          example: 108
+          description: The unique ID of the team the statistic belongs to.
+        value:
+          type: number
+          example: 6
+          description: The numerical value of the metric.
+        type_id:
+          type: integer
+          example: 34
+          nullable: true
+          description: The unique ID associated with the statistic type.
+        developer_name:
+          type: string
+          example: CORNERS
+          description: The unique, constant-style identifier used for programmatic logic.
