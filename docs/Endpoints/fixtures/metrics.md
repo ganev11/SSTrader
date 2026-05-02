@@ -21,6 +21,8 @@ The `metrics` include provides AI-driven, machine-learned insights—such as pre
 | value | number | The calculated value or probability of the metric. |
 | meta | object | Optional. Additional context such as reasons, line, or labels. Omitted if null. |
 
+> Dynamic MetadataThe `meta` object is dynamic. Its properties (such as line, reasons, or note) vary based on the `developer_name`. Developers should implement flexible parsing for this object as fields are specific to the individual metric type.
+
 ## Filtering Metrics
 You can filter metrics by specific IDs or entire domain groups using the following patterns:
 
