@@ -56,7 +56,7 @@ You can narrow down the returned statistics to specific metrics by applying a fi
 You can filter statistics by specific IDs or entire domain groups using the following patterns:
 
 * By Type IDs: filter[statistics]=types:1,2,3
-* By Developer Types: filter[statistics]=developer_types:statistics,statistics_last_20
+* By Developer Types: filter[statistics]=developer_types:statistic,statistic_last_20
 
 ## Example Request
 
