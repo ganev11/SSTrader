@@ -115,7 +115,7 @@ paths:
           in: query
           schema:
             type: string
-            oneOf:
+            anyOf:
               - pattern: ^types:\d+(,\d+)*$
                 description: Filter by specific Type IDs (e.g., types:1,2,3)
               - pattern: ^developer_types:[a-z_]+(,[a-z_]+)*$
