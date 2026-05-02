@@ -28,7 +28,7 @@ The statistics include provides granular match data for each team. These metrics
 
 ## Example Response
 
-```
+```json
 "statistics": [
   {
     "team_id": 108,
