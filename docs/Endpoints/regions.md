@@ -22,6 +22,8 @@ To see how these regions are structured, check out the [Regions API Reference](/
 | --------- | ---- | -------- | ---------------------------------------------------------------------------------------------------- |
 | status    | enum | upcoming | Filter leagues by activity. Use upcoming for active/near-future events or all for the full database. |
 | language  | enum | en       | Returns localized names. Supported: en (English), es (Spanish), bg (Bulgarian).                      |
+| league_level | string |   | Comma-separated list to filter by league tier. Use 1 for top-flight, 2 for second division, etc. Default is all levels.     |
+| country_id | string |    | Comma-separated list of country IDs to filter leagues by specific nations. Default is all countries. |
 
 ***
 
@@ -48,28 +50,32 @@ The response returns an array of objects, where each entry represents a unique "
 
 ```json
 {
-  "region": {
-    "id": 2,
-    "name": "EUROPE - Main"
-  },
-  "country": {
-    "id": 4,
-    "name": "Germany",
-    "alpha3": "DEU"
-  },
-  "league": {
-    "id": 1310,
-    "name": "Reg. Cup Rheinland",
-    "level": 5
-  },
-  "sport": {
-    "id": 1,
-    "name": "Football"
-  },
-  "count": 12,
-  "live": 1,
-  "popular": false,
-  "level": 5
+  "regions": [
+    {
+      "region": {
+        "id": 2,
+        "name": "EUROPE - Main"
+      },
+      "country": {
+        "id": 4,
+        "name": "Germany",
+        "alpha3": "DEU"
+      },
+      "league": {
+        "id": 1310,
+        "name": "Reg. Cup Rheinland",
+        "level": 5
+      },
+      "sport": {
+        "id": 1,
+        "name": "Football"
+      },
+      "count": 12,
+      "live": 1,
+      "popular": false,
+      "level": 5
+    }
+  ]
 }
 ```
 
