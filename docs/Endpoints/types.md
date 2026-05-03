@@ -33,18 +33,20 @@ The response is a JSON array of objects, each containing:
 ## Example Response
 
 ```json
-[
-  {
-    "type_id": 1,
-    "developer_name": "1ST_HALF",
-    "developer_description": "First half of the match",
-    "developer_type": "period"
-  },
-  {
-    "type_id": 2,
-    "developer_name": "2ND_HALF",
-    "developer_description": "Second half of the match",
-    "developer_type": "period"
-  }
-]
+{
+  "types": [
+    {
+      "type_id": 1,
+      "developer_name": "1ST_HALF",
+      "developer_description": "First half of the match",
+      "developer_type": "period"
+    },
+    {
+      "type_id": 2,
+      "developer_name": "2ND_HALF",
+      "developer_description": "Second half of the match",
+      "developer_type": "period"
+    }
+  ]
+}
 ```
