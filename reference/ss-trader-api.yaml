@@ -347,6 +347,8 @@ components:
           $ref: '#/components/schemas/Country'
         league:
           $ref: '#/components/schemas/League'
+        season:
+          $ref: '#/components/schemas/Season'
         sport:
           $ref: '#/components/schemas/Sport'
         count:
@@ -510,13 +512,6 @@ components:
           description: >-
             The tier of the league (e.g., 1 for top-flight, 2 for second
             division).
-    Season:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
     Participant:
       type: object
       description: Details about a specific team or competitor involved in the match.
@@ -920,3 +915,34 @@ components:
             An optional object containing context-specific metadata. Properties
             vary depending on the metric type and are omitted if no metadata is
             available.
+    Season:
+      type: object
+      description: >-
+        Information about the specific season during which the event or league
+        takes place.
+      properties:
+        id:
+          type: integer
+          example: 17760
+          description: The unique identifier for the season.
+        name:
+          type: string
+          example: '2026'
+          description: The name of the season, typically representing the year.
+        starting_at:
+          type: string
+          format: date
+          example: '2026-03-13'
+          description: The official start date of the season.
+        ending_at:
+          type: string
+          format: date
+          example: '2026-11-30'
+          description: The official end date of the season.
+        is_current:
+          type: integer
+          enum:
+            - 0
+            - 1
+          example: 1
+          description: Indicates if this is the active season. 1 for true, 0 for false.
