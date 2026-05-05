@@ -38,6 +38,7 @@ The response returns an array of objects, where each entry represents a unique "
 | region  | object  | The broad geographical area (e.g., Europe, Asia, International).  |
 | country | object  | The specific nation, including the ISO alpha3 code.               |
 | league  | object  | The competition details, including the technical level.           |
+| season  | object  | The current season details, name, starting_at and ending_at.           |
 | sport   | object  | The type of sport (e.g., Football).                               |
 | count   | integer | Total number of available fixtures for this league.               |
 | live    | integer | Number of fixtures currently in-play.                             |
