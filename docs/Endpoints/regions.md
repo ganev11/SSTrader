@@ -67,6 +67,13 @@ The response returns an array of objects, where each entry represents a unique "
         "name": "Reg. Cup Rheinland",
         "level": 5
       },
+      "season": {
+        "id": 17760,
+        "name": "2026",
+        "starting_at": "2026-03-13",
+        "ending_at": "2026-11-30",
+        "is_current": 1
+      }
       "sport": {
         "id": 1,
         "name": "Football"
