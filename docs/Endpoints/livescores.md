@@ -8,7 +8,7 @@ metadata:
 ---
 ## Endpoint
 
-`/fixtures/livescores`
+`/livescores`
 
 ## Query Parameters
 
@@ -46,22 +46,22 @@ No
 ### 1. Live Matches with Betting Odds
 
 Retrieve all inplay matches with current betting market data:
-`GET /fixtures/livescores?include=odds`
+`GET /livescores?include=odds`
 
 ### 2. Live Matches Analysis
 
-Get live matches with real-time statistics to track performance:<br />`GET /fixtures/livescores?include=statistics`
+Get live matches with real-time statistics to track performance:<br />`GET /livescores?include=statistics`
 
 ### 3. Deep Analytical View
 
 Get a specific fixture with advanced metrics and odds for in-depth analysis:<br />
-`GET /fixtures/livescores?include=metrics,odds,statistics`
+`GET /livescores?include=metrics,odds,statistics`
 
 ***
 
 ## Example Base Response
 
-`GET /fixtures/livescores`
+`GET /livescores`
 
 ```json
 {
