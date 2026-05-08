@@ -33,7 +33,7 @@ Use the `include` parameter to customize the data payload. This allows you to fe
 | `statistics` | Adds match statistics (e.g., attacks, shots on goal, possession). Returns live data if the match is in progress. |   |
 | `metrics`    | Adds advanced algorithmic metrics and calculated performance indicators for the fixture.                         |   |
 
-> The `odds` include will return only odds with property `is_live` = 1.
+> The `odds` include will always return only odds with property `is_live` = 1. This means that you can work ONLY with inPlay match odds in this endpoint.
 
 ## Pagination
 
