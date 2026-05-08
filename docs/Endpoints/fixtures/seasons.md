@@ -5,7 +5,7 @@ excerpt: >-
   for the league. This is useful for building calendar views or identifying
   active competition dates.
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
