@@ -29,7 +29,7 @@ Use the `include` parameter to customize the data payload. This allows you to fe
 | `statistics` | Adds match statistics (e.g., attacks, shots on goal, possession). Returns live data if the match is in progress. |   |
 | `metrics`    | Adds advanced algorithmic metrics and calculated performance indicators for the fixture.                         |   |
 
-> **odds**: The `odds` include will return only odds with properie `is_live` = 1.
+> The `odds` include will return only odds with properie `is_live` = 1.
 
 ## Pagination
 
