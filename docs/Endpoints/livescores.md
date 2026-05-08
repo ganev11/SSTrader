@@ -6,6 +6,10 @@ hidden: false
 metadata:
   robots: index
 ---
+## Endpoint
+
+`/fixtures/livescores`
+
 ## Query Parameters
 
 | Parameter   | Type      | Description                                             |
