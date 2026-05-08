@@ -91,23 +91,6 @@ paths:
             type: string
           description: Comma-separated list of league IDs.
         - in: query
-          name: fixture_id
-          schema:
-            type: string
-          description: Comma-separated list of specific fixture IDs.
-        - in: query
-          name: date
-          schema:
-            type: string
-          description: Date in ISO 8601 YYYY-MM-DD format.
-        - in: query
-          name: is_live
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 1
-          description: Set to 1 to filter for currently active matches.
-        - in: query
           name: language
           schema:
             type: string
@@ -124,8 +107,6 @@ paths:
                 - odds
                 - statistics
                 - metrics
-                - fair_odds
-                - movement
           description: >
             Comma-separated list of modules to include.  Example:
             `include=odds,metrics`.  Note: Using an include unlocks the
@@ -163,7 +144,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FixturesResponse'
+                $ref: '#/components/schemas/FixturesLivescoreResponse'
   /fixtures:
     get:
       tags:
@@ -524,6 +505,35 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Movement'
+            statistics:
+              description: Included when `include=statistics` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/Statistic'
+            metrics:
+              description: Included when `include=metrics` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/Metric'
+    FixturesLivescoreResponse:
+      type: object
+      required:
+        - fixtures
+      properties:
+        fixtures:
+          type: array
+          items:
+            $ref: '#/components/schemas/FixtureLivescore'
+    FixtureLivescore:
+      allOf:
+        - $ref: '#/components/schemas/FixtureBase'
+        - type: object
+          properties:
+            odds:
+              description: Included when `include=odds` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/Odd'
             statistics:
               description: Included when `include=statistics` is passed.
               type: array
