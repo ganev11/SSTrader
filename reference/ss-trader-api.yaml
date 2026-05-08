@@ -68,7 +68,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegionsResponse'
-  /fixtures/livescores:
+  /livescores:
     get:
       tags:
         - Livescores
