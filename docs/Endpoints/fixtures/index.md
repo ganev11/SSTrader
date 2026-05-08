@@ -37,7 +37,6 @@ Use the `include` parameter to customize the data payload. This allows you to fe
 | `metrics`    | Adds advanced algorithmic metrics and calculated performance indicators for the fixture.                                              |
 | `fair_odds`  | Adds "Fair Value" pricing. This calculates what the odds should be based on statistical models, helping identify value in the market. |
 | `movement`   | Includes historical odds movement data, showing how the market lines have changed over time.                                          |
-| `seasons`    | Returns a list of available seasons for the requested league (best used when filtering by a single `league_id`).                      |
 
 ***
 
@@ -56,11 +55,6 @@ Get live matches with real-time statistics to track performance:<br />`GET /fixt
 
 Get a specific fixture with advanced metrics, fair value calculations, and market movement:
 `GET /fixtures?fixture_id=88421&include=metrics,fair_odds,movement`
-
-### 4. League Preparation
-
-Get fixtures for a league along with the list of available historical seasons:
-`GET /fixtures?league_id=120&include=seasons`
 
 ***
 
