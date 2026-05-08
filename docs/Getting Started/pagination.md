@@ -72,5 +72,3 @@ The maximum value is **50**. Note that `per_page` only affects the base entity â
 ***
 
 > **Rate limiting:** Each page request counts as a separate API call. Fetching pages 1 through 5 counts as 5 calls against your rate limit.
-
-<br />
