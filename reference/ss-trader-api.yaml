@@ -232,6 +232,9 @@ paths:
             example: bookmakers:2;markets:1,3;is_live:1;suspend:0
           style: form
           explode: false
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/perPageParam'
+        - $ref: '#/components/parameters/orderParam'
       responses:
         '200':
           description: A list of fixtures
@@ -396,6 +399,36 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
+  parameters:
+    pageParam:
+      name: page
+      in: query
+      description: The current page number.
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    perPageParam:
+      name: per_page
+      in: query
+      description: >-
+        Results returned per page. Note that per_page only affects the base
+        entity; included relations are not paginated.
+      schema:
+        type: integer
+        default: 50
+        minimum: 1
+        maximum: 50
+    orderParam:
+      name: order
+      in: query
+      description: Sort order of results.
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: asc
   schemas:
     InsightsResponse:
       type: object
@@ -442,15 +475,48 @@ components:
         level:
           type: integer
           description: League level
+    PaginationMetadata:
+      type: object
+      required:
+        - page
+        - per_page
+        - has_more
+        - order
+      properties:
+        page:
+          type: integer
+          example: 1
+          description: The current page number.
+        per_page:
+          type: integer
+          example: 50
+          description: Number of results returned on this page.
+        has_more:
+          type: boolean
+          example: true
+          description: >
+            `true` if more pages are available, `false` if this is the last
+            page. Determined by whether the number of results returned equals
+            `per_page`.
+        order:
+          type: string
+          enum:
+            - asc
+            - desc
+          example: asc
+          description: Sort order — `asc` or `desc`.
     FixturesResponse:
       type: object
       required:
         - fixtures
+        - pagination
       properties:
         fixtures:
           type: array
           items:
             $ref: '#/components/schemas/Fixture'
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
     FixtureBase:
       type: object
       properties:
