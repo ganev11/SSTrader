@@ -940,9 +940,6 @@ components:
           example: '2026-11-30'
           description: The official end date of the season.
         is_current:
-          type: integer
-          enum:
-            - 0
-            - 1
-          example: 1
-          description: Indicates if this is the active season. 1 for true, 0 for false.
+          type: boolean
+          example: true
+          description: Indicates if this is the active season.
