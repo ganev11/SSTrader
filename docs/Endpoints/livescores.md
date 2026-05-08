@@ -112,5 +112,3 @@ Get a specific fixture with advanced metrics and odds for in-depth analysis:<br 
 ```
 
 > **Note:** If no score or period data is currently available for a fixture, these fields will return as empty arrays `[]`. Advanced data like **statistics** or **odds** are only appended when using the `include` parameter.
-
-<br />
