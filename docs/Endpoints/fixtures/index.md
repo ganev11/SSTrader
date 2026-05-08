@@ -38,8 +38,11 @@ Use the `include` parameter to customize the data payload. This allows you to fe
 | `fair_odds`  | Adds "Fair Value" pricing. This calculates what the odds should be based on statistical models, helping identify value in the market. |
 | `movement`   | Includes historical odds movement data, showing how the market lines have changed over time.                                          |
 
-> 📄 **This endpoint returns paginated results.** Responses include up to 50 results per page by default. Use the `page`, `per_page`, and `order` query parameters to navigate through results. Check the `has_more` field in the `pagination` object to determine if additional pages are available.
-See the [Pagination guide](/pagination) for details on navigating pages and controlling result size.
+## Pagination
+
+**This endpoint returns paginated results.** Responses include up to 50 results per page by default. Use the `page`, `per_page`, and `order` query parameters to navigate through results. Check the `has_more` field in the `pagination` object to determine if additional pages are available.
+
+See the [Pagination guide](/docs/pagination) for details on navigating pages and controlling result size.
 
 ***
 
