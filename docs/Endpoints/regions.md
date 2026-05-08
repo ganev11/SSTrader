@@ -18,12 +18,12 @@ To see how these regions are structured, check out the [Regions API Reference](/
 
 ## Query Parameters
 
-| Parameter | Type | Default  | Description                                                                                          |
-| --------- | ---- | -------- | ---------------------------------------------------------------------------------------------------- |
-| status    | enum | upcoming | Filter leagues by activity. Use upcoming for active/near-future events or all for the full database. |
-| language  | enum | en       | Returns localized names. Supported: en (English), es (Spanish), bg (Bulgarian).                      |
-| league_level | string |   | Comma-separated list to filter by league tier. Use 1 for top-flight, 2 for second division, etc. Default is all levels.     |
-| country_id | string |    | Comma-separated list of country IDs to filter leagues by specific nations. Default is all countries. |
+| Parameter     | Type   | Default  | Description                                                                                                             |
+| ------------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| status        | enum   | upcoming | Filter leagues by activity. Use upcoming for active/near-future events or all for the full database.                    |
+| language      | enum   | en       | Returns localized names. Supported: en (English), es (Spanish), bg (Bulgarian).                                         |
+| league\_level | string |          | Comma-separated list to filter by league tier. Use 1 for top-flight, 2 for second division, etc. Default is all levels. |
+| country\_id   | string |          | Comma-separated list of country IDs to filter leagues by specific nations. Default is all countries.                    |
 
 ***
 
@@ -38,7 +38,7 @@ The response returns an array of objects, where each entry represents a unique "
 | region  | object  | The broad geographical area (e.g., Europe, Asia, International).  |
 | country | object  | The specific nation, including the ISO alpha3 code.               |
 | league  | object  | The competition details, including the technical level.           |
-| season  | object  | The current season details, name, starting_at and ending_at.           |
+| season  | object  | The current season details, name, starting\_at and ending\_at.    |
 | sport   | object  | The type of sport (e.g., Football).                               |
 | count   | integer | Total number of available fixtures for this league.               |
 | live    | integer | Number of fixtures currently in-play.                             |
@@ -72,7 +72,7 @@ The response returns an array of objects, where each entry represents a unique "
         "name": "2026",
         "starting_at": "2026-03-13",
         "ending_at": "2026-11-30",
-        "is_current": 1
+        "is_current": true
       },
       "sport": {
         "id": 1,
