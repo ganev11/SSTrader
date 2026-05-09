@@ -63,8 +63,8 @@ See the [Pagination guide](/docs/pagination) for details on navigating pages and
 
 Validation Constraints
 To ensure data integrity and system performance, the following rules are enforced:
-- Logical Order: start_date must be chronologically before or equal to end_date.
-- Historical Limit: start_date cannot be more than 30 days in the past relative to the current server time.
+- Logical Order: `start_date` must be chronologically before or equal to end_date.
+- Historical Limit: `start_date` cannot be more than 30 days in the past relative to the current server time.
 - Format: Both dates must be valid ISO 8601 strings. Invalid dates (e.g., 2023-13-45) will be rejected.
 
 ***
