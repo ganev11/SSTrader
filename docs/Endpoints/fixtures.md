@@ -17,6 +17,7 @@ metadata:
 | `sport_id`   | `integer` | The ID of the sport. Defaults to `1` (Football/Soccer). |
 | `league_id`  | `string`  | Comma-separated list of league IDs (e.g., `12,45`).     |
 | `fixture_id` | `string`  | Comma-separated list of specific fixture IDs.           |
+| `season_id`  | `integer` | The ID of season.                                       |
 | `date`       | `string`  | Date in `YYYY-MM-DD` format.                            |
 | `is_live`    | `integer` | Set to `1` to filter for currently active matches.      |
 | `language`   | `string`  | Localization code for names (default: `en`).            |
@@ -50,6 +51,21 @@ Use the `include` parameter to customize the data payload. This allows you to fe
 | `order`    | string  | Sort order — `asc` or `desc`                                         |
 
 See the [Pagination guide](/docs/pagination) for details on navigating pages and controlling result size.
+
+***
+
+## Date Range
+
+| Parameter    | Type      | Description                                             |
+| :----------- | :-------- | :------------------------------------------------------ |
+| `start_date` | `string` (ISO 8601)  | The beginning of the date range in UTC format (YYYY-MM-DDTHH:mm:ss.sssZ).                      |
+| `end_date`   | `string` (ISO 8601)  | The end of the date range in UTC format.                        |
+
+Validation Constraints
+To ensure data integrity and system performance, the following rules are enforced:
+- Logical Order: start_date must be chronologically before or equal to end_date.
+- Historical Limit: start_date cannot be more than 30 days in the past relative to the current server time.
+- Format: Both dates must be valid ISO 8601 strings. Invalid dates (e.g., 2023-13-45) will be rejected.
 
 ***
 
