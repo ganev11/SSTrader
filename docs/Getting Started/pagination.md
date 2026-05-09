@@ -16,7 +16,7 @@ By default, every paginated request returns:
 | Parameter  | Default | Description                         |
 | ---------- | ------- | ----------------------------------- |
 | `page`     | `1`     | The current page number             |
-| `per_page` | `50`    | Results returned per page (max: 50) |
+| `per_page` | `25`    | Results returned per page (max: 50) |
 | `order`    | `asc`   | Sort order of results               |
 
 ***
@@ -29,7 +29,7 @@ Every paginated response includes a `pagination` object at the end:
 {
   "pagination": {
       "page": 1,
-      "per_page": 50,
+      "per_page": 25,
       "has_more": true,
       "order": "asc"
   }
