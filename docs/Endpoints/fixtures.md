@@ -41,7 +41,7 @@ Use the `include` parameter to customize the data payload. This allows you to fe
 
 ## Pagination
 
-**This endpoint returns paginated results.** Responses include up to 50 results per page by default. Use the `page`, `per_page`, and `order` query parameters to navigate through results. Check the `has_more` field in the `pagination` object to determine if additional pages are available.
+**This endpoint returns paginated results.** Responses include up to 25 results per page by default. Use the `page`, `per_page`, and `order` query parameters to navigate through results. Check the `has_more` field in the `pagination` object to determine if additional pages are available.
 
 | Field      | Type    | Description                                                          |
 | ---------- | ------- | -------------------------------------------------------------------- |
