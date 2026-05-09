@@ -212,7 +212,6 @@ paths:
             corresponding `filter[entity]` parameter.
         - name: start_date
           in: query
-          required: true
           description: >
             The start date in ISO 8601 format.  Must be within 30 days of the
             current date and before end_date.
@@ -222,7 +221,6 @@ paths:
             example: '2023-10-27T10:00:00Z'
         - name: end_date
           in: query
-          required: true
           description: The end date in ISO 8601 format. Must be after start_date.
           schema:
             type: string
