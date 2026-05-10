@@ -90,47 +90,134 @@ Get a specific fixture with advanced metrics, fair value calculations, and marke
 {
   "fixtures": [
     {
-      "id": 123,
-      "date_time": "2024-10-25T19:45:00.000Z",
-      "status": "INPLAY_1ST_HALF",
-      "is_live": true,
-      "language": "en",
-      "sport": {
-        "id": 1,
-        "name": "Football"
-      },
+      "id": 1048750,
+      "date_time": "2026-05-09T11:30:00.000Z",
+      "status": "FT",
       "country": {
-        "id": 42,
+        "id": 46,
         "name": "England",
         "alpha3": "GBR"
       },
       "league": {
-        "id": 8,
+        "id": 3,
         "name": "Premier League",
         "level": 1
       },
       "season": {
-        "id": 21024,
-        "name": "2024/2025"
+        "id": 16310,
+        "name": "2025/2026",
+        "starting_at": "2025-08-15",
+        "ending_at": "2026-05-24",
+        "is_current": true
+      },
+      "sport": {
+        "id": 1,
+        "name": "Football"
       },
       "participants": [
         {
-          "id": 1,
-          "name": "Manchester United",
-          "position": 5,
+          "id": 8,
+          "name": "Liverpool FC",
+          "position": 4,
           "location": "home"
         },
         {
-          "id": 2,
-          "name": "Liverpool",
-          "position": 2,
+          "id": 18,
+          "name": "Chelsea",
+          "position": 9,
           "location": "away"
         }
       ],
-      "scores": [],
-      "periods": []
+      "is_live": false,
+      "language": "en",
+      "scores": [
+        {
+          "fixture_id": 1048750,
+          "team_id": 8,
+          "value": 1,
+          "developer_name": "1ST_HALF"
+        },
+        {
+          "fixture_id": 1048750,
+          "team_id": 8,
+          "value": 1,
+          "developer_name": "2ND_HALF"
+        },
+        {
+          "fixture_id": 1048750,
+          "team_id": 8,
+          "value": 1,
+          "developer_name": "CURRENT"
+        },
+        {
+          "fixture_id": 1048750,
+          "team_id": 8,
+          "value": 0,
+          "developer_name": "2ND_HALF_ONLY"
+        },
+        {
+          "fixture_id": 1048750,
+          "team_id": 18,
+          "value": 1,
+          "developer_name": "1ST_HALF"
+        },
+        {
+          "fixture_id": 1048750,
+          "team_id": 18,
+          "value": 1,
+          "developer_name": "2ND_HALF"
+        },
+        {
+          "fixture_id": 1048750,
+          "team_id": 18,
+          "value": 1,
+          "developer_name": "CURRENT"
+        },
+        {
+          "fixture_id": 1048750,
+          "team_id": 18,
+          "value": 0,
+          "developer_name": "2ND_HALF_ONLY"
+        }
+      ],
+      "periods": [
+        {
+          "period_id": 2069767,
+          "fixture_id": 1048750,
+          "started": 1778326228,
+          "ended": 1778329075,
+          "counts_from": 0,
+          "ticking": 0,
+          "sort_order": 1,
+          "time_added": 2,
+          "period_length": 45,
+          "minutes": 47,
+          "seconds": 27,
+          "developer_name": "1ST_HALF"
+        },
+        {
+          "period_id": 2070025,
+          "fixture_id": 1048750,
+          "started": 1778329971,
+          "ended": 1778333166,
+          "counts_from": 45,
+          "ticking": 0,
+          "sort_order": 2,
+          "time_added": 7,
+          "period_length": 45,
+          "minutes": 98,
+          "seconds": 15,
+          "developer_name": "2ND_HALF"
+        }
+      ]
     }
-  ]
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 25,
+    "has_more": false,
+    "order": "asc"
+  }
 }
 ```
 
