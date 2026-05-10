@@ -19,7 +19,6 @@ metadata:
 | `fixture_id` | `string`  | Comma-separated list of specific fixture IDs.           |
 | `season_id`  | `integer` | The ID of the season to filter fixtures by.                                       |
 | `date`       | `string`  | Date in `YYYY-MM-DD` format.                            |
-| `is_live`    | `integer` | Set to `1` to filter for currently active matches.      |
 | `language`   | `string`  | Localization code for names (default: `en`).            |
 | `include`    | `string`  | Comma-separated list of data modules to expand.         |
 
@@ -74,13 +73,9 @@ To ensure data integrity and system performance, the following rules are enforce
 ### 1. Match Day Overview with Odds
 
 Retrieve all matches for a specific date with current betting market data:
-`GET /fixtures?date=2024-10-254&include=odds`
+`GET /fixtures?date=2024-10-25&include=odds`
 
-### 2. Live Match Analysis
-
-Get live matches with real-time statistics to track performance:<br />`GET /fixtures?is_live=1&include=statistics`
-
-### 3. Deep Analytical View
+### 2. Deep Analytical View
 
 Get a specific fixture with advanced metrics, fair value calculations, and market movement:
 `GET /fixtures?fixture_id=88421&include=metrics,fair_odds,movement`
