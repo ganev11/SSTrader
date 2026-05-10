@@ -181,13 +181,6 @@ paths:
             type: string
           description: Date in ISO 8601 YYYY-MM-DD format.
         - in: query
-          name: is_live
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 1
-          description: Set to 1 to filter for currently active matches.
-        - in: query
           name: language
           schema:
             type: string
