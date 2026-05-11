@@ -18,7 +18,7 @@ You can leverage Large Language Models (LLMs) to streamline the development of S
 **Model Context Protocol** (MCP) is an open standard that gives AI assistants a live connection to external tools and data. Think of it like a USB port for AI — instead of pasting your docs into a chat window, your AI tool connects directly and can read, search, and act on your content in real time.
 
 ```curl
-https://sstrader.readme.io/mcp
+https://docs.sstrader.com/mcp
 ```
 
 More details how to connect to this MCP Server can be found on [https://docs.readme.com/main/docs/mcp-servers](https://docs.readme.com/main/docs/mcp-servers)
