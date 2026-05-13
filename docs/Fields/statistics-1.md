@@ -32,6 +32,7 @@ Expected Goals (xG) quantifies the probability that any given shot will result i
 ## 📈 Pressure Index
 The Pressure Index is a dynamic, real-time metric that quantifies momentum, territorial control, and the intensity of a team’s physical presence. It serves as a barometer for both offensive dominance and defensive disruption.
 
+TODO - Update ranges
 * **Low (0-30):** Passive play; the team is likely sitting in a deep block or struggling to retain possession.
 * **Moderate (31-60):** Balanced play; standard mid-block positioning with alternating periods of control.
 * **High (61-100):** Total dominance; heavy offensive "suffocation" or high-intensity pressing that forces turnovers deep in the opponent's half.
