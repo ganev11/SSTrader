@@ -18,11 +18,11 @@ Classification type "Attack Power"
 
 | Classification | Range |
 | --- | --- |
-| Top | 1.80+ |
-| Strong | 1.30–1.79 |
-| Stable | 0.90–1.29 |
-| Weak | 0.60–0.89 |
-| Poor | Below 0.60 |
+| Explosive | 1.70+ |
+| Strong | 1.30–1.70 |
+| Solid | 1.10–1.29 |
+| Low | 0.80–1.09 |
+| Weak | Below 0.80 |
 > Example: 1.12 = 12% more goal chances than league average
 
 ## Goals Defensive Power (DP)
@@ -33,14 +33,74 @@ Classification type "Defense Power"
 
 | Classification | Range |
 | --- | --- |
-| Top | Below 0.60 |
-| Strong | 0.60–0.89 |
-| Stable | 0.90–1.29 |
-| Weak | 1.30–1.79 |
-| Poor | 1.80+ |
+| Wall | Below 0.70 |
+| Solid | 0.70–0.89 |
+| Stable | 0.90–1.04 |
+| Leaky | 1.05–1.29 |
+| Fragile | 1.30+ |
 
 > Example: 0.85 = 15% fewer goals conceded than league average (solid defense)
 
+## Corners Attack Power (AP)
+Measures how many corner chances a team creates vs the league average.
+1.00 = league average
+Values above 1 = more corner chances than average
+Classification type "Corners Winning Label"
+
+| Classification | Range |
+| --- | --- |
+| Constantly | 1.50+ |
+| Very Often | 1.25–1.49 |
+| Frequently | 1.10–1.24 |
+| Often | 0.95–1.09 |
+| Sometimes | 0.85–0.94 |
+| Occasionally | 0.70–0.84 |
+| Rarely | Below 0.70 |
+> Example: 1.12 = 12% more corner chances than league average
+
+## Corners Defensive Power (DP)
+Measures how many corner chances a team concedes vs the league average.
+1.00 = league average
+Lower values = better defense (fewer corners conceded)
+Classification type "Corners Conceding Label"
+
+| Classification | Range |
+| --- | --- |
+| Rarely | Below 0.70 |
+| Occasionally | 0.70–0.84 |
+| Sometimes | 0.85–0.94 |
+| Often | 0.95–1.09 |
+| Frequently | 1.10–1.24 |
+| Very Often | 1.25–1.49 |
+| Constantly | 1.50+ |
+
+> Example: 0.85 = 15% fewer corner chances conceded than league average (solid defense)
+
+## Yellow Cards Attack Power (AP)
+Measures how many yellow cards a team receives vs the league average.
+Classification type "Discipline Label"
+
+| Classification | Range |
+| --- | --- |
+| Excellent | Below 0.70 |
+| Very Good | 0.70–0.84 |
+| Good | 0.85–0.94 |
+| Fair | 0.95–1.09 |
+| Poor | 1.10–1.24 |
+| Very Poor | 1.25+ |
+
+## Yellow Cards Defensive Power (DP)
+Measures how many yellow cards a team concedes vs the league average.
+Classification type "Aggression Label"
+
+| Classification | Range |
+| --- | --- |
+| Calm | Below 0.70 |
+| Controlled | 0.70–0.84 |
+| Moderate | 0.85–0.94 |
+| Physical | 0.95–1.09 |
+| Aggressive | 1.10–1.24 |
+| Intense | 1.25+ |
 
 ## Example Interpretation
 
