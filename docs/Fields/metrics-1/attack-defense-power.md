@@ -9,6 +9,8 @@ Attack Power and Defense Power measures how dangerous a team is going forward vs
 
 Both are devided into 3 types: `HOME`, `AWAY` and `OVERALL` (home + away). Each developer_name starts with the location (HOME/AWAY/OVERALL) followed by the statistic type (GOALS, CORNERS, CARDS etc.) and ends with the classification type (ATTACK_POWER or DEFENSE_POWER). For example, `HOME_GOALS_ATTACK_POWER` is the attack power of a team when playing at home based on goals.
 
+> Alway use team_id or location to determine if the metric is for home or away team. Do not rely only on the developer_name prefix as **both teams have metrics for each location**.
+
 ## Goals Attack Power (AP)
 1.00 = league average
 Values above 1 = more goal chances than average
