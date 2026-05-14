@@ -11,7 +11,9 @@ Both are devided into 3 types: home, away and overall (home + away).
 ## Goals Attack Power (AP)
 1.00 = league average
 Values above 1 = more goal chances than average
-| Label | Range |
+Classification type "Attack Power"
+
+| Classification | Range |
 | --- | --- |
 | Top | 1.80+ |
 | Strong | 1.30–1.79 |
@@ -24,7 +26,9 @@ Values above 1 = more goal chances than average
 Measures how solid a team is defensively vs the league average.
 1.00 = league average
 Lower values = better defense (fewer goals conceded)
-| Label | Range |
+Classification type "Defense Power"
+
+| Classification | Range |
 | --- | --- |
 | Top | Below 0.60 |
 | Strong | 0.60–0.89 |
@@ -37,7 +41,12 @@ Lower values = better defense (fewer goals conceded)
 
 ## Example Interpretation
 
-Comparing two teams based on their Home AP and Home DP: Manchester City vs Crystal Palace - 2026-05-13
+Comparing two teams based on their Goals AP and DP.
+Metrics are from fixture: Manchester City vs Crystal Palace - 2026-05-13
+
+Manchester City has a Home AP of 1.59 and a Home DP of 0.58. This means that at home, Manchester City creates 59% more goal chances than the league average (strong attack) and concedes 42% fewer goals than the league average (wall defense). Overall, Manchester City is likely to be a strong contender in their home matches.
+
+Crystal Palace has an Away AP of 0.94 and an Away DP of 0.87. This indicates that when playing away, Crystal Palace creates 6% fewer goal chances than the league average (stable attack) and concedes 13% fewer goals than the league average (solid defense). While their attack is slightly below average, their defense is relatively strong for away matches.
 
 ```json
 {
@@ -57,25 +66,25 @@ Comparing two teams based on their Home AP and Home DP: Manchester City vs Cryst
         },
         {
             "team_id": 9,
-            "type_id": 237,
-            "developer_name": "AWAY_GOALS_ATTACK_POWER",
-            "value": 1.45,
+            "type_id": 236,
+            "developer_name": "HOME_GOALS_DEFENSE_POWER",
+            "value": 0.58,
             "location": "home",
             "meta": {
-                "classification": "Strong",
-                "classification_type": "Attack Power"
+                "classification": "Wall",
+                "classification_type": "Defense Power"
             },
-            "classification": "Strong", // Deprecated: use meta.classification instead
-            "classification_type": "Attack Power" // Deprecated: use meta.classification_type instead
+            "classification": "Wall", // Deprecated: use meta.classification instead
+            "classification_type": "Defense Power" // Deprecated: use meta.classification_type instead
         },
         {
             "team_id": 48,
-            "type_id": 235,
-            "developer_name": "HOME_GOALS_ATTACK_POWER",
-            "value": 0.82,
+            "type_id": 237,
+            "developer_name": "AWAY_GOALS_ATTACK_POWER",
+            "value": 0.94,
             "location": "away",
             "meta": {
-                "classification": "Low",
+                "classification": "Stable",
                 "classification_type": "Attack Power"
             },
             "classification": "Low", // Deprecated: use meta.classification instead
@@ -97,5 +106,3 @@ Comparing two teams based on their Home AP and Home DP: Manchester City vs Cryst
     ]
 }
 ```
-
-Team A has a Home AP of 1.20 and a Home DP of 0.80. This means that at home, Team A creates 20% more goal chances than the league average (strong attack) and concedes 20% fewer goals than the league average (strong defense). Overall, Team A is likely to be a strong contender in their home matches.
