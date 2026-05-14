@@ -11,6 +11,8 @@ Both are devided into 3 types: `HOME`, `AWAY` and `OVERALL` (home + away). Each 
 
 > Alway use team_id or location to determine if the metric is for home or away team. Do not rely only on the developer_name prefix as **both teams have metrics for each location**.
 
+Only goals, corners and yellow cards have been classified into attack and defense power. Other metrics like attacks, dangerous attacks, and shots have not been classified yet. The classification is based on the distribution of each metric across the league and is designed to provide a quick understanding of how a team performs in that area compared to the average.
+
 ## Goals Attack Power (AP)
 1.00 = league average
 Values above 1 = more goal chances than average
