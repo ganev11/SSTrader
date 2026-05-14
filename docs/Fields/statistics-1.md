@@ -13,6 +13,8 @@ metadata:
 
 Modern football analytics have evolved beyond basic box scores—such as goals, possession percentages, or total shot counts—to provide a deeper evaluation of the quality, efficiency, and intensity of play. By leveraging machine learning and granular event data, contemporary platforms provide the necessary context to understand the mechanics behind every match result.
 
+`dev\_type`: `advanced\_statistic`
+
 ***
 
 ## 🎯 Expected Goals (xG)
