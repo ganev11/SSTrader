@@ -6,7 +6,8 @@ metadata:
   robots: index
 ---
 Attack Power and Defense Power measures how dangerous a team is going forward vs the league average.
-Both are devided into 3 types: home, away and overall (home + away).
+
+Both are devided into 3 types: `HOME`, `AWAY` and `OVERALL` (home + away). Each developer_name starts with the location (HOME/AWAY/OVERALL) followed by the statistic type (GOALS, CORNERS, CARDS etc.) and ends with the classification type (ATTACK_POWER or DEFENSE_POWER). For example, `HOME_GOALS_ATTACK_POWER` is the attack power of a team when playing at home based on goals.
 
 ## Goals Attack Power (AP)
 1.00 = league average
