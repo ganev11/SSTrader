@@ -119,6 +119,7 @@ INPLAY\_1ST\_HALF, INPLAY\_2ND\_HALF, INPLAY\_ET, INPLAY\_PENALTIES, HT, EXTRA\_
         },
         "bet": {
           "odd_id": 90004836,
+          "id": 1039720,
           "market_id": 22,
           "bookmaker_id": 4,
           "is_live": 1,
