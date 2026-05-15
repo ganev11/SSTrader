@@ -33,22 +33,3 @@ Expected Goals (xG) quantifies the probability that any given shot will result i
 - **Predictive Modeling:** On a team level, aggregated xG is statistically more reliable than actual goals for forecasting future performance and final league positioning, as it measures the consistency of chance creation.
 
 ***
-
-## 📈 Pressure Index
-
-The Pressure Index is a dynamic, real-time metric that quantifies momentum, territorial control, and the intensity of a team’s physical presence. It serves as a barometer for both offensive dominance and defensive disruption.
-
-**TODO - Update ranges**
-
-- **Low (0-30):** Passive play; the team is likely sitting in a deep block or struggling to retain possession.
-- **Moderate (31-60):** Balanced play; standard mid-block positioning with alternating periods of control.
-- **High (61-100):** Total dominance; heavy offensive "suffocation" or high-intensity pressing that forces turnovers deep in the opponent's half.
-
-### Practical Application & Use Cases
-
-- **Live Momentum Tracking:** This metric powers real-time "ebb and flow" visualizations, allowing analysts and viewers to identify which team is currently dictating the tempo, even if the scoreline remains level.
-- **Tactical & Physical Monitoring:** It helps identify "structural fatigue." A sharp decline in a team’s Pressure Index during the final 20 minutes often signals a physical drop-off, providing critical data for substitutions or live betting adjustments.
-
-***
-
-<br />
