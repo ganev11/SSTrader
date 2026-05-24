@@ -17,7 +17,7 @@ metadata:
 | `sport_id`   | `integer` | The ID of the sport. Defaults to `1` (Football/Soccer). |
 | `league_id`  | `string`  | Comma-separated list of league IDs (e.g., `12,45`).     |
 | `fixture_id` | `string`  | Comma-separated list of specific fixture IDs.           |
-| `season_id`  | `integer` | The ID of the season to filter fixtures by.                                       |
+| `season_id`  | `integer` | The ID of the season to filter fixtures by.             |
 | `date`       | `string`  | Date in `YYYY-MM-DD` format.                            |
 | `language`   | `string`  | Localization code for names (default: `en`).            |
 | `include`    | `string`  | Comma-separated list of data modules to expand.         |
@@ -55,14 +55,16 @@ See the [Pagination guide](/docs/pagination) for details on navigating pages and
 
 ## Date Range
 
-| Parameter    | Type      | Description                                             |
-| :----------- | :-------- | :------------------------------------------------------ |
-| `start_date` | `string` (ISO 8601)  | The beginning of the date range in UTC format (YYYY-MM-DDTHH:mm:ss.sssZ).                      |
-| `end_date`   | `string` (ISO 8601)  | The end of the date range in UTC format.                        |
+| Parameter    | Type                | Description                                                               |
+| :----------- | :------------------ | :------------------------------------------------------------------------ |
+| `start_date` | `string` (ISO 8601) | The beginning of the date range in UTC format (YYYY-MM-DDTHH:mm:ss.sssZ). |
+| `end_date`   | `string` (ISO 8601) | The end of the date range in UTC format.                                  |
 
 Validation Constraints
 To ensure data integrity and system performance, the following rules are enforced:
-- Logical Order: `start_date` must be chronologically before or equal to end_date.
+
+- Data range works only when **both** `start_date` and `end_date` are set.
+- Logical Order: `start_date` must be chronologically before or equal to end\_date.
 - Historical Limit: `start_date` cannot be more than 30 days in the past relative to the current server time.
 - Format: Both dates must be valid ISO 8601 strings. Invalid dates (e.g., 2023-13-45) will be rejected.
 
@@ -222,3 +224,5 @@ Get a specific fixture with advanced metrics, fair value calculations, and marke
 ```
 
 > **Note:** If no score or period data is currently available for a fixture, these fields will return as empty arrays `[]`. Advanced data like **statistics** or **odds** are only appended when using the `include` parameter.
+
+<br />
