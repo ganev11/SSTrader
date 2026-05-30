@@ -77,5 +77,10 @@ The two categories are combined to produce the final classification. For example
 
 Use `meta.classification` for display labels and `value` for numeric comparisons.
 
+**Pre-match strength display** — Show a badge (Weak / Average / Strong / Top) next to each team name before a fixture to give users an instant read on the matchup.
 
-<br />
+**Mismatch detection** — Compare `value` between home and away teams. A difference of 2+ (e.g. `3` vs `1`) indicates a clear favourite and can be surfaced as a confidence signal.
+
+**Fixture filtering** — Let users filter or sort fixtures by team strength. For example, show only fixtures where both teams have `value >= 2` to focus on high-quality matches.
+
+**Prediction models** — Use `value` as a numerical feature in goal or outcome prediction pipelines alongside other attack and defense power metrics.
