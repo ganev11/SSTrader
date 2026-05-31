@@ -17,7 +17,7 @@ When present, the optional `meta`
 object supplies human-friendly details such as reasons, the derived betting line, market and
 label ids, or concise notes useful for UI tooltips and downstream workflows.
 
-| id | developer_name | description |
+| type_id | developer_name | description |
 | --- | --- | --- |
 | 94 | PREDICTION_GL_OVER | Prediction that total match goals will be over the Asian goal line; value is combined expected goals (xG). |
 | 95 | PREDICTION_GL_UNDER | Prediction that total match goals will be under the Asian goal line; value is combined expected goals (xG). |
@@ -202,4 +202,3 @@ PREDICTION_TOTAL_ATTACK_PRESSURE
     }
 }
 ```
-
