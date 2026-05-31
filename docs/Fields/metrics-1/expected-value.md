@@ -46,6 +46,7 @@ Region encoding in `developer_name`:
 
 ## Practical Application & Use Cases
 
+
     Value Bet Identification: Scan all EV metrics for a fixture to instantly surface markets where
     the model has a positive edge over a specific bookmaker. A positive EV (e.g. +8 on EV_EUROPE_ML_HOME)
     signals the European bookmaker is overpricing the home win relative to the xG-implied probability —
