@@ -67,3 +67,125 @@ Region encoding in `developer_name`:
     Portfolio & Staking Decisions: EV values feed directly into Kelly-criterion or flat-staking frameworks.
     Filtering for fixtures where multiple related markets (e.g. AH and GL) show simultaneous positive EV
     provides higher-confidence opportunities for larger stake allocation.
+
+## Examples for EV metrics
+
+EV_EUROPE_ML_HOME
+```json
+{
+    "fixture_id": 12345,
+    "type_id": 281,
+    "team_id": 0,
+    "developer_name": "EV_EUROPE_ML_HOME",
+    "value": 8
+}
+```
+Interpretation: European bookmaker's home-win price is 8% above the model's fair odd — value bet.
+
+EV_ASIA_ML_DRAW
+```json
+{
+    "fixture_id": 12345,
+    "type_id": 285,
+    "team_id": 0,
+    "developer_name": "EV_ASIA_ML_DRAW",
+    "value": -5
+}
+```
+Interpretation: Asian bookmaker's draw price is 5% below fair value — no edge.
+
+EV_EUROPE_AH_HOME
+```json
+{
+    "fixture_id": 12345,
+    "type_id": 287,
+    "team_id": 0,
+    "developer_name": "EV_EUROPE_AH_HOME",
+    "value": 12
+}
+```
+Interpretation: European bookmaker's Asian Handicap home price on the main line is 12% above fair value.
+
+EV_ASIA_AH_AWAY
+```json
+{
+    "fixture_id": 12345,
+    "type_id": 290,
+    "team_id": 0,
+    "developer_name": "EV_ASIA_AH_AWAY",
+    "value": -3
+}
+```
+Interpretation: Asian bookmaker's Asian Handicap away price on the main line is 3% below fair value.
+
+EV_EUROPE_GL_OVER
+```json
+{
+    "fixture_id": 12345,
+    "type_id": 291,
+    "team_id": 0,
+    "developer_name": "EV_EUROPE_GL_OVER",
+    "value": 6
+}
+```
+Interpretation: European bookmaker's goal-line over price on the main total line is 6% above fair value.
+
+EV_ASIA_GL_UNDER
+```json
+{
+    "fixture_id": 12345,
+    "type_id": 301,
+    "team_id": 0,
+    "developer_name": "EV_ASIA_GL_UNDER",
+    "value": -10
+}
+```
+Interpretation: Asian bookmaker's goal-line under price is 10% below fair value.
+
+EV_EUROPE_COR_OVER
+```json
+{
+    "fixture_id": 12345,
+    "type_id": 300,
+    "team_id": 0,
+    "developer_name": "EV_EUROPE_COR_OVER",
+    "value": 9
+}
+```
+Interpretation: European bookmaker's corner-line over price on the main line is 9% above fair value.
+
+EV_ASIA_COR_UNDER
+```json
+{
+    "fixture_id": 12345,
+    "type_id": 297,
+    "team_id": 0,
+    "developer_name": "EV_ASIA_COR_UNDER",
+    "value": 4
+}
+```
+Interpretation: Asian bookmaker's corner-line under price is 4% above fair value.
+
+EV_EUROPE_YC_OVER
+```json
+{
+    "fixture_id": 12345,
+    "type_id": 296,
+    "team_id": 0,
+    "developer_name": "EV_EUROPE_YC_OVER",
+    "value": 7
+}
+```
+Interpretation: European bookmaker's yellow-card line over price is 7% above fair value.
+
+EV_ASIA_YC_UNDER
+```json
+{
+    "fixture_id": 12345,
+    "type_id": 293,
+    "team_id": 0,
+    "developer_name": "EV_ASIA_YC_UNDER",
+    "value": -2
+}
+```
+Interpretation: Asian bookmaker's yellow-card line under price is 2% below fair value.
