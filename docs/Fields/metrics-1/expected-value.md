@@ -47,25 +47,25 @@ Region encoding in `developer_name`:
 
 ## Practical Application & Use Cases
 
-Value Bet Identification: Scan all EV metrics for a fixture to instantly surface markets where
+**Value Bet Identification**: Scan all EV metrics for a fixture to instantly surface markets where
 the model has a positive edge over a specific bookmaker. A positive EV (e.g. +8 on EV_EUROPE_ML_HOME)
 signals the European bookmaker is overpricing the home win relative to the xG-implied probability —
 a directly actionable value bet opportunity.
 
-Cross-Market Edge Comparison: Compare EV across markets (ML, AH, GL, COR, YC) for the same fixture
+**Cross-Market Edge Comparison**: Compare EV across markets (ML, AH, GL, COR, YC) for the same fixture
 to identify where the sharpest mispricing exists. A fixture may show -2 EV on the Money Line but
 +11 on the Goal Line, pointing analysts toward the most profitable market for that game.
 
-Regional Bookmaker Benchmarking: EV metrics are split by region (EUROPE / ASIA), enabling direct
+**Regional Bookmaker Benchmarking**: EV metrics are split by region (EUROPE / ASIA), enabling direct
 comparison of how differently two major bookmaker pools price the same outcome. Consistent positive
 EV on one region and negative on another highlights structural pricing differences exploitable over
 large sample sizes.
 
-Market Efficiency Monitoring: Tracking how EV values shift as kick-off approaches reveals how quickly
+**Market Efficiency Monitoring**: Tracking how EV values shift as kick-off approaches reveals how quickly
 bookmakers adjust to model signals. A large positive EV that collapses in the final hours before
 a match indicates the sharp money has already moved the line, confirming the model's edge was real.
 
-Portfolio & Staking Decisions: EV values feed directly into Kelly-criterion or flat-staking frameworks.
+**Portfolio & Staking Decisions**: EV values feed directly into Kelly-criterion or flat-staking frameworks.
 Filtering for fixtures where multiple related markets (e.g. AH and GL) show simultaneous positive EV
 provides higher-confidence opportunities for larger stake allocation.
 
