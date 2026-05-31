@@ -1,7 +1,7 @@
 ---
 title: Expected Value
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
