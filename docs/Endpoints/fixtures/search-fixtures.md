@@ -1,5 +1,5 @@
 ---
-title: Search Fixtures
+title: Search
 excerpt: >-
   Query upcoming and live fixtures by time window, status, and value-based
   metric or statistic filters.
