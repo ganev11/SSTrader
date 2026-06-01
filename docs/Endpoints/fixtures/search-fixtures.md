@@ -8,10 +8,11 @@ hidden: false
 metadata:
   robots: index
 ---
+# Search Fixtures
 
 `GET /fixtures/search`
 
-A powerful query endpoint for discovering fixtures that match specific metric or statistic thresholds. Unlike `/fixtures`, which retrieves fixtures by date or ID, `/search` lets you filter by **calculated values** — for example, "find all upcoming matches where the home team's goals classification is between 1100 and 1800."
+A powerful query endpoint for discovering fixtures that match specific metric or statistic thresholds. Unlike `/fixtures`, which retrieves fixtures by date or ID, `/search` lets you filter by **calculated values** — for example, "find all upcoming matches where the home team's attack power is between 1100 and 1800."
 
 Results are paginated and the response structure is identical to `/fixtures`.
 
