@@ -12,7 +12,7 @@ metadata:
 
 `GET /types?developer_type=league_average`
 
-League average types represent **per-match averages** calculated across all fixtures played in a league season. They are attached to fixtures as metrics and can be used as filter criteria in [`/fixtures/search`](./search-fixtures.md).
+League average types represent **per-match averages** calculated across all fixtures played in a league season. They are attached to fixtures as metrics and can be used as filter criteria in [`/fixtures/search`](/docs/search-fixtures).
 
 ***
 
