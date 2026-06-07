@@ -199,10 +199,29 @@ paths:
                 - metrics
                 - fair_odds
                 - movement
+                - trends
           description: >
-            Comma-separated list of modules to include.  Example:
-            `include=odds,metrics`.  Note: Using an include unlocks the
+            Comma-separated list of modules to include. Example:
+            `include=odds,metrics`. Note: Using an include unlocks the
             corresponding `filter[entity]` parameter.
+        - name: filter[trends]
+          in: query
+          schema:
+            type: string
+            anyOf:
+              - pattern: ^developer_names:[A-Z_]+(,[A-Z_]+)*$
+                description: >-
+                  Filter by developer name (e.g.,
+                  developer_names:GOALS,CORNERS). Takes priority over types.
+              - pattern: ^types:\d+(,\d+)*$
+                description: >-
+                  Filter by type ID (e.g., types:117,118). Ignored when
+                  developer_names is set.
+          example: developer_names:GOALS,CORNERS,EXPECTED_GOALS,PRESSURE_INDEX
+          description: >
+            Optional filter for the included `trends` module. Use
+            `developer_names` to select stats by name, or `types` to select by
+            type ID. `developer_names` takes priority when both are provided.
         - name: start_date
           in: query
           description: >
@@ -263,6 +282,243 @@ paths:
                 $ref: '#/components/schemas/FixturesResponse'
         '400':
           description: Validation Error (e.g., date range exceeded or invalid format)
+  /fixtures/search:
+    get:
+      tags:
+        - Fixtures
+      summary: Search fixtures by time window and value filters
+      description: >
+        A powerful query endpoint for discovering fixtures that match specific
+        metric or statistic thresholds. Unlike `/fixtures`, which retrieves
+        fixtures by date or ID, `/search` filters by **calculated values** — for
+        example, find all upcoming matches where the home team's classification
+        metric falls within a given range.
+
+        All `where[X]` filters must match simultaneously (AND logic). Results
+        are paginated and the fixture structure is identical to `/fixtures`.
+      operationId: searchFixtures
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: window
+          schema:
+            type: string
+            enum:
+              - live
+              - '3'
+              - '6'
+              - '12'
+              - '24'
+              - '48'
+              - '168'
+            default: '24'
+          description: >
+            Defines the time scope of the search.
+
+            - `live` — No date range applied; only the `status` filter drives
+            results. Defaults to all in-play statuses. - `3`–`168` — Matches
+            fixtures from **now** up to **+N hours** from now. Defaults to live
+            + `NOT_STARTED` statuses.
+        - in: query
+          name: league_id
+          schema:
+            type: string
+          description: Comma-separated list of league IDs to restrict the search scope.
+          example: 8,34,55
+        - in: query
+          name: status
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - ABANDONED
+                - AWAITING_UPDATES
+                - AWARDED
+                - BREAK
+                - CANCELLED
+                - DELETED
+                - DELAYED
+                - EXTRA_TIME_BREAK
+                - FT
+                - FT_AET
+                - FT_PEN
+                - HT
+                - INPLAY_1ST_HALF
+                - INPLAY_2ND_HALF
+                - INPLAY_ET
+                - INPLAY_PENALTIES
+                - INTERRUPTED
+                - NOT_STARTED
+                - PENDING
+                - PEN_BREAK
+                - POSTPONED
+                - SUSPENDED
+                - TBA
+                - WALKOVER
+          description: >
+            Comma-separated list of fixture statuses to include.
+
+            When omitted: `window=live` defaults to all in-play statuses;
+            numeric windows default to in-play + `NOT_STARTED`.
+
+            👉 **[View State
+            Definitions](https://sstrader.readme.io/docs/states)**
+          x-llm-hint: Full state definitions available at /docs/states
+        - in: query
+          name: where[DEVELOPER_NAME]
+          style: form
+          explode: true
+          schema:
+            type: string
+            pattern: ^\d+:\d+(:(HOME|AWAY|LEAGUE))?$
+          description: >
+            Value-range filter applied to a named metric or statistic. Format:
+            `min:max[:location]`.
+
+            - `min` / `max` — Integer bounds (inclusive). - `location` — `HOME`,
+            `AWAY`, or `LEAGUE` (default). Determines which team's value is
+            tested.
+
+            Replace `DEVELOPER_NAME` with a `developer_name` from the `/types`
+            endpoint. Up to **10** filters may be specified; all must match (AND
+            logic). Duplicate keys with different locations are supported.
+
+            **Examples:** - `where[TEAM_GOALS_CLASSIFICATION]=1100:1800:HOME` -
+            `where[HOME_AWAY_CLASSIFICATION]=1:2`
+        - in: query
+          name: order[DEVELOPER_NAME]
+          style: form
+          explode: true
+          schema:
+            type: string
+            pattern: ^(ASC|DESC)(:(HOME|AWAY|LEAGUE))?$
+          description: >
+            Sort results by a named metric or statistic value. Format:
+            `DIR[:location]`.
+
+            - `DIR` — `ASC` or `DESC`. - `location` — `HOME`, `AWAY`, or
+            `LEAGUE` (default).
+
+            Replace `DEVELOPER_NAME` with a `developer_name` from the `/types`
+            endpoint. Only the first `order[...]` parameter is applied. Falls
+            back to `date_time ASC` when no matching value exists for a fixture.
+
+            **Example:** `order[TEAM_GOALS_CLASSIFICATION]=DESC:HOME`
+        - in: query
+          name: include
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - odds
+                - metrics
+                - statistics
+          description: >
+            Comma-separated list of modules to attach to each fixture. Allowed
+            values: `odds`, `metrics`, `statistics`. Note: `fair_odds` and
+            `movement` are not available on this endpoint. Using an include
+            unlocks the corresponding `filter[entity]` parameter.
+        - name: filter[metrics]
+          in: query
+          schema:
+            type: string
+            anyOf:
+              - pattern: ^types:\d+(,\d+)*$
+                description: Filter by specific Type IDs (e.g., types:1,2,3)
+              - pattern: ^developer_types:[a-z_]+(,[a-z_]+)*$
+                description: >-
+                  Filter by domain groups (e.g.,
+                  developer_types:predictions,smart_money)
+          example: developer_types:predictions
+          description: >
+            Optional filter for the included `metrics` module. Use this to
+            specify which metrics to include based on their Type IDs or domain
+            groups.
+        - name: filter[statistics]
+          in: query
+          schema:
+            type: string
+          example: types:5,6
+          description: >
+            Optional filter for the included `statistics` module. Use
+            `types:ID,...` to return only specific statistic types.
+        - name: filter[odds]
+          in: query
+          description: >
+            Refine the odds data by applying specific keys. Use a **comma (,)**
+            for OR logic within a key and a **semicolon (;)** for AND logic
+            between different keys.
+          schema:
+            type: string
+            example: bookmakers:2,3;markets:1,3;is_live:1;suspend:0
+          style: form
+          explode: false
+        - in: query
+          name: language
+          schema:
+            type: string
+            default: en
+          description: >-
+            Localization code for team, league, and country names. Alias:
+            `lang`.
+        - $ref: '#/components/parameters/pageParam'
+        - name: per_page
+          in: query
+          description: Results returned per page. Maximum is 50.
+          schema:
+            type: integer
+            default: 25
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: A list of matching fixtures with pagination metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchFixturesResponse'
+              examples:
+                empty:
+                  summary: No matching fixtures
+                  value:
+                    fixtures: []
+                    pagination:
+                      page: 1
+                      per_page: 25
+                      has_more: false
+        '400':
+          description: >
+            Validation error. Possible causes: - Invalid `window` value. -
+            Malformed `where[X]` filter (non-numeric or missing min/max). - More
+            than 10 `where` filters provided.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                invalid_window:
+                  value:
+                    error: 'Invalid window. Valid values: live, 3, 6, 12, 24, 48, 168'
+                invalid_where:
+                  value:
+                    error: >-
+                      Invalid min/max in where filter:
+                      where[TEAM_GOALS_CLASSIFICATION]
+                too_many_filters:
+                  value:
+                    error: Maximum of 10 where filters allowed
+        '403':
+          description: Unauthorized — missing or insufficient permissions.
   /insights:
     get:
       tags:
@@ -397,12 +653,13 @@ paths:
         - BearerAuth: []
       parameters:
         - in: query
-          name: developer_type
+          name: developer_types
           schema:
             type: string
           description: >-
-            Filter types by their domain-specific group (e.g., 'period').
-            Supports comma-separated lists.
+            Comma-separated list of domain groups to filter by (e.g.,
+            `statistic,advance_statistic`). Alias `developer_type` is accepted
+            for backwards compatibility.
       responses:
         '200':
           description: A list of types
@@ -526,6 +783,60 @@ components:
             - desc
           example: asc
           description: Sort order — `asc` or `desc`.
+    SearchFixturesResponse:
+      type: object
+      required:
+        - fixtures
+        - pagination
+      properties:
+        fixtures:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchFixture'
+        pagination:
+          $ref: '#/components/schemas/SearchPaginationMetadata'
+    SearchPaginationMetadata:
+      type: object
+      required:
+        - page
+        - per_page
+        - has_more
+      properties:
+        page:
+          type: integer
+          example: 1
+          description: The current page number.
+        per_page:
+          type: integer
+          example: 25
+          description: Number of results returned on this page.
+        has_more:
+          type: boolean
+          example: false
+          description: >
+            `true` if more pages are available, `false` if this is the last
+            page. Determined by whether the number of results returned equals
+            `per_page`.
+    SearchFixture:
+      allOf:
+        - $ref: '#/components/schemas/FixtureBase'
+        - type: object
+          properties:
+            odds:
+              description: Included when `include=odds` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/Odd'
+            statistics:
+              description: Included when `include=statistics` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/Statistic'
+            metrics:
+              description: Included when `include=metrics` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/Metric'
     FixturesResponse:
       type: object
       required:
@@ -602,6 +913,13 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Metric'
+            trends:
+              description: >-
+                Included when `include=trends` is passed. Per-minute cumulative
+                stats for each team.
+              type: array
+              items:
+                $ref: '#/components/schemas/TrendEntry'
     FixturesLivescoreResponse:
       type: object
       required:
@@ -640,6 +958,37 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Insight'
+    TrendEntry:
+      type: object
+      description: One stat for one team at one minute of the match.
+      properties:
+        team_id:
+          type: integer
+          description: The team the entry belongs to.
+        period_id:
+          type: integer
+          description: >-
+            The period (half) the entry belongs to. Disambiguates repeated
+            minute values across periods.
+        minute:
+          type: integer
+          description: The match minute at which this value was recorded.
+        type_id:
+          type: integer
+          description: The external type ID of the stat.
+          example: 117
+        developer_name:
+          type: string
+          description: >-
+            Constant-style identifier for the stat (e.g. CORNERS,
+            EXPECTED_GOALS).
+          example: EXPECTED_GOALS
+        value:
+          type: integer
+          description: >
+            Cumulative value of the stat at this minute. For EXPECTED_GOALS
+            (type_id 117), the value is scaled by 100 — divide by 100 to get the
+            xG decimal (e.g. value 18 = 0.18 xG).
     Insight:
       type: object
       properties:
