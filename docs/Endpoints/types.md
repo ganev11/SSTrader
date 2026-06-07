@@ -7,28 +7,30 @@ metadata:
   robots: index
 ---
 ## Get Types
+
 Use this endpoint `/types` to retrieve a list of available Types supported by the SSTrader Football API. Types are used to categorize data points like periods, positions, and statistics.
 
 To see how these types are structured, check out the [Types API Reference](/reference/gettypes).
 
 ## Query Parameters
 
-| Parameter | Type | Description |
-|---|---|---|
-| `developer_types` | string | Optional. Filter types by their domain-specific group (e.g., period). You can provide a single value or a comma-separated list (e.g., period,statistics). |
+| Parameter         | Type   | Description                                                                                                                                              |
+| ----------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `developer_types` | string | Optional. Filter types by their domain-specific group (e.g., period). You can provide a single value or a comma-separated list (e.g., period,statistic). |
 
 ## Endpoint Behavior
 
-* Filtering: If the `developer_types` parameter is provided, the API returns only the types belonging to those specific groups.
-* Response: Returns an array of type objects.
+- Filtering: If the `developer_types` parameter is provided, the API returns only the types belonging to those specific groups.
+- Response: Returns an array of type objects.
 
 ## Response Schema
+
 The response is a JSON array of objects, each containing:
 
-* type_id integer: The unique ID for the type.
-* developer_name string: The unique, constant-style identifier used for programming logic.
-* developer_description string: A brief explanation of the type's purpose.
-* developer_type string: The category or domain this type belongs to (e.g., period).
+- type\_id integer: The unique ID for the type.
+- developer\_name string: The unique, constant-style identifier used for programming logic.
+- developer\_description string: A brief explanation of the type's purpose.
+- developer\_type string: The category or domain this type belongs to (e.g., period).
 
 ## Example Response
 
@@ -50,3 +52,5 @@ The response is a JSON array of objects, each containing:
   ]
 }
 ```
+
+<br />
