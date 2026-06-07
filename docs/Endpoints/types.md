@@ -15,11 +15,11 @@ To see how these types are structured, check out the [Types API Reference](/refe
 
 | Parameter | Type | Description |
 |---|---|---|
-| developer_type | string | Optional. Filter types by their domain-specific group (e.g., period). You can provide a single value or a comma-separated list (e.g., period,statistics). |
+| `developer_types` | string | Optional. Filter types by their domain-specific group (e.g., period). You can provide a single value or a comma-separated list (e.g., period,statistics). |
 
 ## Endpoint Behavior
 
-* Filtering: If the developer_type parameter is provided, the API returns only the types belonging to those specific groups.
+* Filtering: If the `developer_types` parameter is provided, the API returns only the types belonging to those specific groups.
 * Response: Returns an array of type objects.
 
 ## Response Schema
