@@ -871,6 +871,16 @@ components:
           $ref: '#/components/schemas/League'
         season:
           $ref: '#/components/schemas/Season'
+        group:
+          nullable: true
+          description: The group this fixture belongs to. Null if not applicable.
+          allOf:
+            - $ref: '#/components/schemas/Group'
+        stage:
+          nullable: true
+          description: The competition stage. Null if not applicable.
+          allOf:
+            - $ref: '#/components/schemas/Stage'
         participants:
           type: array
           items:
@@ -920,6 +930,11 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/TrendEntry'
+            last_fixtures:
+              description: Included when `include=last_fixtures` is passed.
+              nullable: true
+              allOf:
+                - $ref: '#/components/schemas/LastFixtures'
     FixturesLivescoreResponse:
       type: object
       required:
@@ -1427,6 +1442,51 @@ components:
             An optional object containing context-specific metadata. Properties
             vary depending on the metric type and are omitted if no metadata is
             available.
+    LastFixtureEntry:
+      allOf:
+        - $ref: '#/components/schemas/FixtureBase'
+        - type: object
+          properties:
+            statistics:
+              type: array
+              items:
+                $ref: '#/components/schemas/Statistic'
+            metrics:
+              type: array
+              items:
+                $ref: '#/components/schemas/Metric'
+    LastFixtures:
+      type: object
+      description: >-
+        Last 10 fixtures for each team in their respective location, before this
+        event's kick-off. Each fixture includes statistics and metrics.
+      properties:
+        home:
+          type: array
+          description: Last 10 fixtures where the home team played at home.
+          items:
+            $ref: '#/components/schemas/LastFixtureEntry'
+        away:
+          type: array
+          description: Last 10 fixtures where the away team played away.
+          items:
+            $ref: '#/components/schemas/LastFixtureEntry'
+    Group:
+      type: object
+      description: The group this fixture belongs to (e.g. Group A in a cup tournament).
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Stage:
+      type: object
+      description: The competition stage (e.g. Quarter-Final, Group Stage).
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
     Season:
       type: object
       description: >-
