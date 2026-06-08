@@ -90,6 +90,11 @@ Get a specific fixture with advanced metrics and odds for in-depth analysis:<br 
         "id": 21024,
         "name": "2024/2025"
       },
+      "group": null,
+      "stage": {
+        "id": 45421,
+        "name": "Regular Season"
+      },
       "participants": [
         {
           "id": 1,
