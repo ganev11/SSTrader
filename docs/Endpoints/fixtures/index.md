@@ -112,6 +112,11 @@ Get a specific fixture with advanced metrics, fair value calculations, and marke
         "ending_at": "2026-05-24",
         "is_current": true
       },
+      "group": null,
+      "stage": {
+        "id": 45421,
+        "name": "Regular Season"
+      },
       "sport": {
         "id": 1,
         "name": "Football"
