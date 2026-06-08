@@ -32,6 +32,23 @@ Each entry in the `trends` array represents one stat for one team at one minute.
 
 ---
 
+## Minute Scope
+
+Minute values are **global across the match**, not reset per period. However, the second half always begins at minute **45**, regardless of how much added time occurred in the first half.
+
+| Period       | Minute range                          |
+|--------------|---------------------------------------|
+| 1st half     | `1` → `45+` (continues into added time) |
+| 2nd half     | `45` → `90+` (always starts at 45)   |
+
+**Key rules:**
+
+- Minutes within a period count continuously until that period ends. A 1st half with 3 minutes of added time produces entries up to minute `48`.
+- When the 2nd half kicks off, the minute counter **resets to 45** — not to wherever the 1st half ended. There is no gap or overlap in the stored data; use `period_id` to distinguish entries at the same minute value across the two halves.
+- Use `period_id` as the disambiguator when plotting: entries at minute `45` can exist in both halves, and `period_id` tells you which is which.
+
+---
+
 ## Available Stats
 
 ### Default Stats
@@ -48,6 +65,7 @@ Returned when no `filter[trends]` is provided.
 | `11`      | `SHOTS_TOTAL`       | Total shots (on + off target).                     |
 | `27`      | `SHOTS_INSIDEBOX`   | Shots taken from inside the penalty area.          |
 | `28`      | `SHOTS_OUTSIDEBOX`  | Shots taken from outside the penalty area.         |
+| `25`      | `BALL_POSSESSION`   | Percentage of ball possession.                     |
 | `13`      | `CORNERS`           | Corner kicks taken.                                |
 | `9`       | `ATTACKS`           | Total attacking moves recorded.                    |
 | `10`      | `DANGEROUS_ATTACKS` | Attacking moves that reached a dangerous position. |
