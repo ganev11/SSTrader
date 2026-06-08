@@ -47,6 +47,21 @@ Minute values are **global across the match**, not reset per period. However, th
 - When the 2nd half kicks off, the minute counter **resets to 45** — not to wherever the 1st half ended. There is no gap or overlap in the stored data; use `period_id` to distinguish entries at the same minute value across the two halves.
 - Use `period_id` as the disambiguator when plotting: entries at minute `45` can exist in both halves, and `period_id` tells you which is which.
 
+### Value Continuity Across Periods
+
+**Cumulative `value` fields are never reset between periods.** Each new period picks up where the previous one left off — a team that had 6 corners by the end of the first half will show 6+ corners at the start of the second half, not 0.
+
+This applies to all periods, including additional time in cup matches where both teams are level after 90 minutes:
+
+| Period            | Minute range                                 | Value behaviour                          |
+|-------------------|----------------------------------------------|------------------------------------------|
+| 1st half          | `1` → `45+`                                  | Starts from 0                            |
+| 2nd half          | `45` → `90+`                                 | Continues from end of 1st half           |
+| Extra time 1st    | `90` → `105+`                                | Continues from end of 2nd half           |
+| Extra time 2nd    | `105` → `120+`                               | Continues from end of extra time 1st     |
+
+When plotting a single stat across all periods, use the raw `value` directly — no per-period offset is needed. To isolate a period's contribution, subtract the last `value` of the preceding period from the first `value` of the current one.
+
 ---
 
 ## Available Stats
