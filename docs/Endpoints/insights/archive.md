@@ -1,5 +1,6 @@
 ---
 title: Archive
+excerpt: Returns paginated insights history
 deprecated: false
 hidden: false
 metadata:
