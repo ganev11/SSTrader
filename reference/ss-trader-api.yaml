@@ -200,6 +200,7 @@ paths:
                 - fair_odds
                 - movement
                 - trends
+                - last_fixtures
           description: >
             Comma-separated list of modules to include. Example:
             `include=odds,metrics`. Note: Using an include unlocks the
