@@ -201,6 +201,7 @@ paths:
                 - movement
                 - trends
                 - last_fixtures
+                - metadata
           description: >
             Comma-separated list of modules to include. Example:
             `include=odds,metrics`. Note: Using an include unlocks the
@@ -421,11 +422,12 @@ paths:
                 - odds
                 - metrics
                 - statistics
+                - metadata
           description: >
             Comma-separated list of modules to attach to each fixture. Allowed
-            values: `odds`, `metrics`, `statistics`. Note: `fair_odds` and
-            `movement` are not available on this endpoint. Using an include
-            unlocks the corresponding `filter[entity]` parameter.
+            values: `odds`, `metrics`, `statistics`, `metadata`. Note:
+            `fair_odds` and `movement` are not available on this endpoint. Using
+            an include unlocks the corresponding `filter[entity]` parameter.
         - name: filter[metrics]
           in: query
           schema:
@@ -955,6 +957,11 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Metric'
+            metadata:
+              description: Included when `include=metadata` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/MetadataEntry'
     FixturesResponse:
       type: object
       required:
@@ -1053,6 +1060,11 @@ components:
               nullable: true
               allOf:
                 - $ref: '#/components/schemas/LastFixtures'
+            metadata:
+              description: Included when `include=metadata` is passed.
+              type: array
+              items:
+                $ref: '#/components/schemas/MetadataEntry'
     FixturesLivescoreResponse:
       type: object
       required:
@@ -1560,6 +1572,53 @@ components:
             An optional object containing context-specific metadata. Properties
             vary depending on the metric type and are omitted if no metadata is
             available.
+    MetadataEntry:
+      type: object
+      description: >
+        Fixture-level metadata. Currently only kit/participant colors
+        (`PARTICIPANT_COLORS`) are returned; other raw metadata stored against a
+        fixture is not yet exposed.
+      properties:
+        team_id:
+          type: integer
+          example: 85
+          description: The team this metadata entry belongs to.
+        type_id:
+          type: integer
+          example: 348
+          description: The external type ID. 348 = PARTICIPANT_COLORS.
+        developer_name:
+          type: string
+          example: PARTICIPANT_COLORS
+          description: The constant-style identifier for the metadata type.
+        value:
+          type: integer
+          nullable: true
+          example: null
+          description: >-
+            Always null for PARTICIPANT_COLORS. Present for template consistency
+            with other type-based includes.
+        meta:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: >-
+            Context-specific payload. For PARTICIPANT_COLORS, contains `kit` and
+            `participant`.
+          properties:
+            kit:
+              type: string
+              example: >-
+                #D6003D,#D6003D,#D6003D,#D6003D,#C40010,#0046A8,#C40010,#D6003D,#0A0A0A,#0A0A0A,#F0F0F0
+              description: >-
+                Comma-separated list of hex colors describing the team's kit
+                (shirt, shorts, socks, sleeves, etc.).
+            participant:
+              type: string
+              example: '#C40010'
+              description: >-
+                The primary/representative hex color for this team, used for
+                charts, badges, and UI accents.
     LastFixtureEntry:
       allOf:
         - $ref: '#/components/schemas/FixtureBase'
