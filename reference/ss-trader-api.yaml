@@ -1576,8 +1576,8 @@ components:
       type: object
       description: >
         Fixture-level metadata. Currently only kit/participant colors
-        (`PARTICIPANT_COLORS`) are returned; other raw metadata stored against a
-        fixture is not yet exposed.
+        (`PARTICIPANT_COLORS`) and formations (`FORMATION`) are returned; other
+        raw metadata stored against a fixture is not yet exposed.
       properties:
         team_id:
           type: integer
@@ -1586,7 +1586,7 @@ components:
         type_id:
           type: integer
           example: 348
-          description: The external type ID. 348 = PARTICIPANT_COLORS.
+          description: The external type ID. 348 = PARTICIPANT_COLORS, 349 = FORMATION.
         developer_name:
           type: string
           example: PARTICIPANT_COLORS
@@ -1596,15 +1596,15 @@ components:
           nullable: true
           example: null
           description: >-
-            Always null for PARTICIPANT_COLORS. Present for template consistency
-            with other type-based includes.
+            Always null for PARTICIPANT_COLORS and FORMATION. Present for
+            template consistency with other type-based includes.
         meta:
           type: object
           nullable: true
           additionalProperties: true
           description: >-
             Context-specific payload. For PARTICIPANT_COLORS, contains `kit` and
-            `participant`.
+            `participant`. For FORMATION, contains `formation`.
           properties:
             kit:
               type: string
@@ -1619,6 +1619,10 @@ components:
               description: >-
                 The primary/representative hex color for this team, used for
                 charts, badges, and UI accents.
+            formation:
+              type: string
+              example: 3-4-2-1
+              description: The team's formation for this fixture.
     LastFixtureEntry:
       allOf:
         - $ref: '#/components/schemas/FixtureBase'
