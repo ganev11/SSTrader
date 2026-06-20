@@ -127,7 +127,16 @@ Same label mapping as Market 1, but for the first half only.
 
 ---
 
-### Market 13 — 1st Half Goal Line
+### Market 13 — 1st Half Goal Line (Asian Total Goals)
+
+| label_id | Outcome |
+|----------|---------|
+| 1        | Under |
+| 2        | Over |
+
+---
+
+### Market 14 — 1st Half Match Goals (European Total Goals)
 
 | label_id | Outcome |
 |----------|---------|
@@ -302,7 +311,8 @@ Compound label_id: first digit = team (`1` = Home, `2` = Away), second digit = o
 | 7         | Correct Score                | Encoded score (remove leading 1: remaining = HomeGoals+AwayGoals) |
 | 11        | 1st Half 3Way Result         | **0**=Draw, 1=Home, 2=Away |
 | 12        | 1st Half Asian Handicap      | 1=Home, 2=Away |
-| 13        | 1st Half Goal Line           | **1=Under**, 2=Over |
+| 13        | 1st Half Goal Line (Asian)   | **1=Under**, 2=Over |
+| 14        | 1st Half Match Goals (European)| **1=Under**, 2=Over |
 | 16        | 1st Half Asian Total Corners | **1=Under**, 2=Over |
 | 17        | 1st Half Correct Score       | Encoded score (same as Market 7) |
 | 22        | Next Goal                    | **0**=No Goal, 1=Home, 2=Away |
