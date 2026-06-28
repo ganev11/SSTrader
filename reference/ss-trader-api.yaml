@@ -13,6 +13,8 @@ tags:
     description: Operations related to match fixtures
   - name: Regions
     description: Geographic regions data
+  - name: Countries
+    description: Country reference data
   - name: Insights
     description: AI-driven match insights and recommended bets
   - name: Types
@@ -68,6 +70,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegionsResponse'
+  /countries:
+    get:
+      tags:
+        - Countries
+      summary: Get all countries
+      description: Returns a list of all countries.
+      operationId: getCountries
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: language
+          schema:
+            type: string
+            enum:
+              - en
+              - es
+              - bg
+            default: en
+          description: Language for the response.
+      responses:
+        '200':
+          description: A list of countries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountriesResponse'
   /livescores:
     get:
       tags:
@@ -903,6 +932,15 @@ components:
             - desc
           example: asc
           description: Sort order — `asc` or `desc`.
+    CountriesResponse:
+      type: object
+      required:
+        - countries
+      properties:
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country'
     SearchFixturesResponse:
       type: object
       required:
@@ -1568,10 +1606,49 @@ components:
           type: object
           nullable: true
           additionalProperties: true
-          description: >-
-            An optional object containing context-specific metadata. Properties
-            vary depending on the metric type and are omitted if no metadata is
-            available.
+          description: >
+            Optional, context-specific metadata. Properties vary by metric
+            family, and the field is omitted entirely for most `developer_name`
+            values — including `EV_*` and `SMARTMONEY_*` metrics generated
+            before this field was introduced. Always check for presence (e.g.
+            `metric.meta?.market_id`) rather than assuming it exists.
+
+
+            Known shapes:
+
+            - `EV_*` (Expected Value, e.g. `EV_EUROPE_ML_HOME`): `market_id`,
+            `label_id`, `line`, `bookmaker_id`.
+
+            - `SMARTMONEY_*` (e.g. `SMARTMONEY_GL_OVER`): `market_id`,
+            `label_id`, `line` (no `bookmaker_id`).
+          properties:
+            market_id:
+              type: integer
+              description: >-
+                The betting market this metric relates to (e.g. 1 = Money Line,
+                2 = Asian Handicap, 3 = Goal Line, 6 = Corners, 203 = Yellow
+                Cards).
+            label_id:
+              type: integer
+              description: >-
+                The outcome label ID; mapping depends on market_id (same scheme
+                as Odd.label_id).
+            line:
+              type: number
+              format: float
+              description: >-
+                The main handicap/total line used for the calculation. Always 0
+                for Money Line (market_id 1), which has no line.
+            bookmaker_id:
+              type: integer
+              description: >-
+                The bookmaker the price was sourced from (2 = Europe, 3 = Asia).
+                Present only on EV_* metrics.
+          example:
+            market_id: 3
+            label_id: 2
+            line: 2.5
+            bookmaker_id: 2
     MetadataEntry:
       type: object
       description: >
