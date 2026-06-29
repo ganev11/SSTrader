@@ -19,6 +19,10 @@ tags:
     description: AI-driven match insights and recommended bets
   - name: Types
     description: Domain-specific data types and metrics
+  - name: Search
+    description: >-
+      Free-text lookup across entity types, tolerant of misspellings and
+      abbreviations.
 paths:
   /regions:
     get:
@@ -809,6 +813,101 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Type'
+  /search:
+    get:
+      tags:
+        - Search
+      summary: Search entities by free-text query
+      description: >
+        General-purpose lookup for finding entities by name. Unlike exact-match
+        endpoints (e.g. `/countries`), this endpoint tolerates misspellings,
+        abbreviations, and alternate phrasings — useful for search-as-you-type
+        UI and for mapping a free-text mention onto a canonical entity ID that
+        can be passed to other endpoints.
+
+        Results are grouped by entity type; only the types requested are
+        included in the response. Currently supported: `country`. Additional
+        types (teams, leagues, fixtures) will be added over time.
+      operationId: searchEntities
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+          description: The search text.
+          example: spain
+        - in: query
+          name: types
+          required: true
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - country
+          description: >-
+            Comma-separated list of entity types to search. Currently:
+            `country`.
+          example: country
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 5
+            minimum: 1
+            maximum: 20
+          description: Maximum results per type.
+        - in: query
+          name: language
+          schema:
+            type: string
+            enum:
+              - en
+              - es
+              - bg
+            default: en
+          description: Language for localized entity names.
+      responses:
+        '200':
+          description: Search results grouped by entity type.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchEntitiesResponse'
+              examples:
+                country_match:
+                  summary: Country match
+                  value:
+                    countries:
+                      - id: 41
+                        name: Spain
+                        alpha3: ESP
+                        score: 0.94
+        '400':
+          description: >
+            Validation error. Possible causes: - Missing `q`. - Missing `types`.
+            - `types` includes an unsupported value.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                missing_q:
+                  value:
+                    error: Missing required query param "q"
+                unsupported_type:
+                  value:
+                    error: 'Unsupported type(s): team. Supported: country'
+        '403':
+          description: Unauthorized — missing or insufficient permissions.
 components:
   securitySchemes:
     BearerAuth:
@@ -941,6 +1040,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Country'
+    SearchEntitiesResponse:
+      type: object
+      description: >
+        Grouped by entity type. Only the types requested via `types` are present
+        as keys.
+      properties:
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchCountryResult'
+    SearchCountryResult:
+      allOf:
+        - $ref: '#/components/schemas/Country'
+        - type: object
+          properties:
+            score:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              description: Match confidence — higher means a closer match to `q`.
     SearchFixturesResponse:
       type: object
       required:
