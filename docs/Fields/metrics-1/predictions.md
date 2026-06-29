@@ -48,7 +48,6 @@ label ids, or concise notes useful for UI tooltips and downstream workflows.
 PREDICTION_GL_OVER
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 94,
     "team_id": 0,
     "developer_name": "PREDICTION_GL_OVER",
@@ -65,7 +64,6 @@ PREDICTION_GL_OVER
 PREDICTION_GL_UNDER
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 95,
     "team_id": 0,
     "developer_name": "PREDICTION_GL_UNDER",
@@ -82,7 +80,6 @@ PREDICTION_GL_UNDER
 PREDICTION_GL_CONFIDENCE
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 96,
     "team_id": 0,
     "developer_name": "PREDICTION_GL_CONFIDENCE",
@@ -96,7 +93,6 @@ PREDICTION_GL_CONFIDENCE
 PREDICTION_COR_OVER
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 99,
     "team_id": 0,
     "developer_name": "PREDICTION_COR_OVER",
@@ -113,7 +109,6 @@ PREDICTION_COR_OVER
 PREDICTION_COR_UNDER
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 100,
     "team_id": 0,
     "developer_name": "PREDICTION_COR_UNDER",
@@ -130,7 +125,6 @@ PREDICTION_COR_UNDER
 PREDICTION_COR_CONFIDENCE
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 101,
     "team_id": 0,
     "developer_name": "PREDICTION_COR_CONFIDENCE",
@@ -144,7 +138,6 @@ PREDICTION_COR_CONFIDENCE
 PREDICTION_YC_OVER
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 104,
     "team_id": 0,
     "developer_name": "PREDICTION_YC_OVER",
@@ -161,7 +154,6 @@ PREDICTION_YC_OVER
 PREDICTION_YC_UNDER
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 105,
     "team_id": 0,
     "developer_name": "PREDICTION_YC_UNDER",
@@ -178,7 +170,6 @@ PREDICTION_YC_UNDER
 PREDICTION_YC_CONFIDENCE
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 106,
     "team_id": 0,
     "developer_name": "PREDICTION_YC_CONFIDENCE",
@@ -192,7 +183,6 @@ PREDICTION_YC_CONFIDENCE
 PREDICTION_TOTAL_ATTACK_PRESSURE
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 115,
     "team_id": 0,
     "developer_name": "PREDICTION_TOTAL_ATTACK_PRESSURE",
