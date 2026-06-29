@@ -75,7 +75,6 @@ EV\_EUROPE\_ML\_HOME
 
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 281,
     "team_id": 0,
     "developer_name": "EV_EUROPE_ML_HOME",
@@ -89,7 +88,6 @@ EV\_ASIA\_ML\_DRAW
 
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 285,
     "team_id": 0,
     "developer_name": "EV_ASIA_ML_DRAW",
@@ -103,7 +101,6 @@ EV\_EUROPE\_AH\_HOME
 
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 287,
     "team_id": 0,
     "developer_name": "EV_EUROPE_AH_HOME",
@@ -117,7 +114,6 @@ EV\_ASIA\_AH\_AWAY
 
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 290,
     "team_id": 0,
     "developer_name": "EV_ASIA_AH_AWAY",
@@ -131,7 +127,6 @@ EV\_EUROPE\_GL\_OVER
 
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 291,
     "team_id": 0,
     "developer_name": "EV_EUROPE_GL_OVER",
@@ -145,7 +140,6 @@ EV\_ASIA\_GL\_UNDER
 
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 301,
     "team_id": 0,
     "developer_name": "EV_ASIA_GL_UNDER",
@@ -159,7 +153,6 @@ EV\_EUROPE\_COR\_OVER
 
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 300,
     "team_id": 0,
     "developer_name": "EV_EUROPE_COR_OVER",
@@ -173,7 +166,6 @@ EV\_ASIA\_COR\_UNDER
 
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 297,
     "team_id": 0,
     "developer_name": "EV_ASIA_COR_UNDER",
@@ -187,7 +179,6 @@ EV\_EUROPE\_YC\_OVER
 
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 296,
     "team_id": 0,
     "developer_name": "EV_EUROPE_YC_OVER",
@@ -201,7 +192,6 @@ EV\_ASIA\_YC\_UNDER
 
 ```json
 {
-    "fixture_id": 12345,
     "type_id": 293,
     "team_id": 0,
     "developer_name": "EV_ASIA_YC_UNDER",
