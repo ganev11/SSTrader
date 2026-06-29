@@ -23,6 +23,8 @@ tags:
     description: >-
       Free-text lookup across entity types, tolerant of misspellings and
       abbreviations.
+  - name: Standings
+    description: League table standings for a given season.
 paths:
   /regions:
     get:
@@ -778,6 +780,60 @@ paths:
                 invalid_range:
                   value:
                     error: time_from must not be after time_to
+        '403':
+          description: Unauthorized — missing or insufficient role.
+  /standings:
+    get:
+      tags:
+        - Standings
+      summary: Get league standings for a season
+      description: >
+        Returns league table standings for a given season. A season can have
+        more than one table — e.g. a regular season plus a separate playoff
+        stage, or several groups in a cup competition. All tables are returned
+        together in a single flat `standings` array; group by `stage.id` and
+        `group.id` client-side if you need to render separate tables.
+      operationId: getStandings
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: season_id
+          required: true
+          schema:
+            type: integer
+          description: The season to retrieve standings for.
+        - in: query
+          name: language
+          schema:
+            type: string
+            default: en
+          description: 'Localization code for team names. Alias: `lang`.'
+      responses:
+        '200':
+          description: League table standings for the season.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandingsResponse'
+              examples:
+                empty:
+                  summary: Unknown or not-yet-populated season
+                  value:
+                    standings: []
+        '400':
+          description: Validation error — `season_id` missing or not a valid integer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                missing_season_id:
+                  value:
+                    error: season_id is required
         '403':
           description: Unauthorized — missing or insufficient role.
   /types:
@@ -1893,3 +1949,64 @@ components:
           type: boolean
           example: true
           description: Indicates if this is the active season.
+    StandingsResponse:
+      type: object
+      required:
+        - standings
+      properties:
+        standings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Standing'
+    Standing:
+      type: object
+      description: One team's row in a league table for a given season/stage/group.
+      properties:
+        season:
+          $ref: '#/components/schemas/Season'
+        stage:
+          nullable: true
+          description: The competition stage this table belongs to. Null if not applicable.
+          allOf:
+            - $ref: '#/components/schemas/Stage'
+        group:
+          nullable: true
+          description: >-
+            The group within the stage (e.g. Group A in a cup competition). Null
+            if not applicable.
+          allOf:
+            - $ref: '#/components/schemas/Group'
+        position:
+          type: integer
+          nullable: true
+          description: The team's rank in this table.
+        team:
+          $ref: '#/components/schemas/Team'
+        points:
+          type: integer
+          nullable: true
+          description: Total points.
+        result:
+          type: string
+          nullable: true
+          description: >-
+            Qualification/relegation note for this position (e.g. 'Champions
+            League', 'Relegation'), if any.
+        statistics:
+          type: array
+          description: >
+            Breakdown stats for this team in this table (matches played,
+            won/drawn/lost, goals scored/against, etc.). Available
+            `developer_name` values can be discovered via `GET /types`.
+          items:
+            $ref: '#/components/schemas/Statistic'
+    Team:
+      type: object
+      description: Minimal team reference.
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the team.
+        name:
+          type: string
+          description: Localized name of the team.
