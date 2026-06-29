@@ -29,7 +29,6 @@ Example smartmoney metric with `meta` property:
 
 ```json
 {
-    "fixture_id": 12345,
     "team_id": 0,
     "developer_name": "SMARTMONEY_GL_OVER",
     "value": 2.3,
