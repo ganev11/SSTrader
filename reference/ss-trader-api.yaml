@@ -882,8 +882,8 @@ paths:
         can be passed to other endpoints.
 
         Results are grouped by entity type; only the types requested are
-        included in the response. Currently supported: `country`, `league`.
-        Additional types (teams, fixtures) will be added over time.
+        included in the response. Currently supported: `country`, `league`,
+        `team`. Additional types (fixtures) will be added over time.
       operationId: searchEntities
       security:
         - BearerAuth: []
@@ -907,9 +907,10 @@ paths:
               enum:
                 - country
                 - league
+                - team
           description: >-
             Comma-separated list of entity types to search. Currently:
-            `country`, `league`.
+            `country`, `league`, `team`.
           example: country
         - in: query
           name: limit
@@ -974,6 +975,19 @@ paths:
                         popular: true
                         level: 1
                         score: 0.91
+                team_match:
+                  summary: Team match
+                  value:
+                    teams:
+                      - id: 6
+                        name: Tottenham Hotspur
+                        short_code: TOT
+                        national_team: false
+                        country:
+                          id: 46
+                          name: England
+                          alpha3: GBR
+                        score: 0.97
         '400':
           description: >
             Validation error. Possible causes: - Missing `q`. - Missing `types`.
@@ -991,7 +1005,9 @@ paths:
                     error: Missing required query param "q"
                 unsupported_type:
                   value:
-                    error: 'Unsupported type(s): team. Supported: country, league'
+                    error: >-
+                      Unsupported type(s): fixture. Supported: country, league,
+                      team
         '403':
           description: Unauthorized — missing or insufficient permissions.
 components:
@@ -1140,6 +1156,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchLeagueResult'
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchTeamResult'
     SearchCountryResult:
       allOf:
         - $ref: '#/components/schemas/Country'
@@ -1155,6 +1175,41 @@ components:
       description: Same shape as a `GET /regions` item, with an added `score`.
       allOf:
         - $ref: '#/components/schemas/RegionItem'
+        - type: object
+          properties:
+            score:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              description: Match confidence — higher means a closer match to `q`.
+    TeamEntity:
+      type: object
+      description: >
+        A team reference with localized name and country — richer than the
+        minimal `Team` schema used in Standings (id/name only).
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the team.
+        name:
+          type: string
+          description: Localized team name.
+        short_code:
+          type: string
+          nullable: true
+          description: Short code for the team (e.g. 'TOT').
+        national_team:
+          type: boolean
+          description: True if this is a national team rather than a club.
+        country:
+          nullable: true
+          description: The team's country. Null if not set.
+          allOf:
+            - $ref: '#/components/schemas/Country'
+    SearchTeamResult:
+      allOf:
+        - $ref: '#/components/schemas/TeamEntity'
         - type: object
           properties:
             score:
