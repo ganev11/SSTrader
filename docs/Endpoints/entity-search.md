@@ -8,6 +8,11 @@ hidden: false
 metadata:
   robots: index
 ---
+<Callout icon="🛑" theme="error">
+  ### **NB**
+
+  This ednpoint is only for testing.
+</Callout>
 
 `GET /search`
 
@@ -23,16 +28,16 @@ Results are grouped by entity type. Only the types you request are included in t
 > `fixture` search only covers matches in a rolling window from a few hours ago to about a week
 > ahead, in top-tier leagues — i.e. upcoming fixtures and recently finished ones.
 
----
+***
 
 ## Query Parameters
 
-| Parameter  | Type    | Required | Default | Description |
-|------------|---------|----------|---------|-------------|
-| `q`        | string  | Yes      | —       | The search text. |
+| Parameter  | Type    | Required | Default | Description                                                                                        |
+| ---------- | ------- | -------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `q`        | string  | Yes      | —       | The search text.                                                                                   |
 | `types`    | string  | Yes      | —       | Comma-separated list of entity types to search. Currently: `country`, `league`, `team`, `fixture`. |
-| `limit`    | integer | No       | `5`     | Maximum results per type. 1–20. |
-| `language` | string  | No       | `en`    | Language code for localized entity names. |
+| `limit`    | integer | No       | `5`     | Maximum results per type. 1–20.                                                                    |
+| `language` | string  | No       | `en`    | Language code for localized entity names.                                                          |
 
 ```
 GET /search?q=spain&types=country
@@ -42,7 +47,7 @@ GET /search?q=tottenham&types=team
 GET /search?q=tottenham+arsenal&types=fixture
 ```
 
----
+***
 
 ## Response
 
@@ -108,16 +113,16 @@ within a type are ordered by `score`, descending. `league` results use the same 
 If `types=country,league,team,fixture` were requested, the response would include a `countries`,
 a `leagues`, a `teams`, and a `fixtures` key (each only present if that type was requested).
 
----
+***
 
 ## Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `400`  | Missing `q`. |
-| `400`  | Missing `types`. |
-| `400`  | `types` includes an unsupported value. |
-| `403`  | Missing or insufficient authentication. |
+| Status | Condition                                                         |
+| ------ | ----------------------------------------------------------------- |
+| `400`  | Missing `q`.                                                      |
+| `400`  | Missing `types`.                                                  |
+| `400`  | `types` includes an unsupported value.                            |
+| `403`  | Missing or insufficient authentication.                           |
 | `500`  | Search is temporarily unavailable, or an internal error occurred. |
 
 **Example error:**
@@ -125,3 +130,5 @@ a `leagues`, a `teams`, and a `fixtures` key (each only present if that type was
 ```json
 { "error": "Unsupported type(s): player. Supported: country, league, team, fixture" }
 ```
+
+<br />
