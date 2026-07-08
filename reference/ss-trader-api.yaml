@@ -883,7 +883,11 @@ paths:
 
         Results are grouped by entity type; only the types requested are
         included in the response. Currently supported: `country`, `league`,
-        `team`. Additional types (fixtures) will be added over time.
+        `team`, `fixture`.
+
+        `fixture` search only covers matches in a rolling window from a few
+        hours ago to about a week ahead, in top-tier leagues — i.e. upcoming
+        fixtures and recently finished ones.
       operationId: searchEntities
       security:
         - BearerAuth: []
@@ -908,9 +912,10 @@ paths:
                 - country
                 - league
                 - team
+                - fixture
           description: >-
             Comma-separated list of entity types to search. Currently:
-            `country`, `league`, `team`.
+            `country`, `league`, `team`, `fixture`.
           example: country
         - in: query
           name: limit
@@ -988,6 +993,33 @@ paths:
                           name: England
                           alpha3: GBR
                         score: 0.97
+                fixture_match:
+                  summary: Fixture match
+                  value:
+                    fixtures:
+                      - id: 1033370
+                        date_time: '2026-05-24T15:00:00Z'
+                        status: NOT_STARTED
+                        is_live: false
+                        sport:
+                          id: 1
+                          name: Football
+                        country:
+                          id: 46
+                          name: England
+                          alpha3: GBR
+                        league:
+                          id: 8
+                          name: Premier League
+                          level: 1
+                        participants:
+                          - id: 6
+                            name: Tottenham Hotspur
+                            location: home
+                          - id: 19
+                            name: Arsenal
+                            location: away
+                        score: 0.95
         '400':
           description: >
             Validation error. Possible causes: - Missing `q`. - Missing `types`.
@@ -1006,8 +1038,8 @@ paths:
                 unsupported_type:
                   value:
                     error: >-
-                      Unsupported type(s): fixture. Supported: country, league,
-                      team
+                      Unsupported type(s): player. Supported: country, league,
+                      team, fixture
         '403':
           description: Unauthorized — missing or insufficient permissions.
 components:
@@ -1160,6 +1192,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchTeamResult'
+        fixtures:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchFixtureResult'
     SearchCountryResult:
       allOf:
         - $ref: '#/components/schemas/Country'
@@ -1210,6 +1246,20 @@ components:
     SearchTeamResult:
       allOf:
         - $ref: '#/components/schemas/TeamEntity'
+        - type: object
+          properties:
+            score:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              description: Match confidence — higher means a closer match to `q`.
+    SearchFixtureResult:
+      description: >
+        Same base shape as a `GET /fixtures` item (without any `include=`
+        modules), plus a `score`. Reranked by relevance to `q`.
+      allOf:
+        - $ref: '#/components/schemas/FixtureBase'
         - type: object
           properties:
             score:
