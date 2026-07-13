@@ -11,7 +11,7 @@ metadata:
 <Callout icon="🛑" theme="error">
   ### **NB**
 
-  This ednpoint is only for testing.
+  This endpoint is only for testing.
 </Callout>
 
 `GET /search`
