@@ -10,6 +10,12 @@ metadata:
   robots: index
 ---
 
+<Callout icon="🛑" theme="error">
+  ### **NB**
+
+  This endpoint is in beta testing.
+</Callout>
+
 `GET /bet-builders`
 
 A bet builder combines multiple selections from the **same match** into one bet (e.g. Match Winner + Over 2.5 Goals for the same fixture).
@@ -26,7 +32,7 @@ Results use the same layout as `/insights`: a list of fixtures, where each fixtu
 | `language`   | string  | `en`    | Language code for the generated content. Also accepted as `lang` |
 | `fixture_id` | integer | —       | Restrict results to a specific single fixture |
 | `league_id`  | string  | —       | Comma-separated list of League IDs |
-| `is_live`    | integer | 0       | Use `1` to filter only for events currently in-play |
+| `is_live`    | integer | —       | Use `1` to filter only for events currently in-play, `0` for events not yet started. Omitted by default — no filtering on match state. |
 
 ```
 GET /bet-builders?model_id=12&language=en
