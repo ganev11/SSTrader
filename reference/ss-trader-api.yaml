@@ -25,6 +25,11 @@ tags:
       abbreviations.
   - name: Standings
     description: League table standings for a given season.
+  - name: Bet Builders
+    description: >-
+      AI-selected bet builder suggestions — multiple selections from the same
+      match combined into a single bet, with a natural-language explanation for
+      the combination.
 paths:
   /regions:
     get:
@@ -782,6 +787,161 @@ paths:
                     error: time_from must not be after time_to
         '403':
           description: Unauthorized — missing or insufficient role.
+  /bet-builders:
+    get:
+      tags:
+        - Bet Builders
+      summary: Retrieve Bet Builder suggestions
+      description: >
+        A bet builder combines multiple selections from the **same match** into
+        one bet (e.g. Match Winner + Over 2.5 Goals for the same fixture).
+
+        Results use the same layout as `/insights`: a list of fixtures, where
+        each fixture contains a `bet_builders[]` array.
+
+        Results only ever include active, non-suspended bet builders — there's
+        no way to include suspended or expired ones yet (a dedicated
+        `/bet-builders/archive` endpoint, mirroring `/insights/archive`, is
+        planned). Pagination is not implemented yet — a fixed internal result
+        limit is applied for now.
+      operationId: getBetBuilders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: model_id
+          in: query
+          description: >-
+            Comma-separated list of Model IDs to filter by. Example:
+            `model_id=1,2,3`.
+          schema:
+            type: string
+        - name: language
+          in: query
+          description: >-
+            Language code for the generated content. Alias `lang` is also
+            accepted. Default: `en`.
+          schema:
+            type: string
+            default: en
+        - name: fixture_id
+          in: query
+          description: Restrict results to a specific single fixture.
+          schema:
+            type: integer
+        - name: league_id
+          in: query
+          description: Comma-separated list of League IDs.
+          schema:
+            type: string
+        - name: is_live
+          in: query
+          description: >
+            Use `1` to filter only for events currently in-play, `0` for events
+            not yet started. Omitted by default — no filtering on match state.
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+      responses:
+        '200':
+          description: A list of fixtures with bet builder suggestions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BetBuildersResponse'
+              examples:
+                empty:
+                  summary: No matching bet builders
+                  value:
+                    fixtures: []
+        '403':
+          description: Unauthorized — missing or invalid authentication.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                unauthorized:
+                  value:
+                    error: Unauthorized
+  /bet-builders/{id}:
+    get:
+      tags:
+        - Bet Builders
+      summary: Get a single bet builder by ID
+      description: >
+        Returns a single bet builder by id, as a flat object (not nested under a
+        fixture). Includes expired/suspended bet builders regardless of the
+        active-only filtering that `GET /bet-builders` applies — a direct lookup
+        by id always works regardless of current state.
+      operationId: getBetBuilderById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The bet builder's ID.
+        - name: language
+          in: query
+          description: >-
+            Language code for the generated content. Alias `lang` is also
+            accepted. Default: `en`.
+          schema:
+            type: string
+            default: en
+      responses:
+        '200':
+          description: The bet builder.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BetBuilder'
+        '400':
+          description: Validation error — `id` is not a valid integer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                invalid_id:
+                  value:
+                    error: Invalid bet builder id
+        '403':
+          description: Unauthorized — missing or invalid authentication.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                unauthorized:
+                  value:
+                    error: Unauthorized
+        '404':
+          description: Bet builder not found, or doesn't belong to you.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                not_found:
+                  value:
+                    error: Bet builder not found
   /standings:
     get:
       tags:
@@ -1097,6 +1257,152 @@ components:
             $ref: '#/components/schemas/FixtureWithInsights'
         pagination:
           $ref: '#/components/schemas/PaginationMetadata'
+    BetBuildersResponse:
+      type: object
+      properties:
+        fixtures:
+          type: array
+          items:
+            $ref: '#/components/schemas/FixtureWithBetBuilders'
+    FixtureWithBetBuilders:
+      allOf:
+        - $ref: '#/components/schemas/FixtureBase'
+        - type: object
+          properties:
+            bet_builders:
+              type: array
+              items:
+                $ref: '#/components/schemas/BetBuilder'
+    BetBuilder:
+      type: object
+      description: Multiple selections from the same match, combined into a single bet.
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for this bet builder.
+        user_id:
+          type: integer
+          description: >-
+            The owning user's ID — always your own, since results are scoped to
+            the authenticated user.
+        model_id:
+          type: integer
+          description: The Model that generated this suggestion.
+        is_live:
+          type: integer
+          enum:
+            - 0
+            - 1
+          description: >-
+            1 if this bet builder was generated for an in-play match, 0 for
+            pre-match.
+        value:
+          type: number
+          format: float
+          nullable: true
+          description: >-
+            Current combined decimal odds. Null while the combination is still
+            being priced.
+        sp:
+          type: number
+          format: float
+          nullable: true
+          description: >-
+            Starting Price — the combined odds at the time this bet builder was
+            generated.
+        suspend:
+          type: integer
+          enum:
+            - 0
+            - 1
+          description: >
+            If 1, this bet builder is temporarily unavailable (e.g. one of its
+            selections is currently suspended). Treat this as "wait", not
+            "cancelled" — it can flip back to 0 once the selection becomes
+            available again.
+        status:
+          type: integer
+          enum:
+            - 2
+            - 1
+            - 0
+            - -1
+            - -2
+            - -3
+          description: Settlement status. Same codes as the Odd object's `status` field.
+        last_priced_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO 8601 timestamp of the last time `value`/`sp` were updated.
+        raw:
+          type: object
+          additionalProperties: true
+          description: >-
+            Bookmaker-specific reference data for this exact combination of
+            selections. Opaque and varies by bookmaker; `{}` when not available.
+        meta:
+          type: object
+          additionalProperties: true
+          description: >-
+            Additional bookmaker-specific metadata (e.g. promotional price
+            boosts). Shape may vary and is not guaranteed to be present.
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of generation.
+        language:
+          type: string
+          description: >-
+            Language code of `content`. Matches the request's `language`/`lang`
+            param.
+        content:
+          type: object
+          additionalProperties: true
+          description: >-
+            Dynamic. The natural-language explanation for the combination — can
+            hold any key-value pairs.
+        model:
+          type: object
+          description: Metadata about the model used.
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            color:
+              type: string
+        selections:
+          type: array
+          description: >-
+            The individual picks that make up this bet builder. Each entry
+            follows the Odd object schema.
+          items:
+            $ref: '#/components/schemas/Odd'
+      example:
+        id: 501
+        user_id: 8831
+        model_id: 12
+        is_live: 0
+        value: 4.8
+        sp: 4.5
+        suspend: 0
+        status: 0
+        last_priced_at: '2026-04-27T14:58:00.000Z'
+        raw:
+          selection_ids: 3897429409|3314639099
+        meta: {}
+        created_at: '2026-04-27T14:00:00.000Z'
+        language: en
+        content:
+          text: >-
+            Piast have been slow starters at home this season, and Arka's front
+            two have been finding the net at a steady clip — backing the away
+            side alongside goals in this one.
+        model:
+          id: 12
+          name: Home Value Builder
+          color: '#2f7d32'
     RegionsResponse:
       type: object
       required:
