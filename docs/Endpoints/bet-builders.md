@@ -9,6 +9,7 @@ hidden: false
 metadata:
   robots: index
 ---
+
 <Callout icon="🛑" theme="error">
   ### **NB**
 
@@ -76,22 +77,30 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
 {
   "fixtures": [
     {
-      "id": 1039720,
-      "date_time": "2026-04-27T15:00:00.000Z",
+      "id": 1080495,
+      "date_time": "2026-07-16T17:00:00.000Z",
       "status": "NOT_STARTED",
       "country": {
-        "id": 2,
-        "name": "Poland",
-        "alpha3": "POL"
+        "id": 81,
+        "name": "Norway",
+        "alpha3": "NOR"
       },
       "league": {
-        "id": 158,
-        "name": "Ekstraklasa",
-        "level": 2
+        "id": 155,
+        "name": "Eliteserien",
+        "level": 1
       },
       "season": {
-        "id": 16267,
-        "name": "2025/2026"
+        "id": 17734,
+        "name": "2026",
+        "starting_at": "2026-03-14",
+        "ending_at": "2026-12-06",
+        "is_current": true
+      },
+      "group": null,
+      "stage": {
+        "id": 48471,
+        "name": "Regular Season"
       },
       "sport": {
         "id": 1,
@@ -99,15 +108,15 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
       },
       "participants": [
         {
-          "id": 1397,
-          "name": "Piast Gliwice",
-          "position": 16,
+          "id": 411,
+          "name": "Valerenga IF",
+          "position": 11,
           "location": "home"
         },
         {
-          "id": 772,
-          "name": "Arka Gdynia",
-          "position": 17,
+          "id": 349,
+          "name": "Aalesunds",
+          "position": 12,
           "location": "away"
         }
       ],
@@ -117,67 +126,139 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
       "periods": [],
       "bet_builders": [
         {
-          "id": 501,
-          "user_id": 8831,
-          "model_id": 12,
+          "id": 3,
+          "user_id": 2,
+          "model_id": 164,
           "is_live": 0,
-          "value": 4.8,
-          "sp": 4.5,
+          "value": 2.71,
+          "sp": 2.71,
           "suspend": 0,
           "status": 0,
-          "last_priced_at": "2026-04-27T14:58:00.000Z",
-          "raw": { "selection_ids": "3897429409|3314639099" },
+          "last_priced_at": "2026-07-16T11:58:08.450Z",
+          "raw": {
+            "Bets": [
+              {
+                "Type": "Single",
+                "MaxStake": 0,
+                "MinStake": 0,
+                "TrueOdds": 2.71,
+                "DisplayOdds": "2.71",
+                "NumberOfBets": 1,
+                "SelectionsMapped": [
+                  {
+                    "Id": "0VS0ML864430244147548160H|0QA864430244147548195Q1714Q0"
+                  }
+                ]
+              }
+            ],
+            "Selections": [
+              {
+                "Id": "0VS0ML864430244147548160H|0QA864430244147548195Q1714Q0",
+                "TrueOdds": 2.71,
+                "BetslipLine": "Valerenga | Yes",
+                "DecimalOdds": "2.71",
+                "DisplayOdds": "2.71",
+                "IsEarlyPayout": false
+              },
+              {
+                "Id": "0ML864430244147548160H",
+                "TrueOdds": 1.69,
+                "BetslipLine": "Valerenga",
+                "DecimalOdds": "1.69",
+                "DisplayOdds": "1.69",
+                "IsEarlyPayout": false
+              },
+              {
+                "Id": "0QA864430244147548195Q1714Q0",
+                "TrueOdds": 1.48,
+                "BetslipLine": "Yes",
+                "DecimalOdds": "1.48",
+                "DisplayOdds": "1.48",
+                "IsEarlyPayout": false
+              }
+            ],
+            "AdditionalInfo": {
+              "0ML864430244147548160H": {
+                "MarketTypeId": "ML0"
+              },
+              "0QA864430244147548195Q1714Q0": {
+                "MarketTypeId": "QA158"
+              },
+              "0VS0ML864430244147548160H|0QA864430244147548195Q1714Q0": {
+                "MarketTypeId": "RVMML0|QA158"
+              }
+            },
+            "NonActiveSelections": {}
+          },
           "meta": {},
-          "created_at": "2026-04-27T14:00:00.000Z",
+          "created_at": "2026-07-16T11:58:08.450Z",
           "language": "en",
           "content": {
-            "text": "Piast have been slow starters at home this season, and Arka's front two have been finding the net at a steady clip — backing the away side alongside goals in this one."
+            "text": "Valerenga should boss this at home, their front line creating better chances all season. Aalesunds still carry enough threat to nick one, but Valerenga’s stronger engine, higher tempo and tighter back line point to a home win with both teams to score."
           },
-          "model": { "id": 12, "name": "Home Value Builder", "color": "#2f7d32" },
+          "model": {
+            "id": 164,
+            "name": "BB - all leagues",
+            "color": "#ed145b"
+          },
           "selections": [
             {
-              "odd_id": 90004836,
-              "fixture_id": 1039720,
+              "odd_id": 99053176,
+              "fixture_id": 1080495,
               "market_id": 1,
-              "bookmaker_id": 4,
+              "bookmaker_id": 7,
               "is_live": 0,
-              "label_id": 2,
-              "value": 2.1,
+              "label_id": 1,
+              "value": 1.69,
               "handicap": 0,
               "line": 0,
-              "last_update": 1777316400,
+              "last_update": 1784201658,
               "suspend": 0,
-              "sp": 2.2,
+              "sp": 1.67,
               "home_score": 0,
               "away_score": 0,
               "status": 0,
-              "raw": {},
+              "raw": {
+                "event_id": "864430242864062464",
+                "market_id": "0ML864430244147548160",
+                "selection_id": "0ML864430244147548160H",
+                "is_betbuilder": true,
+                "market_type_id": "ML0",
+                "selection_type_id": 1
+              },
               "outcome": "Pending",
-              "market_name": "Match Winner",
               "market_description": "Predict the result of the match",
-              "label_name": "Arka Gdynia"
+              "market_name": "Match Winner",
+              "label_name": "Valerenga IF"
             },
             {
-              "odd_id": 90004901,
-              "fixture_id": 1039720,
-              "market_id": 3,
-              "bookmaker_id": 4,
+              "odd_id": 99053173,
+              "fixture_id": 1080495,
+              "market_id": 53,
+              "bookmaker_id": 7,
               "is_live": 0,
-              "label_id": 2,
-              "value": 2.05,
+              "label_id": 1,
+              "value": 1.48,
               "handicap": 0,
-              "line": 2.5,
-              "last_update": 1777316400,
+              "line": 0,
+              "last_update": 1783945606,
               "suspend": 0,
-              "sp": 2.0,
+              "sp": 1.51,
               "home_score": 0,
               "away_score": 0,
               "status": 0,
-              "raw": {},
+              "raw": {
+                "event_id": "864430242864062464",
+                "market_id": "0QA864430244147548195",
+                "selection_id": "0QA864430244147548195Q1714Q0",
+                "is_betbuilder": true,
+                "market_type_id": "QA158",
+                "selection_type_id": 0
+              },
               "outcome": "Pending",
-              "market_name": "Over/Under",
-              "market_description": "Total goals scored",
-              "label_name": "Over 2.5"
+              "market_description": "Will both teams score in the match",
+              "market_name": "Both Teams to Score",
+              "label_name": "Yes"
             }
           ]
         }
