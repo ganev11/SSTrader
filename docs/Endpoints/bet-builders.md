@@ -9,7 +9,6 @@ hidden: false
 metadata:
   robots: index
 ---
-
 <Callout icon="🛑" theme="error">
   ### **NB**
 
@@ -49,6 +48,7 @@ GET /bet-builders?model_id=12&language=en
 | Field            | Type            | Description |
 |------------------|-----------------|--------------|
 | `id`             | integer         | Unique identifier for this bet builder. |
+| `user_id`        | integer         | The owning user's ID — always your own, since results are scoped to the authenticated user. |
 | `model_id`       | integer         | The Model that generated this suggestion. |
 | `is_live`        | integer         | `1` if this bet builder was generated for an in-play match, `0` for pre-match. |
 | `value`          | number / null   | Current combined decimal odds. `null` while the combination is still being priced. |
@@ -59,6 +59,7 @@ GET /bet-builders?model_id=12&language=en
 | `raw`            | object          | Bookmaker-specific reference data for this exact combination of selections. Opaque and varies by bookmaker; returns `{}` when not available. |
 | `meta`           | object          | Additional bookmaker-specific metadata (e.g. promotional price boosts). Shape may vary and is not guaranteed to be present. |
 | `created_at`     | string          | ISO 8601 timestamp of generation. |
+| `language`       | string          | Language code of the `content` below. Matches the request's `language`/`lang` param. |
 | `content`        | object          | Dynamic. The natural-language explanation for the combination — can hold any key-value pairs. |
 | `model`          | object          | Metadata about the model used (`id`, `name`, `color`). |
 | `selections`     | array           | The individual picks that make up this bet builder — see below. |
@@ -117,8 +118,8 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
       "bet_builders": [
         {
           "id": 501,
+          "user_id": 8831,
           "model_id": 12,
-          "job_id": 43483,
           "is_live": 0,
           "value": 4.8,
           "sp": 4.5,
@@ -128,6 +129,7 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
           "raw": { "selection_ids": "3897429409|3314639099" },
           "meta": {},
           "created_at": "2026-04-27T14:00:00.000Z",
+          "language": "en",
           "content": {
             "text": "Piast have been slow starters at home this season, and Arka's front two have been finding the net at a steady clip — backing the away side alongside goals in this one."
           },
