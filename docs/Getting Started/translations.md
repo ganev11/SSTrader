@@ -17,11 +17,12 @@ The API supports translations for entities containing text, such as names. The l
 
 ## Which languages are supported?
 
-| Language Code | Language  |
-| ------------- | --------- |
-| `en`          | English   |
-| `bg`          | Български |
-| `es`          | Español   |
+| Language Code | Language       |
+| ------------- | -------------- |
+| `en`          | English        |
+| `bg`          | Български      |
+| `es`          | Español        |
+| `es-pe`       | Español (Perú) |
 
 > Please note: if a translation is unavailable, the API defaults to English.
 
