@@ -12,10 +12,6 @@ metadata:
 GET /standings
 ```
 
-## Authentication
-
-Requires a Bearer token belonging to a `premium`, `admin`, `staff`, or `system` role.
-
 ## Query parameters
 
 | Parameter   | Type    | Required | Description                                                     |
