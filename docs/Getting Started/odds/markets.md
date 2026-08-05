@@ -317,6 +317,15 @@ Which named player is the first to receive a booking in the match. The specific 
 
 ***
 
+### Market 302 - Player to be Sent Off
+Which named player is sent off in the match. The specific player is identified elsewhere in the Odd object; label\_id encodes when they are sent off.
+
+| label\_id | Outcome |
+| --------- | ------- |
+| 1         | Yes     |
+
+***
+
 ### Market 303 — Match Goalscorers
 
 Which named player scores in the match. The specific player is identified elsewhere in the Odd
@@ -391,6 +400,16 @@ Which named player commits fouls in the match. The specific player is identified
 
 ***
 
+### Market 313 - Score or Assist
+
+Which named player scores or provides an assist in the match. The specific player is identified elsewhere in the Odd object; label\_id encodes when they score or assist.
+
+| label\_id | Outcome |
+| --------- | ------- |
+| 1         | Yes     |
+
+***
+
 ## Quick Lookup Table
 
 | market\_id | Market Name                     | label\_id → Outcome                                                    |
@@ -422,6 +441,7 @@ Which named player commits fouls in the match. The specific player is identified
 | 203        | Asian Total Cards               | **1=Under**, 2=Over                                                    |
 | 300        | Player to be booked              | 1=Yes                                                                 |
 | 301        | 1st Player Booked               | 1=Yes                                                                 |
+| 302        | Player to be Sent Off             | 1=Yes                                                                 |
 | 303        | Match Goalscorers               | 0=Anytime, 1=First, 2=Last                                             |
 | 304        | Team Goalscorers                | 1=First, 2=Last                                                       |
 | 305        | Player Shots On Target          | 2=Over                                                                |
@@ -429,6 +449,7 @@ Which named player commits fouls in the match. The specific player is identified
 | 307        | Player Shots On Target          | 2=Over                                                                |
 | 308        | Player Shots                    | 2=Over                                                                |
 | 309        | Player Fouls Committed          | 2=Over                                                                |
+| 313        | Score or Assist                 | 1=Yes                                                                 |
 
 ***
 
