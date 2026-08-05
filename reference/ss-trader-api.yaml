@@ -241,6 +241,7 @@ paths:
                 - movement
                 - trends
                 - last_fixtures
+                - lineups
                 - metadata
           description: >
             Comma-separated list of modules to include. Example:
@@ -1731,11 +1732,141 @@ components:
               nullable: true
               allOf:
                 - $ref: '#/components/schemas/LastFixtures'
+            lineups:
+              description: >
+                Included when `include=lineups` is passed. Flat array of both
+                teams' team-sheet entries (starting XI, bench and sidelined) —
+                not grouped, split them on `team_id`.
+
+                Ordered by team, then slot type (starters before bench), then
+                formation position and shirt number.
+
+                Empty when the team sheets for the fixture have not been
+                published yet — providers typically release them around an hour
+                before kick-off.
+              type: array
+              items:
+                $ref: '#/components/schemas/LineupEntry'
             metadata:
               description: Included when `include=metadata` is passed.
               type: array
               items:
                 $ref: '#/components/schemas/MetadataEntry'
+    LineupEntry:
+      type: object
+      description: >
+        One slot in a fixture's team sheet. The slot itself (`type_id` /
+        `developer_name`) says whether it is the starting XI, the bench or a
+        sidelined player; the player filling it is nested under `player`.
+      properties:
+        team_id:
+          type: integer
+          description: >-
+            The team this entry belongs to. Match against `participants[].id` to
+            tell home from away.
+        number:
+          type: integer
+          nullable: true
+          description: Shirt number. Null when the provider did not supply one.
+        formation_position:
+          type: integer
+          nullable: true
+          description: >
+            The player's slot index within the team's formation, for starting
+            players. Null for bench entries and where the provider did not
+            supply one.
+        type_id:
+          type: integer
+          nullable: true
+          description: >-
+            Type id of the lineup slot: 377 = LINEUP, 378 = BENCH, 379 =
+            SIDELINED.
+          example: 378
+        developer_name:
+          type: string
+          nullable: true
+          enum:
+            - LINEUP
+            - BENCH
+            - SIDELINED
+          description: >
+            The slot: `LINEUP` = named in the starting XI, `BENCH` = named as a
+            substitute, `SIDELINED` = unavailable for this match. `SIDELINED` is
+            rarely present — most feeds report team sheets as starters and
+            substitutes only.
+        player:
+          $ref: '#/components/schemas/LineupPlayer'
+      example:
+        team_id: 631
+        number: 45
+        formation_position: null
+        type_id: 378
+        developer_name: BENCH
+        player:
+          player_id: 441628
+          type_id: 374
+          developer_name: MIDFIELDER
+          common_name: E. Martinho Silva
+          display_name: Edson Martinho da Silva
+          fullname: Edson Martinho Silva
+          firstname: Edson
+          lastname: Martinho Silva
+    LineupPlayer:
+      type: object
+      description: >
+        The player in a lineup slot. The four name variants exist because
+        sources spell the same player differently — having all of them is what
+        makes it possible to recognise a player across feeds. Any field may be
+        null where the provider holds no value for it.
+
+        Name fields and the position (`type_id` / `developer_name`) use the same
+        field names as the corresponding squad entry, so the two can be compared
+        field for field.
+      properties:
+        player_id:
+          type: integer
+          description: The player's id. Stable across fixtures and seasons.
+        type_id:
+          type: integer
+          nullable: true
+          description: >
+            Type id of the player's position **in this fixture**, which can
+            differ from the position he is registered under for the season — a
+            full-back deployed in midfield is reported as a midfielder here.
+          example: 374
+        developer_name:
+          type: string
+          nullable: true
+          enum:
+            - GOALKEEPER
+            - DEFENDER
+            - MIDFIELDER
+            - ATTACKER
+            - UNKNOWN
+          description: Developer name of the player's position in this fixture.
+        common_name:
+          type: string
+          nullable: true
+          description: Short form, usually initial + surname.
+          example: M. Silva Jaimes
+        display_name:
+          type: string
+          nullable: true
+          description: The name normally shown in match coverage.
+          example: Miguel Silva
+        fullname:
+          type: string
+          nullable: true
+          description: Full registered name.
+          example: Miguel Alejandro Silva Jaimes
+        firstname:
+          type: string
+          nullable: true
+          description: Given name(s).
+        lastname:
+          type: string
+          nullable: true
+          description: Family name(s).
     FixturesLivescoreResponse:
       type: object
       required:
