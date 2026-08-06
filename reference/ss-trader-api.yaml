@@ -237,16 +237,36 @@ paths:
                 - odds
                 - statistics
                 - metrics
+                - player_metrics
                 - fair_odds
                 - movement
                 - trends
                 - last_fixtures
                 - lineups
+                - squads
                 - metadata
           description: >
             Comma-separated list of modules to include. Example:
             `include=odds,metrics`. Note: Using an include unlocks the
             corresponding `filter[entity]` parameter.
+
+
+            `player_metrics` must be requested together with `squads`
+            (`include=squads,player_metrics`) — the metric rows identify players
+            by `player_id` only, and `squads` carries their names and positions.
+        - name: filter[player_metrics]
+          in: query
+          schema:
+            type: string
+            anyOf:
+              - pattern: ^types:\d+(,\d+)*$
+                description: Filter by specific Type IDs (e.g., types:380,383)
+              - pattern: ^developer_types:[a-z_]+(,[a-z_]+)*$
+                description: Filter by domain group (e.g., developer_types:player_metrics)
+          example: types:380,383
+          description: >
+            Optional filter for the included `player_metrics` module. Use this
+            to return only specific player metrics by Type ID or domain group.
         - name: filter[trends]
           in: query
           schema:
@@ -1720,6 +1740,20 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Metric'
+            player_metrics:
+              description: >
+                Included when `include=player_metrics` is passed, which requires
+                `include=squads` alongside it. Flat array covering both teams'
+                squads — not grouped, split them on `team_id` and join to
+                `squads[]` on `player_id` for names and positions.
+
+                Four rows per player: Impact, Aggression, Discipline and SST
+                Rating. Players with too little recent playing time to rate are
+                omitted rather than given a placeholder, so expect fewer players
+                here than in `squads[]`.
+              type: array
+              items:
+                $ref: '#/components/schemas/PlayerMetric'
             trends:
               description: >-
                 Included when `include=trends` is passed. Per-minute cumulative
@@ -1747,6 +1781,18 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/LineupEntry'
+            squads:
+              description: >
+                Included when `include=squads` is passed. Flat array of both
+                teams' registered squads for the fixture's season — not grouped,
+                split them on `team_id`.
+
+                Unlike `lineups`, this is available well before kick-off, since
+                it is the season roster rather than the team sheet for this
+                match.
+              type: array
+              items:
+                $ref: '#/components/schemas/SquadEntry'
             metadata:
               description: Included when `include=metadata` is passed.
               type: array
@@ -1867,6 +1913,80 @@ components:
           type: string
           nullable: true
           description: Family name(s).
+    SquadEntry:
+      type: object
+      description: >
+        One player registered to a team for the season. Name fields and the
+        position (`type_id` / `developer_name`) use the same field names as
+        `LineupPlayer`, so the two can be compared field for field.
+      properties:
+        team_id:
+          type: integer
+          description: >-
+            The team this player is registered with. Match against
+            `participants[].id` to tell home from away.
+        season_id:
+          type: integer
+          description: The season this squad entry belongs to.
+        player_id:
+          type: integer
+          description: The player's id. Stable across fixtures and seasons.
+        in_squad:
+          type: integer
+          enum:
+            - 0
+            - 1
+          description: 1 if the player is currently part of the squad.
+        type_id:
+          type: integer
+          nullable: true
+          description: >
+            Type id of the position the player is registered under for the
+            season. Note this can differ from the position given in `lineups`
+            for a specific match.
+          example: 375
+        developer_name:
+          type: string
+          nullable: true
+          enum:
+            - GOALKEEPER
+            - DEFENDER
+            - MIDFIELDER
+            - ATTACKER
+            - UNKNOWN
+          description: Developer name of the registered position.
+        common_name:
+          type: string
+          nullable: true
+          description: Short form, usually initial + surname.
+        display_name:
+          type: string
+          nullable: true
+          description: The name normally shown in match coverage.
+        fullname:
+          type: string
+          nullable: true
+          description: Full registered name.
+        firstname:
+          type: string
+          nullable: true
+          description: Given name(s).
+        lastname:
+          type: string
+          nullable: true
+          description: Family name(s).
+      example:
+        team_id: 4009
+        season_id: 25580
+        player_id: 184521
+        in_squad: 1
+        type_id: 375
+        developer_name: ATTACKER
+        common_name: M. Silva Jaimes
+        display_name: Miguel Silva
+        fullname: Miguel Alejandro Silva Jaimes
+        firstname: Miguel
+        lastname: Silva Jaimes
     FixturesLivescoreResponse:
       type: object
       required:
@@ -2413,6 +2533,124 @@ components:
             label_id: 2
             line: 2.5
             bookmaker_id: 2
+    PlayerMetric:
+      type: object
+      description: >
+        A single rated attribute of one player, for the season the fixture
+        belongs to.
+
+
+        **Reading the values.** The three index metrics are relative to the
+        average player in the same position in the same league, where **1.00 is
+        exactly average** — a defender's tackling is compared against other
+        defenders, never against strikers. So 1.35 means 35% above the
+        positional average and 0.80 means 20% below. Values are bounded to the
+        range 0.25–2.50. `PLAYER_SST_RATING` is the exception: it is an absolute
+        0–99 score, where 50 is average.
+
+
+        **Direction.** Higher is better for Impact and for SST Rating. Higher is
+        *worse* for Discipline — it counts how often a player's fouls turn into
+        a booking. Aggression is neither: it measures how physical a player is,
+        which is an asset or a liability depending on the market you are
+        pricing.
+
+
+        Each row carries a plain-language label in `meta.classification`, so you
+        can use the wording directly without applying your own thresholds.
+      properties:
+        team_id:
+          type: integer
+          example: 4009
+          description: >-
+            The team the player is registered with. Match against
+            `participants[].id` to tell home from away.
+        player_id:
+          type: integer
+          example: 184521
+          description: The player. Join to `squads[].player_id` for name and position.
+        type_id:
+          type: integer
+          example: 380
+          nullable: true
+          description: The unique ID for the metric type.
+        developer_name:
+          type: string
+          example: PLAYER_IMPACT_INDEX
+          enum:
+            - PLAYER_IMPACT_INDEX
+            - PLAYER_AGGRESSION_INDEX
+            - PLAYER_DISCIPLINE_INDEX
+            - PLAYER_SST_RATING
+          description: >
+            Which attribute this row rates.
+
+
+            - `PLAYER_IMPACT_INDEX` (380) — how well the player does the main
+            job of their position.
+              What that job is depends on the position, and `meta.classification_type` names it:
+              **Threat** for attackers (shooting and scoring), **Control** for midfielders (creating
+              and winning the ball back), **Wall** for defenders (clearing, blocking, intercepting),
+              **Shield** for goalkeepers (shot stopping).
+
+            - `PLAYER_AGGRESSION_INDEX` (381) — how many bookable situations the
+            player gets into:
+              fouls and tackles.
+
+            - `PLAYER_DISCIPLINE_INDEX` (382) — how often those situations
+            actually become a yellow
+              card. Higher is worse. A player can be highly aggressive and still well disciplined.
+
+            - `PLAYER_SST_RATING` (383) — a single 0–99 overall rating combining
+            the three above,
+              weighted for the player's position.
+        value:
+          type: number
+          example: 1.42
+          description: >
+            For the three index metrics, a ratio where 1.00 is the positional
+            average, bounded to 0.25–2.50. For `PLAYER_SST_RATING`, an integer
+            0–99.
+        meta:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: Label and attribute name for this row.
+          properties:
+            classification:
+              type: string
+              description: >
+                Plain-language label for `value`.
+
+
+                - Impact — `Quiet`, `Low`, `Average`, `Solid`, `Strong`, `Elite`
+
+                - Aggression — `Calm`, `Controlled`, `Moderate`, `Physical`,
+                `Aggressive`, `Intense`
+
+                - Discipline — `Excellent`, `Very Good`, `Good`, `Fair`, `Poor`,
+                `Reckless`
+
+                - SST Rating — `Developing`, `Average`, `Solid`, `Strong`,
+                `Excellent`, `Elite`
+              example: Strong
+            classification_type:
+              type: string
+              description: >
+                The attribute's display name. Fixed per metric — `Aggression`,
+                `Discipline`, `SST Rating` — except on `PLAYER_IMPACT_INDEX`,
+                where it varies with the player's position: `Threat`, `Control`,
+                `Wall` or `Shield`.
+              example: Threat
+      example:
+        team_id: 4009
+        player_id: 184521
+        type_id: 380
+        developer_name: PLAYER_IMPACT_INDEX
+        value: 1.42
+        meta:
+          classification: Strong
+          classification_type: Threat
     MetadataEntry:
       type: object
       description: >
