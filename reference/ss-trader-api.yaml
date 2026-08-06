@@ -251,6 +251,9 @@ paths:
             corresponding `filter[entity]` parameter.
 
 
+            `squads` is in **beta** — its shape and coverage may still change.
+
+
             `player_metrics` must be requested together with `squads`
             (`include=squads,player_metrics`) — the metric rows identify players
             by `player_id` only, and `squads` carries their names and positions.
@@ -1783,13 +1786,17 @@ components:
                 $ref: '#/components/schemas/LineupEntry'
             squads:
               description: >
-                Included when `include=squads` is passed. Flat array of both
-                teams' registered squads for the fixture's season — not grouped,
-                split them on `team_id`.
+                **BETA** — shape and coverage may still change. Included when
+                `include=squads` is passed. Flat array of both teams' registered
+                squads for the fixture's season — not grouped, split them on
+                `team_id`.
 
                 Unlike `lineups`, this is available well before kick-off, since
                 it is the season roster rather than the team sheet for this
                 match.
+
+                Entries are not filtered on `in_squad` — filter on `in_squad ===
+                1` for a current roster.
               type: array
               items:
                 $ref: '#/components/schemas/SquadEntry'
@@ -1916,9 +1923,9 @@ components:
     SquadEntry:
       type: object
       description: >
-        One player registered to a team for the season. Name fields and the
-        position (`type_id` / `developer_name`) use the same field names as
-        `LineupPlayer`, so the two can be compared field for field.
+        **BETA.** One player registered to a team for the season. Name fields
+        and the position (`type_id` / `developer_name`) use the same field names
+        as `LineupPlayer`, so the two can be compared field for field.
       properties:
         team_id:
           type: integer
@@ -1936,14 +1943,36 @@ components:
           enum:
             - 0
             - 1
-          description: 1 if the player is currently part of the squad.
+          description: >
+            `1` if the player is currently part of the squad, `0` if they are
+            registered against this season but no longer at the club (e.g. sold
+            or loaned out mid-season). **Rows are not filtered on this** —
+            around a fifth of entries are `0`, so filter on `in_squad === 1` for
+            a current roster.
+        source:
+          type: string
+          enum:
+            - squad
+            - lineup
+          description: >
+            Where the entry came from. `squad` is the registered season roster.
+            `lineup` marks a player who was named in this fixture's team sheet
+            but is not in the registered squad — typically a very recent signing
+            or an academy call-up. `lineup` entries only appear when
+            `include=lineups` is requested alongside `squads`.
         type_id:
           type: integer
           nullable: true
           description: >
             Type id of the position the player is registered under for the
-            season. Note this can differ from the position given in `lineups`
+            season: 372 GOALKEEPER, 373 DEFENDER, 374 MIDFIELDER, 375 ATTACKER,
+            376 UNKNOWN. This can differ from the position given in `lineups`
             for a specific match.
+
+            `null` for a small share of players — either no position on record,
+            or a more granular one (e.g. Centre Back, Defensive Midfield) that
+            has no id in the public type space yet. A `null` here means
+            "position not available", not "no position".
           example: 375
         developer_name:
           type: string
@@ -1954,7 +1983,9 @@ components:
             - MIDFIELDER
             - ATTACKER
             - UNKNOWN
-          description: Developer name of the registered position.
+          description: >-
+            Developer name of the registered position. `null` under the same
+            conditions as `type_id`.
         common_name:
           type: string
           nullable: true
@@ -1980,6 +2011,7 @@ components:
         season_id: 25580
         player_id: 184521
         in_squad: 1
+        source: squad
         type_id: 375
         developer_name: ATTACKER
         common_name: M. Silva Jaimes
