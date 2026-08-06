@@ -25,6 +25,7 @@ Fixtures transition through various **statuses** — including scheduled, finish
 | `FT`               | Match ended after 90 minutes.                       |
 | `FT_AET`           | Match ended after extra time (120 minutes).         |
 | `FT_PEN`           | Match finished after a penalty shootout.            |
+| `FT_UNCONFIRMED`   | Match finished but result unconfirmed.              |
 | `HT`               | Match is at half-time.                              |
 | `INPLAY_1ST_HALF`  | First half in progress.                             |
 | `INPLAY_2ND_HALF`  | Second half in progress.                            |
@@ -38,5 +39,3 @@ Fixtures transition through various **statuses** — including scheduled, finish
 | `SUSPENDED`        | Match suspended and will resume later.              |
 | `TBA`              | Date and time not yet confirmed.                    |
 | `WALKOVER`         | Victory awarded due to opponent absence (walkover). |
-
-<br />
