@@ -9,6 +9,7 @@ hidden: false
 metadata:
   robots: index
 ---
+
 # Player Metrics
 
 `include=player_metrics`
@@ -25,30 +26,29 @@ Ratings describe a player's recent form in the competition, not a single match, 
 
 ## Reading the values
 
-Everything below rests on one idea: **a player is compared only against others in the same position, in the same league.** A defender's numbers are measured against other defenders, never against strikers. Without that, every striker would look like a terrible defender.
+Every value is an integer from **1 to 99**. Two rules cover all four metrics:
 
-That makes the scale simple:
+1. **50 is average**, and average means *for this player's position, in this league*. A defender is measured against other defenders, never against strikers — without that, every striker would look like a terrible defender.
+2. **Higher is always better.** This holds for all four metrics, Discipline included.
 
 | Value | Meaning |
 |-------|---------|
-| `1.00` | Exactly average for this player's position |
-| `1.35` | 35% above the positional average |
-| `0.80` | 20% below the positional average |
+| `50` | Exactly average for this player's position |
+| `73` | Well above average |
+| `39` | Below average |
 
-Values are bounded to **0.25 – 2.50**, so one freak match cannot send a rating to an extreme.
+As a rough guide, about 10 points is a meaningful gap, and the middle 80% of players in a league fall between roughly 25 and 80. Values are bounded, so a single freak match cannot push a player to an extreme.
 
-`PLAYER_SST_RATING` is the exception: it is an absolute **0 – 99** score where **50 is average**, in the style of a game rating.
+### What each metric means
 
-### Which direction is good
+| Metric | A high value means |
+|--------|--------------------|
+| Impact | More effective at their position's core job |
+| Aggression | Competes more physically — more fouls and tackles |
+| Discipline | **Stays out of the book** — rarely booked for the fouls they commit |
+| SST Rating | Stronger player overall |
 
-| Metric | Higher means |
-|--------|--------------|
-| Impact | **Better** — more effective at their position's core job |
-| SST Rating | **Better** — stronger player overall |
-| Discipline | **Worse** — their fouls turn into bookings more often |
-| Aggression | Neither — more physical, which is an asset or a liability depending on the market |
-
-Aggression and Discipline are deliberately separate. A player can be highly aggressive and still well disciplined: he commits plenty of fouls but rarely gets booked for them. Reading Aggression alone as "dirty player" will mislead you.
+> **Aggression and Discipline are separate on purpose.** A player can score high on *both*: he commits plenty of fouls but rarely gets carded for them. Reading a high Aggression as "dirty player" will mislead you — that is what Discipline is for, and on this scale a *low* Discipline is the one to watch.
 
 ---
 
@@ -64,45 +64,31 @@ Each player has **four** rows:
 | `player_id`      | integer | The player. Join to `squads[].player_id`. |
 | `type_id`        | integer | Type id of the metric — see the table below. |
 | `developer_name` | string  | Developer name of the metric. |
-| `value`          | number  | The rating. See [Reading the values](#reading-the-values). |
-| `meta`           | object  | `classification` (the label) and `classification_type` (the attribute's display name). |
+| `value`          | integer | The rating, 1–99. See [Reading the values](#reading-the-values). |
+
+There is no `meta` object and no label — the value is the whole payload.
 
 ### Metric types
 
-| `type_id` | `developer_name` | What it measures |
-|-----------|------------------|------------------|
-| `380` | `PLAYER_IMPACT_INDEX` | How well the player does the main job of their position. What that job *is* depends on the position — see below. |
-| `381` | `PLAYER_AGGRESSION_INDEX` | How many bookable situations the player gets into: fouls and tackles. |
-| `382` | `PLAYER_DISCIPLINE_INDEX` | How often those situations actually become a yellow card. Higher is worse. |
-| `383` | `PLAYER_SST_RATING` | Overall 0–99 rating combining the three above, weighted for the player's position. |
+| `type_id` | `developer_name` | A high value means |
+|-----------|------------------|--------------------|
+| `380` | `PLAYER_IMPACT_INDEX` | Effective at the main job of their position — what that job *is* depends on the position, see below. |
+| `381` | `PLAYER_AGGRESSION_INDEX` | Competes physically: lots of fouls and tackles. |
+| `382` | `PLAYER_DISCIPLINE_INDEX` | Rarely booked for the fouls they commit. |
+| `383` | `PLAYER_SST_RATING` | Strong overall, combining the three above, weighted for their position. |
 
 ### The Impact metric
 
-All four positions share one metric type, but it means something different for each. `meta.classification_type` tells you which:
+All four positions share one metric type, but it measures a different job for each. Derive which one applies from the player's position in `squads[]`:
 
-| Position | `classification_type` | What a high value means |
-|----------|----------------------|-------------------------|
-| Attacker | `Threat` | Shoots often, hits the target, scores |
-| Midfielder | `Control` | Creates chances, plays into the final third, wins the ball back |
-| Defender | `Wall` | Clears, blocks, intercepts, wins duels |
-| Goalkeeper | `Shield` | Saves a high share of the shots faced |
+| `squads[].developer_name` | Impact measures | A high value means |
+|---------------------------|-----------------|--------------------|
+| `ATTACKER` | Threat | Shoots often, hits the target, scores |
+| `MIDFIELDER` | Control | Creates chances, plays into the final third, wins the ball back |
+| `DEFENDER` | Wall | Clears, blocks, intercepts, wins duels |
+| `GOALKEEPER` | Shield | Saves a high share of the shots faced |
 
-So a `1.40` Impact on a defender means a strong defender, and a `1.40` on a striker means a dangerous striker — both are "40% above average at their own job".
-
-### Labels
-
-Every row carries a plain-language label in `meta.classification`, so you can use the wording directly without applying your own thresholds.
-
-| Impact | Aggression | Discipline | SST Rating |
-|--------|-----------|------------|------------|
-| `Elite` | `Intense` | `Reckless` | `Elite` |
-| `Strong` | `Aggressive` | `Poor` | `Excellent` |
-| `Solid` | `Physical` | `Fair` | `Strong` |
-| `Average` | `Moderate` | `Good` | `Solid` |
-| `Low` | `Controlled` | `Very Good` | `Average` |
-| `Quiet` | `Calm` | `Excellent` | `Developing` |
-
-Best at the top for Impact and SST Rating; worst at the top for Discipline. Aggression runs most physical at the top.
+So an Impact of `73` on a defender means a strong defender, and `73` on a striker means a dangerous striker — both are "well above average at their own job". Because everything is position-relative, the two numbers are directly comparable even though they measure different things.
 
 ---
 
@@ -117,37 +103,33 @@ Best at the top for Impact and SST Rating; worst at the top for Discipline. Aggr
     "player_id": 184521,
     "type_id": 380,
     "developer_name": "PLAYER_IMPACT_INDEX",
-    "value": 1.42,
-    "meta": { "classification": "Strong", "classification_type": "Threat" }
+    "value": 73
   },
   {
     "team_id": 4009,
     "player_id": 184521,
     "type_id": 381,
     "developer_name": "PLAYER_AGGRESSION_INDEX",
-    "value": 0.83,
-    "meta": { "classification": "Controlled", "classification_type": "Aggression" }
+    "value": 41
   },
   {
     "team_id": 4009,
     "player_id": 184521,
     "type_id": 382,
     "developer_name": "PLAYER_DISCIPLINE_INDEX",
-    "value": 1.12,
-    "meta": { "classification": "Fair", "classification_type": "Discipline" }
+    "value": 43
   },
   {
     "team_id": 4009,
     "player_id": 184521,
     "type_id": 383,
     "developer_name": "PLAYER_SST_RATING",
-    "value": 63,
-    "meta": { "classification": "Solid", "classification_type": "SST Rating" }
+    "value": 63
   }
 ]
 ```
 
-Read together: a forward who is a well above-average goal threat, not especially physical, picks up cards slightly more often than most when he does foul, and rates 63 overall.
+Read together, and knowing from `squads[]` that this player is an `ATTACKER`: a well above-average goal threat (73), not especially physical (41), slightly more prone to picking up a card than most when he does foul (43), rating 63 overall.
 
 > **Not every squad player appears.** Players without enough recent playing time to rate are omitted rather than given a placeholder — expect fewer players in `player_metrics` than in `squads`. Newly signed and youth players are the usual cases. Always look players up by `player_id` rather than assuming the arrays line up.
 
@@ -169,7 +151,7 @@ returns only Impact and SST Rating for each player, which is usually all a listi
 
 ### Player cards
 
-Join `player_metrics` to `squads` on `player_id` and render a card per player: the SST Rating as the headline number, the three indices as bars, and `meta.classification` as the caption under each. No threshold logic needed on your side.
+Join `player_metrics` to `squads` on `player_id` and render a card per player: the SST Rating as the headline number and the other three as 1–99 bars. Since every value shares one scale and one direction, a single bar component works for all four.
 
 ### Ranking a squad
 
@@ -177,12 +159,21 @@ Sort a team's players by `PLAYER_SST_RATING` to surface its most dangerous names
 
 ### Card markets
 
-`PLAYER_AGGRESSION_INDEX` and `PLAYER_DISCIPLINE_INDEX` together are the pair that matters for booking markets. A player who is high on both — plenty of fouls *and* a high conversion into cards — is a very different proposition from one who is high on Aggression alone.
+`PLAYER_AGGRESSION_INDEX` and `PLAYER_DISCIPLINE_INDEX` together are the pair that matters for booking markets, and it is the **combination** that carries the signal:
+
+| Aggression | Discipline | Reading |
+|-----------|-----------|---------|
+| High | **Low** | The genuine card risk — fouls a lot *and* gets booked for it |
+| High | High | Physical but gets away with it; far less exposed than the raw foul count suggests |
+| Low | Low | Fouls rarely, but is booked when he does |
+| Low | High | Minimal exposure |
+
+Note the direction: it is a **low** Discipline that flags risk, not a high one.
 
 ### Goalscorer markets
 
-`Threat` on an attacker is a direct read on shot volume and finishing relative to other attackers in the league, which gives context to an anytime-scorer price.
+Impact on an attacker is a direct read on shot volume and finishing relative to other attackers in the league, which gives context to an anytime-scorer price.
 
 ### Matchup context
 
-Compare one side's attackers' `Threat` against the other side's defenders' `Wall` to characterise a fixture before looking at odds — both are on the same 1.00-is-average scale, so they are directly comparable.
+Compare one side's attackers' Impact against the other side's defenders' Impact to characterise a fixture before looking at odds — both are on the same 50-is-average scale, so they are directly comparable even though one measures shooting and the other blocking.
