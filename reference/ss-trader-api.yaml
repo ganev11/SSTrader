@@ -1751,9 +1751,10 @@ components:
                 `squads[]` on `player_id` for names and positions.
 
                 Four rows per player: Impact, Aggression, Discipline and SST
-                Rating. Players with too little recent playing time to rate are
-                omitted rather than given a placeholder, so expect fewer players
-                here than in `squads[]`.
+                Rating, each an integer 1–99 where 50 is average for the
+                player's position and higher is always better. Players with too
+                little recent playing time to rate are omitted rather than given
+                a placeholder, so expect fewer players here than in `squads[]`.
               type: array
               items:
                 $ref: '#/components/schemas/PlayerMetric'
@@ -2572,24 +2573,12 @@ components:
         belongs to.
 
 
-        **Reading the values.** The three index metrics are relative to the
-        average player in the same position in the same league, where **1.00 is
-        exactly average** — a defender's tackling is compared against other
-        defenders, never against strikers. So 1.35 means 35% above the
-        positional average and 0.80 means 20% below. Values are bounded to the
-        range 0.25–2.50. `PLAYER_SST_RATING` is the exception: it is an absolute
-        0–99 score, where 50 is average.
-
-
-        **Direction.** Higher is better for Impact and for SST Rating. Higher is
-        *worse* for Discipline — it counts how often a player's fouls turn into
-        a booking. Aggression is neither: it measures how physical a player is,
-        which is an asset or a liability depending on the market you are
-        pricing.
-
-
-        Each row carries a plain-language label in `meta.classification`, so you
-        can use the wording directly without applying your own thresholds.
+        **Reading the values.** Every value is an integer from **1 to 99**,
+        where **50 is average** for that player's position in that league — a
+        defender is compared against other defenders, never against strikers.
+        **Higher is always better**, on all four metrics including Discipline.
+        Roughly 10 points is a meaningful gap; the middle 80% of players in a
+        league typically fall between 25 and 80.
       properties:
         team_id:
           type: integer
@@ -2620,69 +2609,39 @@ components:
 
             - `PLAYER_IMPACT_INDEX` (380) — how well the player does the main
             job of their position.
-              What that job is depends on the position, and `meta.classification_type` names it:
-              **Threat** for attackers (shooting and scoring), **Control** for midfielders (creating
-              and winning the ball back), **Wall** for defenders (clearing, blocking, intercepting),
-              **Shield** for goalkeepers (shot stopping).
+              What that job is depends on the position: shooting and scoring for an attacker
+              (**Threat**), creating and winning the ball back for a midfielder (**Control**),
+              clearing, blocking and intercepting for a defender (**Wall**), shot stopping for a
+              goalkeeper (**Shield**). Derive which one applies from the player's position in
+              `squads[]`.
 
-            - `PLAYER_AGGRESSION_INDEX` (381) — how many bookable situations the
-            player gets into:
-              fouls and tackles.
+            - `PLAYER_AGGRESSION_INDEX` (381) — how physically the player
+            competes: fouls and
+              tackles. A higher value means more of both.
 
-            - `PLAYER_DISCIPLINE_INDEX` (382) — how often those situations
-            actually become a yellow
-              card. Higher is worse. A player can be highly aggressive and still well disciplined.
+            - `PLAYER_DISCIPLINE_INDEX` (382) — how well the player stays out of
+            the referee's book
+              relative to how often they foul. **A higher value means better discipline** — 99 is a
+              player who is almost never booked, 1 is one who is booked constantly. A player can
+              score high on both Aggression and Discipline: plenty of fouls, few cards.
 
-            - `PLAYER_SST_RATING` (383) — a single 0–99 overall rating combining
-            the three above,
+            - `PLAYER_SST_RATING` (383) — a single overall rating combining the
+            three above,
               weighted for the player's position.
         value:
-          type: number
-          example: 1.42
+          type: integer
+          minimum: 1
+          maximum: 99
+          example: 73
           description: >
-            For the three index metrics, a ratio where 1.00 is the positional
-            average, bounded to 0.25–2.50. For `PLAYER_SST_RATING`, an integer
-            0–99.
-        meta:
-          type: object
-          nullable: true
-          additionalProperties: true
-          description: Label and attribute name for this row.
-          properties:
-            classification:
-              type: string
-              description: >
-                Plain-language label for `value`.
-
-
-                - Impact — `Quiet`, `Low`, `Average`, `Solid`, `Strong`, `Elite`
-
-                - Aggression — `Calm`, `Controlled`, `Moderate`, `Physical`,
-                `Aggressive`, `Intense`
-
-                - Discipline — `Excellent`, `Very Good`, `Good`, `Fair`, `Poor`,
-                `Reckless`
-
-                - SST Rating — `Developing`, `Average`, `Solid`, `Strong`,
-                `Excellent`, `Elite`
-              example: Strong
-            classification_type:
-              type: string
-              description: >
-                The attribute's display name. Fixed per metric — `Aggression`,
-                `Discipline`, `SST Rating` — except on `PLAYER_IMPACT_INDEX`,
-                where it varies with the player's position: `Threat`, `Control`,
-                `Wall` or `Shield`.
-              example: Threat
+            Integer 1–99. 50 is average for the player's position in their
+            league; higher is better on every metric.
       example:
         team_id: 4009
         player_id: 184521
         type_id: 380
         developer_name: PLAYER_IMPACT_INDEX
-        value: 1.42
-        meta:
-          classification: Strong
-          classification_type: Threat
+        value: 73
     MetadataEntry:
       type: object
       description: >
