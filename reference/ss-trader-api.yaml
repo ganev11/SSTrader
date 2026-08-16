@@ -2633,10 +2633,10 @@ components:
         scale and has no upper bound. These always carry `meta`.
 
 
-        These move far more between fixtures than the ratings do — opponent,
-        venue and the chance of starting all feed the model, and one player's
-        expected shots measured 1.068 to 1.781 across six fixtures. Never carry
-        an expected value from one fixture to another.
+        These move far more between fixtures than the ratings do — the opponent,
+        the venue and the chance of starting all bear on them, and across a few
+        fixtures the same player's expected shots can differ by well over half.
+        Never carry an expected value from one fixture to another.
 
 
         **Expected metrics assume the team sheet is unknown.** The published
