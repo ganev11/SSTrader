@@ -9,6 +9,7 @@ hidden: false
 metadata:
   robots: index
 ---
+
 # Player Metrics
 
 `include=player_metrics`
@@ -96,8 +97,8 @@ These are **predictions for the specific fixture**, not ratings. The value is a 
 
 | Metric | `type_id` | Unit | Typical range |
 |--------|-----------|------|---------------|
-| `PLAYER_EXPECTED_SHOTS` | `384` | Shots attempted | Median `0.42`, 95th percentile `1.63`, rarely above `4` |
-| `PLAYER_EXPECTED_MINUTES` | `385` | Minutes on the pitch | `0`–`90+`, median `47.8` |
+| `PLAYER_EXPECTED_SHOTS` | `384` | Shots attempted | Usually below `1`; above `3` is rare |
+| `PLAYER_EXPECTED_MINUTES` | `385` | Minutes on the pitch | `0`–`90+` |
 
 Expected Shots counts **every attempt** — on target or not, blocked shots included.
 
@@ -105,7 +106,7 @@ Expected Shots counts **every attempt** — on target or not, blocked shots incl
 
 ### How much they move between fixtures
 
-Expected metrics vary far more from match to match than the ratings do, because opponent, venue and the player's chance of starting all feed the model directly. Measured across one player's six fixtures, expected shots ranged from `1.068` to `1.781` — a 67% spread — while his ratings drifted by a couple of points.
+Expected metrics vary far more from match to match than the ratings do, because the opponent, the venue and the player's chance of starting all bear on them directly. Across a few fixtures the same player's expected shots can differ by well over half, while his ratings drift by only a point or two.
 
 So do not carry an expected value from one fixture to another. Ask for the fixture you actually care about.
 
@@ -263,7 +264,7 @@ For this match he is a likely but not certain starter (`p_start` 0.77), which wo
 
 The blend is checkable by hand: `0.77 × 1.632 + 0.23 × 0.158 = 1.293`.
 
-> **Not every squad player appears, and the two families have separate bars.** Players without enough recent playing time are omitted rather than given a placeholder — newly signed and youth players are the usual cases. Expected metrics need a longer and richer history than the ratings do, so **a player can have all four ratings and no expected metrics**. Currently around 63% of rated players also carry expected metrics. Always look rows up by `player_id` **and** `developer_name` rather than assuming a fixed six rows per player.
+> **Not every squad player appears, and the two families have separate bars.** Players without enough recent playing time are omitted rather than given a placeholder — newly signed and youth players are the usual cases. Expected metrics need a longer and richer history than the ratings do, so **a player can have all four ratings and no expected metrics** — this is common rather than exceptional. Always look rows up by `player_id` **and** `developer_name` rather than assuming a fixed six rows per player.
 
 ---
 
