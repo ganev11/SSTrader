@@ -270,6 +270,12 @@ paths:
           description: >
             Optional filter for the included `player_metrics` module. Use this
             to return only specific player metrics by Type ID or domain group.
+
+
+            Ratings are `380`–`383` (Impact, Aggression, Discipline, SST
+            Rating); expected metrics for the fixture are `384` (Expected Shots)
+            and `385` (Expected Minutes). A listing view typically wants
+            `types:380,383`; a player-props view wants `types:384,385`.
         - name: filter[trends]
           in: query
           schema:
@@ -1347,13 +1353,16 @@ components:
         status:
           type: integer
           enum:
-            - 2
             - 1
             - 0
             - -1
-            - -2
             - -3
-          description: Settlement status. Same codes as the Odd object's `status` field.
+          description: >
+            Settlement status of the combination as a whole — 0 pending, 1 won,
+            -1 lost, -3 void. Same codes as the Odd object's `status` field, but
+            only these four occur: every selection must win for 1, and a single
+            void selection voids the whole bet builder. Stays 0 until every
+            selection has a result.
         last_priced_at:
           type: string
           format: date-time
@@ -1750,11 +1759,34 @@ components:
                 squads — not grouped, split them on `team_id` and join to
                 `squads[]` on `player_id` for names and positions.
 
-                Four rows per player: Impact, Aggression, Discipline and SST
+                Up to six rows per player, from two families that are read
+                differently:
+
+
+                **Four ratings** — Impact, Aggression, Discipline and SST
                 Rating, each an integer 1–99 where 50 is average for the
-                player's position and higher is always better. Players with too
-                little recent playing time to rate are omitted rather than given
-                a placeholder, so expect fewer players here than in `squads[]`.
+                player's position and higher is always better.
+
+
+                **Two expected metrics** — Expected Shots and Expected Minutes,
+                decimal counts predicted for this fixture. These carry a `meta`
+                object with the values conditional on the player starting or
+                being benched, which is how you apply a confirmed team sheet
+                without waiting for a recompute.
+
+
+                Every row belongs to this fixture specifically and reflects the
+                state before kick-off; nothing is revised after the match
+                starts.
+
+
+                Players with too little recent playing time are omitted rather
+                than given a placeholder, so expect fewer players here than in
+                `squads[]`. The two families have separate eligibility bars, so
+                a player can have the four ratings and no expected metrics —
+                always look rows up by `player_id` **and** `developer_name`. The
+                array is empty for a fixture that was never seen before
+                kick-off.
               type: array
               items:
                 $ref: '#/components/schemas/PlayerMetric'
@@ -2569,16 +2601,57 @@ components:
     PlayerMetric:
       type: object
       description: >
-        A single rated attribute of one player, for the season the fixture
-        belongs to.
+        A single rated attribute or predicted quantity for one player.
 
 
-        **Reading the values.** Every value is an integer from **1 to 99**,
-        where **50 is average** for that player's position in that league — a
-        defender is compared against other defenders, never against strikers.
-        **Higher is always better**, on all four metrics including Discipline.
-        Roughly 10 points is a meaningful gap; the middle 80% of players in a
-        league typically fall between 25 and 80.
+        **Two families share this shape, and they are read differently.** Tell
+        them apart by `developer_name` (or by `type_id`: 380–383 vs 384–385).
+
+
+        Every row belongs to **one fixture** and freezes at kick-off — it
+        records the state before that match and is never revised afterwards. So
+        the same player queried across two fixtures returns two different sets
+        of values, and a past fixture reports what he looked like going into it
+        rather than what he looks like now. A fixture that was never seen before
+        kick-off carries no player metrics at all.
+
+
+        **Ratings** (`PLAYER_IMPACT_INDEX`, `PLAYER_AGGRESSION_INDEX`,
+        `PLAYER_DISCIPLINE_INDEX`, `PLAYER_SST_RATING`) describe the form the
+        player took into this fixture. Each is an integer from **1 to 99** where
+        **50 is average** for that player's position in that league — a defender
+        is compared against other defenders, never against strikers — and
+        **higher is always better**, Discipline included. Roughly 10 points is a
+        meaningful gap; the middle 80% of players in a league typically fall
+        between 25 and 80. These carry no `meta`.
+
+
+        **Expected metrics** (`PLAYER_EXPECTED_SHOTS`,
+        `PLAYER_EXPECTED_MINUTES`) are predictions for **this specific
+        fixture**, not ratings. The value is a decimal count in the unit named
+        by the metric — 1.293 shots, 65.926 minutes — so it is not on the 1–99
+        scale and has no upper bound. These always carry `meta`.
+
+
+        These move far more between fixtures than the ratings do — opponent,
+        venue and the chance of starting all feed the model, and one player's
+        expected shots measured 1.068 to 1.781 across six fixtures. Never carry
+        an expected value from one fixture to another.
+
+
+        **Expected metrics assume the team sheet is unknown.** The published
+        `value` is already discounted for the chance the player does not start,
+        which is the honest number before a lineup is confirmed. When you know
+        the lineup, do not wait for us to recompute — read `meta.if_starts` or
+        `meta.if_benched` directly. See `PlayerMetricMeta`.
+
+
+        Further expected metrics — goals, assists, shots on target, booking
+        points, fouls, tackles, passes and saves — are planned and will share
+        this exact shape. None are returned today and no `type_id` is assigned
+        to them; the `developer_name` enum below is the complete current set.
+        Treat an unrecognised `developer_name` as forward compatibility rather
+        than an error.
       properties:
         team_id:
           type: integer
@@ -2603,8 +2676,13 @@ components:
             - PLAYER_AGGRESSION_INDEX
             - PLAYER_DISCIPLINE_INDEX
             - PLAYER_SST_RATING
+            - PLAYER_EXPECTED_SHOTS
+            - PLAYER_EXPECTED_MINUTES
           description: >
-            Which attribute this row rates.
+            Which attribute this row rates, or which quantity it predicts.
+
+
+            **Ratings — integer 1–99, higher is better, no `meta`:**
 
 
             - `PLAYER_IMPACT_INDEX` (380) — how well the player does the main
@@ -2628,20 +2706,108 @@ components:
             - `PLAYER_SST_RATING` (383) — a single overall rating combining the
             three above,
               weighted for the player's position.
+
+
+            **Expected metrics — decimal count for this fixture, always carries
+            `meta`:**
+
+
+            - `PLAYER_EXPECTED_SHOTS` (384) — how many shots the player is
+            expected to attempt.
+              Counts every attempt, on target or not; blocked shots included.
+
+            - `PLAYER_EXPECTED_MINUTES` (385) — how many minutes the player is
+            expected to be on
+              the pitch, 0–90+. Also the exposure behind every other expected metric, so it is the
+              first thing to check when an expected count looks low: a good player who is unlikely
+              to start has a low expected count for that reason alone.
         value:
-          type: integer
-          minimum: 1
-          maximum: 99
+          type: number
           example: 73
           description: >
-            Integer 1–99. 50 is average for the player's position in their
-            league; higher is better on every metric.
+            **Ratings** (380–383): integer 1–99, where 50 is average for the
+            player's position in their league and higher is better on every
+            metric.
+
+
+            **Expected metrics** (384–385): a decimal count for this fixture —
+            shots, or minutes — with no upper bound and no relation to the 1–99
+            scale. Reported to 3 decimal places. This is the **pre-team-sheet**
+            number, already weighted by the player's chance of starting; `meta`
+            carries the two conditionals.
+        meta:
+          type: object
+          nullable: true
+          description: >
+            Present **only on expected metrics** (384–385) and omitted entirely
+            from the four ratings — check for presence rather than assuming it.
+            See `PlayerMetricMeta`.
+          allOf:
+            - $ref: '#/components/schemas/PlayerMetricMeta'
       example:
-        team_id: 4009
-        player_id: 184521
-        type_id: 380
-        developer_name: PLAYER_IMPACT_INDEX
-        value: 73
+        team_id: 1338
+        player_id: 600
+        type_id: 384
+        developer_name: PLAYER_EXPECTED_SHOTS
+        value: 1.228
+        meta:
+          if_starts: 1.694
+          if_benched: 0.254
+          p_start: 0.6764
+    PlayerMetricMeta:
+      type: object
+      description: >
+        The team-sheet breakdown behind an expected metric. Attached to
+        `PLAYER_EXPECTED_SHOTS` and `PLAYER_EXPECTED_MINUTES`; never present on
+        the four ratings.
+
+
+        **Why it exists.** We publish expected metrics from the moment a fixture
+        is scheduled, long before lineups exist, so the headline `value` has to
+        assume the team sheet is unknown and blend the two cases:
+
+
+        `value = p_start × if_starts + (1 − p_start) × if_benched`
+
+
+        Worked from the example: `0.6764 × 1.694 + 0.3236 × 0.254 = 1.228`.
+
+
+        **This is what lets you react to a confirmed lineup instantly.** Team
+        sheets are typically published 15–60 minutes before kick-off. Rather
+        than waiting for us to recompute and republish, substitute the case you
+        now know is true: if the player is named in the XI use `if_starts`, if
+        he is on the bench use `if_benched`, and if he is not in the squad at
+        all treat every expected metric for him as 0.
+      properties:
+        if_starts:
+          type: number
+          example: 1.694
+          description: >
+            The expected value **conditional on the player starting**. Use this
+            in place of `value` once a team sheet confirms he is in the starting
+            XI.
+        if_benched:
+          type: number
+          example: 0.254
+          description: >
+            The expected value **conditional on the player starting on the
+            bench**. Already includes the chance he is not brought on at all, so
+            it is much smaller than `if_starts` rather than simply being a
+            shorter appearance — use it as-is, do not scale it further.
+        p_start:
+          type: number
+          minimum: 0
+          maximum: 1
+          example: 0.6764
+          description: >
+            The probability the player starts, which produced the blend above.
+            Published so the three numbers are self-consistent and auditable,
+            and useful in its own right as a rotation read.
+      example:
+        if_starts: 1.694
+        if_benched: 0.254
+        p_start: 0.6764
     MetadataEntry:
       type: object
       description: >
