@@ -273,9 +273,10 @@ paths:
 
 
             Ratings are `380`–`383` (Impact, Aggression, Discipline, SST
-            Rating); expected metrics for the fixture are `384` (Expected Shots)
-            and `385` (Expected Minutes). A listing view typically wants
-            `types:380,383`; a player-props view wants `types:384,385`.
+            Rating); expected metrics for the fixture are `384` (Expected
+            Shots), `385` (Expected Minutes) and `386` (Expected Goals). A
+            listing view typically wants `types:380,383`; a player-props view
+            wants `types:384,385,386`.
         - name: filter[trends]
           in: query
           schema:
@@ -1768,11 +1769,11 @@ components:
                 player's position and higher is always better.
 
 
-                **Two expected metrics** — Expected Shots and Expected Minutes,
-                decimal counts predicted for this fixture. These carry a `meta`
-                object with the values conditional on the player starting or
-                being benched, which is how you apply a confirmed team sheet
-                without waiting for a recompute.
+                **Three expected metrics** — Expected Shots, Expected Goals and
+                Expected Minutes, decimal counts predicted for this fixture.
+                These carry a `meta` object with the values conditional on the
+                player starting or being benched, which is how you apply a
+                confirmed team sheet without waiting for a recompute.
 
 
                 Every row belongs to this fixture specifically and reflects the
@@ -2626,11 +2627,11 @@ components:
         between 25 and 80. These carry no `meta`.
 
 
-        **Expected metrics** (`PLAYER_EXPECTED_SHOTS`,
+        **Expected metrics** (`PLAYER_EXPECTED_SHOTS`, `PLAYER_EXPECTED_GOALS`,
         `PLAYER_EXPECTED_MINUTES`) are predictions for **this specific
         fixture**, not ratings. The value is a decimal count in the unit named
-        by the metric — 1.293 shots, 65.926 minutes — so it is not on the 1–99
-        scale and has no upper bound. These always carry `meta`.
+        by the metric — 1.293 shots, 0.19 goals, 65.926 minutes — so it is not
+        on the 1–99 scale and has no upper bound. These always carry `meta`.
 
 
         These move far more between fixtures than the ratings do — the opponent,
@@ -2646,12 +2647,12 @@ components:
         `meta.if_benched` directly. See `PlayerMetricMeta`.
 
 
-        Further expected metrics — goals, assists, shots on target, booking
-        points, fouls, tackles, passes and saves — are planned and will share
-        this exact shape. None are returned today and no `type_id` is assigned
-        to them; the `developer_name` enum below is the complete current set.
-        Treat an unrecognised `developer_name` as forward compatibility rather
-        than an error.
+        Further expected metrics — assists, shots on target, booking points,
+        fouls, tackles, passes and saves — are planned and will share this exact
+        shape. None are returned today and no `type_id` is assigned to them; the
+        `developer_name` enum below is the complete current set. Treat an
+        unrecognised `developer_name` as forward compatibility rather than an
+        error.
       properties:
         team_id:
           type: integer
@@ -2677,6 +2678,7 @@ components:
             - PLAYER_DISCIPLINE_INDEX
             - PLAYER_SST_RATING
             - PLAYER_EXPECTED_SHOTS
+            - PLAYER_EXPECTED_GOALS
             - PLAYER_EXPECTED_MINUTES
           description: >
             Which attribute this row rates, or which quantity it predicts.
@@ -2716,6 +2718,12 @@ components:
             expected to attempt.
               Counts every attempt, on target or not; blocked shots included.
 
+            - `PLAYER_EXPECTED_GOALS` (386) — how many goals the player is
+            expected to score.
+              Never exceeds `PLAYER_EXPECTED_SHOTS`, on the value and on both `meta` conditionals,
+              since a goal has to start as a shot. Divide the two for an implied conversion rate.
+              As a Poisson rate, `1 - exp(-xG)` is the anytime-scorer probability.
+
             - `PLAYER_EXPECTED_MINUTES` (385) — how many minutes the player is
             expected to be on
               the pitch, 0–90+. Also the exposure behind every other expected metric, so it is the
@@ -2730,16 +2738,16 @@ components:
             metric.
 
 
-            **Expected metrics** (384–385): a decimal count for this fixture —
-            shots, or minutes — with no upper bound and no relation to the 1–99
-            scale. Reported to 3 decimal places. This is the **pre-team-sheet**
-            number, already weighted by the player's chance of starting; `meta`
-            carries the two conditionals.
+            **Expected metrics** (384–386): a decimal count for this fixture —
+            shots, goals or minutes — with no upper bound and no relation to the
+            1–99 scale. Reported to 3 decimal places. This is the
+            **pre-team-sheet** number, already weighted by the player's chance
+            of starting; `meta` carries the two conditionals.
         meta:
           type: object
           nullable: true
           description: >
-            Present **only on expected metrics** (384–385) and omitted entirely
+            Present **only on expected metrics** (384–386) and omitted entirely
             from the four ratings — check for presence rather than assuming it.
             See `PlayerMetricMeta`.
           allOf:
