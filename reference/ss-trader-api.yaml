@@ -2762,6 +2762,7 @@ components:
           if_starts: 1.694
           if_benched: 0.254
           p_start: 0.6764
+          p_play: 0.767526
     PlayerMetricMeta:
       type: object
       description: >
@@ -2787,6 +2788,14 @@ components:
         now know is true: if the player is named in the XI use `if_starts`, if
         he is on the bench use `if_benched`, and if he is not in the squad at
         all treat every expected metric for him as 0.
+
+
+        **For pricing, `p_play` is the field you need.** Player markets are
+        normally void if the player takes no part, so a fair probability is
+        `P(event) / p_play` — or `P(event) / p_start` where the market instead
+        voids unless he starts. Convert each branch separately before blending;
+        collapsing them first overstates the price. See `docs/player-metrics.md`
+        for a worked example.
       properties:
         if_starts:
           type: number
@@ -2812,10 +2821,33 @@ components:
             The probability the player starts, which produced the blend above.
             Published so the three numbers are self-consistent and auditable,
             and useful in its own right as a rotation read.
+        p_play:
+          type: number
+          minimum: 0
+          maximum: 1
+          example: 0.767526
+          description: >
+            The probability the player takes **any** part in the match, whether
+            starting or coming on. Always at least `p_start`; the gap between
+            them is the chance he appears as a substitute. This is the
+            denominator for markets that void on non-participation.
+
+
+            It also makes the bench branch decodable, which it otherwise is not
+            — `if_benched` already has the chance of coming on folded into it,
+            so `P(comes on | did not start) = (p_play − p_start) / (1 −
+            p_start)` recovers the split.
+
+
+            Note this is a **pre-match** probability: it includes the chance the
+            player is left out of the matchday squad entirely. Once a team sheet
+            names him among the substitutes, that possibility is gone and his
+            real chance of appearing is higher.
       example:
         if_starts: 1.694
         if_benched: 0.254
         p_start: 0.6764
+        p_play: 0.767526
     MetadataEntry:
       type: object
       description: >
