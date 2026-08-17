@@ -2766,8 +2766,9 @@ components:
     PlayerMetricMeta:
       type: object
       description: >
-        The team-sheet breakdown behind an expected metric. Attached to
-        `PLAYER_EXPECTED_SHOTS` and `PLAYER_EXPECTED_MINUTES`; never present on
+        The team-sheet breakdown behind an expected metric. Attached to every
+        expected metric (`PLAYER_EXPECTED_SHOTS`, `PLAYER_EXPECTED_GOALS`,
+        `PLAYER_EXPECTED_ASSISTS`, `PLAYER_EXPECTED_MINUTES`); never present on
         the four ratings.
 
 
@@ -2796,6 +2797,14 @@ components:
         voids unless he starts. Convert each branch separately before blending;
         collapsing them first overstates the price. See `docs/player-metrics.md`
         for a worked example.
+
+
+        Note the conversion differs by market. Anytime goalscorer is Poisson per
+        branch. Shots lines (over 0.5 / 1.5 / 2.5) need a negative binomial,
+        because shot counts are overdispersed within a branch — Poisson runs
+        about 4% high on the lowest line and 6% low on the highest. Do not
+        estimate that spread from the blended `value`: most of the variance
+        there is the start/bench mixture rather than shot randomness.
       properties:
         if_starts:
           type: number
