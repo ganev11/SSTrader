@@ -129,10 +129,13 @@ All three inputs ship in `meta` on every expected-metric row, so the number is n
 | `meta` field | Meaning |
 |---|---|
 | `if_starts` | The expected value **if the player is named in the starting XI** |
-| `if_benched` | The expected value **if the player starts on the bench** |
+| `if_benched` | The expected value **if the player does not start** |
 | `p_start` | The probability that he starts, which produced the blend |
+| `p_play` | The probability he takes **any** part in the match |
 
 > **`if_benched` already includes the chance he never comes on.** It is not simply "if_starts, but shorter" — most benched players do not appear at all, and that is priced in. Use it as published; do not scale it down further.
+
+`p_play` is the number betting markets need, because essentially every player market is **void if the player takes no part**. It is always at least `p_start`, and the gap between them is the chance he appears as a substitute. See [Pricing markets](#pricing-markets) below.
 
 `PLAYER_EXPECTED_MINUTES` follows exactly the same structure, and it is worth reading first whenever another expected metric looks surprisingly low. A low expected count usually means low expected minutes rather than a poor player.
 
@@ -204,8 +207,9 @@ Two things are worth knowing in advance:
 | Field | Type | Description |
 |---|---|---|
 | `if_starts` | number | Expected value conditional on starting. |
-| `if_benched` | number | Expected value conditional on starting on the bench, already accounting for not being brought on. |
+| `if_benched` | number | Expected value conditional on not starting, already accounting for not being brought on. |
 | `p_start` | number | Probability of starting, `0`–`1`. |
+| `p_play` | number | Probability of taking any part in the match, `0`–`1`. Always ≥ `p_start`. |
 
 ---
 
@@ -249,7 +253,7 @@ Two things are worth knowing in advance:
     "type_id": 384,
     "developer_name": "PLAYER_EXPECTED_SHOTS",
     "value": 1.293,
-    "meta": { "if_starts": 1.632, "if_benched": 0.158, "p_start": 0.77 }
+    "meta": { "if_starts": 1.632, "if_benched": 0.158, "p_start": 0.77, "p_play": 0.834768 }
   },
   {
     "team_id": 4009,
@@ -257,7 +261,7 @@ Two things are worth knowing in advance:
     "type_id": 385,
     "developer_name": "PLAYER_EXPECTED_MINUTES",
     "value": 65.953,
-    "meta": { "if_starts": 82.949, "if_benched": 9.053, "p_start": 0.77 }
+    "meta": { "if_starts": 82.949, "if_benched": 9.053, "p_start": 0.77, "p_play": 0.834768 }
   }
 ]
 ```
@@ -302,7 +306,7 @@ Sort a team's players by `PLAYER_SST_RATING` to surface its most dangerous names
 
 ### Shots markets
 
-`PLAYER_EXPECTED_SHOTS` is the direct input for "player to have 1+ / 2+ shots" markets. Two rules make it usable:
+`PLAYER_EXPECTED_SHOTS` is the direct input for "player to have 1+ / 2+ shots" markets. See [Pricing markets](#pricing-markets) for the conversion — and note that **2+ and higher need more than the published mean**, because shot counts are more spread out than a Poisson distribution implies. Two further rules make it usable:
 
 - **Before the team sheet**, compare the published `value` against the market price — it already carries the selection risk the price should also reflect.
 - **After the team sheet**, switch to `meta.if_starts` or `meta.if_benched`. Prices often move slower than lineups do, and this is where the gap opens.
@@ -328,7 +332,7 @@ Note the direction: it is a **low** Discipline that flags risk, not a high one. 
 
 ### Goalscorer markets
 
-`PLAYER_EXPECTED_GOALS` is the direct input for anytime and first-scorer prices. Treated as a Poisson rate, `1 − exp(−xG)` converts it to an anytime-scorer probability, which is what a price implies.
+`PLAYER_EXPECTED_GOALS` is the direct input for anytime-scorer prices, but converting it takes two steps that are easy to skip — and skipping either loses money. See [Pricing markets](#pricing-markets) for the full derivation; the short version is that you must convert **each branch separately** and then divide by `p_play`.
 
 The same before/after team-sheet rule applies, and it bites hardest here: a fringe striker's published value is dominated by the chance he does not start, so confirmation can move it sharply. Switch to `meta.if_starts` the moment the XI is known.
 
@@ -337,3 +341,53 @@ Read alongside `PLAYER_EXPECTED_SHOTS`, the pair separates the two halves of a s
 ### Matchup context
 
 Compare one side's attackers' Impact against the other side's defenders' Impact to characterise a fixture before looking at odds — both are on the same 50-is-average scale, so they are directly comparable even though one measures shooting and the other blocking.
+
+---
+
+## Pricing markets
+
+Turning an expected value into a fair price is not `1 − exp(−value)`. Two corrections come first, and the second is much larger than the first.
+
+**1. Convert each branch, then blend — never the other way round.** Starting and being benched are different worlds, and the conversion from a mean to a probability is curved, so collapsing them first overstates the price.
+
+**2. Divide by the probability the bet stands.** Almost every player market is void if the player takes no part, so a fair price is conditional on him appearing:
+
+```
+fair probability = P(event) / P(bet stands)
+```
+
+Use `p_play` when the market voids on non-participation, or `p_start` when it voids unless the player starts. Both conventions exist; the two fields are exactly those two rules.
+
+### Anytime goalscorer, worked through
+
+Given a row with `p_start: 0.5208`, `p_play: 0.6557`, `if_starts: 0.226`, `if_benched: 0.021`:
+
+```js
+const { p_start, p_play, if_starts, if_benched } = meta;
+
+// The chance he appears as a substitute is the gap between the two probabilities.
+const p_sub = p_play - p_start;
+
+// if_benched already has "might not come on" folded in, so undo it to get the rate
+// that applies once he IS on the pitch.
+const lambda_sub = if_benched / (p_sub / (1 - p_start));
+
+const p_scores = p_start * (1 - Math.exp(-if_starts))
+               + p_sub   * (1 - Math.exp(-lambda_sub));
+
+const fair_odds = p_play / p_scores;     // 5.70
+```
+
+For comparison, on the same row: reading `value` as a probability gives 7.81, and `1 − exp(−value)` gives 8.32. Both are far enough off to erase any edge — the void adjustment alone is worth more than a typical bookmaker's margin.
+
+### Lines above 0.5 need more than a mean
+
+The method above is sound for **anytime** markets, where you only need the chance of at least one. It is **not** sufficient for over/under lines like "over 1.5 shots" or "over 2.5 tackles".
+
+Real match counts are more spread out than a Poisson distribution with the same mean — a shooter's output swings on game state, rotation and red cards. Assuming Poisson therefore understates how often a player records zero, and understates the long tail as well. Shots, tackles, fouls and passes are all affected; goals, being rare, are close enough to Poisson that the method above holds. Cards run the opposite way: a player almost never receives more than one yellow, so a card market is closer to a coin flip than to a count, and `1 − exp(−λ)` will understate it.
+
+We publish the mean, not the shape of the distribution. If you are pricing lines above 0.5, fit the spread yourself against your own settled results, or restrict yourself to the anytime markets where the mean is enough.
+
+### After the team sheet
+
+Once the XI is confirmed the mixture collapses and the arithmetic gets simpler — use `if_starts` with `P(bet stands) = 1`, or `if_benched` for a named substitute. Note that a confirmed substitute has a **higher** chance of appearing than `p_play` implies: `p_play` is a pre-match number that includes the possibility of being left out of the squad altogether, which the team sheet has now ruled out.
