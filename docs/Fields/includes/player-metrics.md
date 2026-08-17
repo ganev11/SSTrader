@@ -9,7 +9,6 @@ hidden: false
 metadata:
   robots: index
 ---
-
 # Player Metrics
 
 `include=player_metrics`
@@ -19,7 +18,7 @@ The `player_metrics` include returns two different kinds of number for every pla
 | Family | `type_id` | What it is | Scale |
 |---|---|---|---|
 | **Ratings** | 380–383 | How good the player had been going into this fixture | Integer 1–99, 50 = average |
-| **Expected metrics** | 384–385 | What the player is predicted to do **in this fixture** | Decimal count (shots, minutes) |
+| **Expected metrics** | 384–386 | What the player is predicted to do **in this fixture** | Decimal count (shots, goals, minutes) |
 
 They live in the same array and share the same row shape, so the one thing to get right is telling them apart — use `developer_name`, or the `type_id` ranges above. Everything else follows from which family a row belongs to.
 
@@ -91,16 +90,21 @@ So an Impact of `73` on a defender means a strong defender, and `73` on a strike
 
 # Part 2 — Expected metrics
 
-`PLAYER_EXPECTED_SHOTS` · `PLAYER_EXPECTED_MINUTES`
+`PLAYER_EXPECTED_SHOTS` · `PLAYER_EXPECTED_GOALS` · `PLAYER_EXPECTED_MINUTES`
 
 These are **predictions for the specific fixture**, not ratings. The value is a plain decimal count in the metric's own unit:
 
 | Metric | `type_id` | Unit | Typical range |
 |--------|-----------|------|---------------|
 | `PLAYER_EXPECTED_SHOTS` | `384` | Shots attempted | Usually below `1`; above `3` is rare |
+| `PLAYER_EXPECTED_GOALS` | `386` | Goals scored | Usually well below `0.5`; above `1` is rare |
 | `PLAYER_EXPECTED_MINUTES` | `385` | Minutes on the pitch | `0`–`90+` |
 
 Expected Shots counts **every attempt** — on target or not, blocked shots included.
+
+> **Expected Goals never exceeds Expected Shots**, on the published value and on both `meta` conditionals. A goal has to start as a shot, so the ordering always holds and you can rely on it.
+
+Dividing the two gives an implied conversion rate — how likely each of a player's attempts is to go in. Across a squad that typically lands somewhere around one goal in six to one in ten attempts, and it is a fair way to separate a high-volume shooter from a clinical finisher.
 
 > **Not on the 1–99 scale.** An Expected Shots of `1.29` is not "very poor". It is 1.29 shots. Applying the ratings scale to these values, or the reverse, is the one mistake worth guarding against, and it is why the two families are marked by `developer_name` rather than left to context.
 
@@ -152,9 +156,8 @@ Expected Shots is the first of a wider set. The rest are **not implemented yet �
 
 | Planned | Unit | Notes |
 |---------|------|-------|
-| Expected Goals (xG) | Goals | |
 | Expected Assists (xA) | Assists | |
-| Expected Goal Involvements (xGI) | Goals + assists | Derived from xG and xA rather than modelled separately |
+| Expected Goal Involvements (xGI) | Goals + assists | Will be derived from Expected Goals and Expected Assists rather than modelled separately |
 | Expected Shots on Target (xSoT) | Shots on target | Will be modelled as a share of Expected Shots, so `xSoT ≤ xSh` always holds |
 | Expected Booking Points (xBP) | Points | Yellow 10, straight red 25, second yellow 35 |
 | Expected Fouls (xF) | Fouls committed | |
@@ -194,6 +197,7 @@ Two things are worth knowing in advance:
 | `383` | `PLAYER_SST_RATING` | Rating | Strong overall, combining the three above, weighted for their position. |
 | `384` | `PLAYER_EXPECTED_SHOTS` | Expected | Shots attempted in this fixture. |
 | `385` | `PLAYER_EXPECTED_MINUTES` | Expected | Minutes played in this fixture. |
+| `386` | `PLAYER_EXPECTED_GOALS` | Expected | Goals scored in this fixture. Never exceeds Expected Shots. |
 
 ### `meta` (expected metrics only)
 
@@ -279,10 +283,10 @@ filter[player_metrics]=types:380,383
 returns only Impact and SST Rating for each player, which is usually all a listing view needs.
 
 ```
-filter[player_metrics]=types:384,385
+filter[player_metrics]=types:384,385,386
 ```
 
-returns only the expected metrics, which is what a player-props view wants.
+returns the expected metrics for shots and minutes; add `386` for goals. A player-props view usually wants all three.
 
 ---
 
@@ -324,7 +328,11 @@ Note the direction: it is a **low** Discipline that flags risk, not a high one. 
 
 ### Goalscorer markets
 
-Impact on an attacker is a direct read on shot volume and finishing relative to other attackers in the league. Paired with `PLAYER_EXPECTED_SHOTS` it separates the two halves of an anytime-scorer price: how many chances he is expected to get in this match, and how well he converts them relative to his peers.
+`PLAYER_EXPECTED_GOALS` is the direct input for anytime and first-scorer prices. Treated as a Poisson rate, `1 − exp(−xG)` converts it to an anytime-scorer probability, which is what a price implies.
+
+The same before/after team-sheet rule applies, and it bites hardest here: a fringe striker's published value is dominated by the chance he does not start, so confirmation can move it sharply. Switch to `meta.if_starts` the moment the XI is known.
+
+Read alongside `PLAYER_EXPECTED_SHOTS`, the pair separates the two halves of a scorer price — how many chances a player is expected to get, and how likely each is to go in. A high xSh with a low ratio is a volume shooter; the reverse is a clinical finisher who needs fewer chances.
 
 ### Matchup context
 
