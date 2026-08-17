@@ -18,7 +18,7 @@ The `player_metrics` include returns two different kinds of number for every pla
 | Family | `type_id` | What it is | Scale |
 |---|---|---|---|
 | **Ratings** | 380–383 | How good the player had been going into this fixture | Integer 1–99, 50 = average |
-| **Expected metrics** | 384–386 | What the player is predicted to do **in this fixture** | Decimal count (shots, goals, minutes) |
+| **Expected metrics** | 384–387 | What the player is predicted to do **in this fixture** | Decimal count (shots, goals, assists, minutes) |
 
 They live in the same array and share the same row shape, so the one thing to get right is telling them apart — use `developer_name`, or the `type_id` ranges above. Everything else follows from which family a row belongs to.
 
@@ -90,7 +90,7 @@ So an Impact of `73` on a defender means a strong defender, and `73` on a strike
 
 # Part 2 — Expected metrics
 
-`PLAYER_EXPECTED_SHOTS` · `PLAYER_EXPECTED_GOALS` · `PLAYER_EXPECTED_MINUTES`
+`PLAYER_EXPECTED_SHOTS` · `PLAYER_EXPECTED_GOALS` · `PLAYER_EXPECTED_ASSISTS` · `PLAYER_EXPECTED_MINUTES`
 
 These are **predictions for the specific fixture**, not ratings. The value is a plain decimal count in the metric's own unit:
 
@@ -98,6 +98,7 @@ These are **predictions for the specific fixture**, not ratings. The value is a 
 |--------|-----------|------|---------------|
 | `PLAYER_EXPECTED_SHOTS` | `384` | Shots attempted | Usually below `1`; above `3` is rare |
 | `PLAYER_EXPECTED_GOALS` | `386` | Goals scored | Usually well below `0.5`; above `1` is rare |
+| `PLAYER_EXPECTED_ASSISTS` | `387` | Assists | Lower than Expected Goals for most players; creators are the exception |
 | `PLAYER_EXPECTED_MINUTES` | `385` | Minutes on the pitch | `0`–`90+` |
 
 Expected Shots counts **every attempt** — on target or not, blocked shots included.
@@ -201,6 +202,7 @@ Two things are worth knowing in advance:
 | `384` | `PLAYER_EXPECTED_SHOTS` | Expected | Shots attempted in this fixture. |
 | `385` | `PLAYER_EXPECTED_MINUTES` | Expected | Minutes played in this fixture. |
 | `386` | `PLAYER_EXPECTED_GOALS` | Expected | Goals scored in this fixture. Never exceeds Expected Shots. |
+| `387` | `PLAYER_EXPECTED_ASSISTS` | Expected | Assists in this fixture. |
 
 ### `meta` (expected metrics only)
 
@@ -306,7 +308,7 @@ Sort a team's players by `PLAYER_SST_RATING` to surface its most dangerous names
 
 ### Shots markets
 
-`PLAYER_EXPECTED_SHOTS` is the direct input for "player to have 1+ / 2+ shots" markets. See [Pricing markets](#pricing-markets) for the conversion — and note that **2+ and higher need more than the published mean**, because shot counts are more spread out than a Poisson distribution implies. Two further rules make it usable:
+`PLAYER_EXPECTED_SHOTS` is the direct input for "player to have 1+ / 2+ shots" markets. See [Shots lines](#shots-lines-over-05-15-25) for the exact conversion — it is a negative binomial per branch, not a Poisson on the blended value. Two further rules make it usable:
 
 - **Before the team sheet**, compare the published `value` against the market price — it already carries the selection risk the price should also reflect.
 - **After the team sheet**, switch to `meta.if_starts` or `meta.if_benched`. Prices often move slower than lineups do, and this is where the gap opens.
@@ -380,13 +382,68 @@ const fair_odds = p_play / p_scores;     // 5.70
 
 For comparison, on the same row: reading `value` as a probability gives 7.81, and `1 − exp(−value)` gives 8.32. Both are far enough off to erase any edge — the void adjustment alone is worth more than a typical bookmaker's margin.
 
-### Lines above 0.5 need more than a mean
+### Shots lines: over 0.5, 1.5, 2.5
 
-The method above is sound for **anytime** markets, where you only need the chance of at least one. It is **not** sufficient for over/under lines like "over 1.5 shots" or "over 2.5 tackles".
+Shots markets void the same way, so the structure is identical — convert each branch, mix, divide by `p_play`. The only difference is the count distribution.
 
-Real match counts are more spread out than a Poisson distribution with the same mean — a shooter's output swings on game state, rotation and red cards. Assuming Poisson therefore understates how often a player records zero, and understates the long tail as well. Shots, tackles, fouls and passes are all affected; goals, being rare, are close enough to Poisson that the method above holds. Cards run the opposite way: a player almost never receives more than one yellow, so a card market is closer to a coin flip than to a count, and `1 − exp(−λ)` will understate it.
+**Do not fit the spread against the published `value`.** Measured that way shot counts look heavily overdispersed, around 1.8× variance-to-mean, and that number is misleading: most of it is the start/bench mixture itself. `value` blends "started and played 90 minutes" with "came on for ten", two genuinely different distributions, and their spread is not shot randomness. Once you convert each branch separately — which the method above already requires — the remaining spread is mild, close to **1.19** variance-to-mean.
 
-We publish the mean, not the shape of the distribution. If you are pricing lines above 0.5, fit the spread yourself against your own settled results, or restrict yourself to the anytime markets where the mean is enough.
+That leaves a negative binomial with a single dispersion constant:
+
+```js
+const D = 1.19;
+
+// P(X >= n) for one branch. Setting r = mu/(D-1) makes the success probability exactly
+// 1/D regardless of mu, which is why one constant works at any expected count.
+function atLeast(n, mu) {
+    if (mu <= 0) return 0;
+    const r = mu / (D - 1), p = 1 / D, q = 1 - p;
+    let term = Math.pow(p, r), cdf = term;
+    for (let j = 1; j < n; j++) { term *= ((r + j - 1) / j) * q; cdf += term; }
+    return 1 - cdf;
+}
+
+const { p_start, p_play, if_starts, if_benched } = meta;
+const p_sub      = p_play - p_start;
+const lambda_sub = if_benched / (p_sub / (1 - p_start));
+
+// "over 1.5 shots" is P(X >= 2).
+const p_over  = (p_start * atLeast(2, if_starts) + p_sub * atLeast(2, lambda_sub)) / p_play;
+const fair    = p_play / (p_start * atLeast(2, if_starts) + p_sub * atLeast(2, lambda_sub));
+```
+
+How the two families compare against settled results, as a percentage error on the fair probability:
+
+| Line | Poisson | Negative binomial |
+|---|---|---|
+| over 0.5 | +4% | **−1%** |
+| over 1.5 | +3% | +3% |
+| over 2.5 | **−6%** | **0%** |
+
+Poisson is not catastrophic, but it is biased in a consistent and exploitable direction — too generous on low lines, too stingy on high ones. The negative binomial removes most of that.
+
+### Assists, and goal involvements
+
+`PLAYER_EXPECTED_ASSISTS` prices "anytime assist" exactly like anytime goalscorer — Poisson per branch, mixed, divided by `p_play`. Assists are rarer than goals for most players, so the rate is low enough that the Poisson approximation is comfortable.
+
+**Expected goal involvements is `xG + xA`**, and there is deliberately no `type_id` for it: a stored sum can drift from its own addends, so add the two rows yourself.
+
+Take care converting it. Goals and assists are separate events, so the sum is the expected **count** of involvements — but the probability of *either* is not the sum of the two probabilities. For "to score or assist", combine at the branch level:
+
+```js
+// per branch, not on the blended values
+const p_involved = 1 - Math.exp(-(xg_if_starts + xa_if_starts));
+```
+
+One honest caveat: a player cannot assist his own goal, so the two are mildly negatively correlated within a match. Treating them as independent slightly overstates "score or assist" — a small effect next to the void adjustment, but real.
+
+### Other markets
+
+**Goals stay Poisson.** At the rates involved the two families barely differ for "at least one", and the anytime-scorer method above needs no dispersion term.
+
+**Cards run the opposite way.** A player almost never receives more than one yellow, so a card market is closer to a coin flip than a count, and `1 − exp(−λ)` will *understate* it. Do not reuse the shots recipe there.
+
+**Tackles, fouls and passes** behave like shots — expect overdispersion within a branch — but we have not measured their constants, so treat `D = 1.19` as specific to shots rather than a general figure.
 
 ### After the team sheet
 
