@@ -2768,8 +2768,14 @@ components:
       description: >
         The team-sheet breakdown behind an expected metric. Attached to every
         expected metric (`PLAYER_EXPECTED_SHOTS`, `PLAYER_EXPECTED_GOALS`,
-        `PLAYER_EXPECTED_ASSISTS`, `PLAYER_EXPECTED_MINUTES`); never present on
-        the four ratings.
+        `PLAYER_EXPECTED_ASSISTS`, `PLAYER_EXPECTED_GOAL_INVOLVEMENTS`,
+        `PLAYER_EXPECTED_MINUTES`); never present on the four ratings.
+
+
+        `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` is derived rather than modelled: its
+        `value`, `if_starts` and `if_benched` are each exactly the sum of the
+        Expected Goals and Expected Assists figures for the same player, on the
+        published 3dp values. It is emitted only when both of those are.
 
 
         **Why it exists.** We publish expected metrics from the moment a fixture
