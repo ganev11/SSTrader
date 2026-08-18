@@ -18,7 +18,7 @@ The `player_metrics` include returns two different kinds of number for every pla
 | Family | `type_id` | What it is | Scale |
 |---|---|---|---|
 | **Ratings** | 380–383 | How good the player had been going into this fixture | Integer 1–99, 50 = average |
-| **Expected metrics** | 384–388 | What the player is predicted to do **in this fixture** | Decimal count (shots, goals, assists, involvements, minutes) |
+| **Expected metrics** | 384–390 | What the player is predicted to do **in this fixture** | Decimal count (shots, shots on target, goals, assists, involvements, minutes), or booking points |
 
 They live in the same array and share the same row shape, so the one thing to get right is telling them apart — use `developer_name`, or the `type_id` ranges above. Everything else follows from which family a row belongs to.
 
@@ -90,26 +90,70 @@ So an Impact of `73` on a defender means a strong defender, and `73` on a strike
 
 # Part 2 — Expected metrics
 
-`PLAYER_EXPECTED_SHOTS` · `PLAYER_EXPECTED_GOALS` · `PLAYER_EXPECTED_ASSISTS` ·
-`PLAYER_EXPECTED_GOAL_INVOLVEMENTS` · `PLAYER_EXPECTED_MINUTES`
+`PLAYER_EXPECTED_SHOTS` · `PLAYER_EXPECTED_SHOTS_ON_TARGET` · `PLAYER_EXPECTED_GOALS` ·
+`PLAYER_EXPECTED_ASSISTS` · `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` · `PLAYER_EXPECTED_MINUTES` ·
+`PLAYER_EXPECTED_BOOKING_POINTS`
 
-These are **predictions for the specific fixture**, not ratings. The value is a plain decimal count in the metric's own unit:
+These are **predictions for the specific fixture**, not ratings. The value is a plain decimal count in the metric's own unit — with one exception, Expected Booking Points, which is a points score rather than a count:
 
 | Metric | `type_id` | Unit | Typical range |
 |--------|-----------|------|---------------|
 | `PLAYER_EXPECTED_SHOTS` | `384` | Shots attempted | Usually below `1`; above `3` is rare |
+| `PLAYER_EXPECTED_SHOTS_ON_TARGET` | `389` | Attempts hitting the target | Roughly a third of Expected Shots |
 | `PLAYER_EXPECTED_GOALS` | `386` | Goals scored | Usually well below `0.5`; above `1` is rare |
 | `PLAYER_EXPECTED_ASSISTS` | `387` | Assists | Lower than Expected Goals for most players; creators are the exception |
 | `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` | `388` | Goals + assists | Always the sum of the two above, exactly |
 | `PLAYER_EXPECTED_MINUTES` | `385` | Minutes on the pitch | `0`–`90+` |
+| `PLAYER_EXPECTED_BOOKING_POINTS` | `390` | **Booking points** (yellow 10, red 25, second yellow 35) | Around `2.5` for a regular; capped at `35` |
 
-Expected Shots counts **every attempt** — on target or not, blocked shots included.
+Expected Shots counts **every attempt** — on target or not, blocked shots included. Expected Shots on Target counts the subset that hits the target, on the same definition the match feed uses.
 
-> **Expected Goals never exceeds Expected Shots**, on the published value and on both `meta` conditionals. A goal has to start as a shot, so the ordering always holds and you can rely on it.
+> **The three shooting metrics are always ordered:**
+>
+> ```
+> Expected Goals  ≤  Expected Shots on Target  ≤  Expected Shots
+> ```
+>
+> A goal has to be on target, and an on-target attempt has to be a shot. This holds on the published `value` **and** on both `meta` conditionals, so you can rely on it rather than defending against it.
 
-Dividing the two gives an implied conversion rate — how likely each of a player's attempts is to go in. Across a squad that typically lands somewhere around one goal in six to one in ten attempts, and it is a fair way to separate a high-volume shooter from a clinical finisher.
+The two ratios in that chain are the two halves of finishing, and they answer different questions:
+
+| Ratio | What it measures |
+|---|---|
+| `xSoT / xSh` | **Accuracy** — how often his attempts hit the target |
+| `xG / xSoT` | **Conversion** — how often the ones on target go in |
+
+Their product, `xG / xSh`, is the overall strike rate, which across a squad typically lands somewhere around one goal in six to one in ten attempts. Splitting it in two is more informative than the single number: a player who shoots a lot from distance and one who gets fewer but better chances can share a strike rate while looking nothing alike here.
 
 > **Not on the 1–99 scale.** An Expected Shots of `1.29` is not "very poor". It is 1.29 shots. Applying the ratings scale to these values, or the reverse, is the one mistake worth guarding against, and it is why the two families are marked by `developer_name` rather than left to context.
+
+### Expected Booking Points
+
+`PLAYER_EXPECTED_BOOKING_POINTS` (390) is the odd one in this family: every other expected metric counts a thing that happened, and this one is a **score**. It uses the standard disciplinary scale:
+
+| Card | Points |
+|---|---|
+| Yellow | 10 |
+| Straight red | 25 |
+| Second yellow | 35 |
+
+A second yellow is 10 + 25 because the first booking still counts. So does a player who is booked and then sent off for a separate offence — both routes reach 35, which is the **maximum any one player can score**.
+
+That changes what a typical value looks like. A regular midfielder sits near **2.5**, not near 0.25, and 8 is a high number rather than an impossible one. If you are feeding this into anything that also reads Expected Shots, keep the scales apart.
+
+> **The points total on its own cannot be inverted.** It blends two different events — a booking and a dismissal — at a 1:2.5 weight, so a player at 2.5 points might be a 25% booking risk who is never sent off, or a 15% booking risk who plays on the edge. Those price very differently. So both components ship in `meta` as **`p_booked`** and **`p_sent_off`**, and those, not the points total, are what you price a card market off:
+>
+> ```
+> value = 10 × p_booked + 25 × p_sent_off
+> ```
+>
+> The identity holds up to rounding — `value` is published to 3 decimals and the two probabilities to 5, so a reconstruction can differ by one unit in `value`'s last digit and no more. `p_booked` is the "player to be carded" price directly; remember to divide by `p_play`, since card markets void if he takes no part.
+
+**Two things about it are weaker than the rest of the family, and both are worth knowing before you price off it.**
+
+*The referee is not in it yet.* Who officiates is the single largest influence on cards — across officials with at least 20 matches, the strictest tenth show roughly 75% more cards per match than the most lenient tenth. The appointment is known for the great majority of finished fixtures but only about half of those kicking off inside two days, and almost none a week out, so a model using it would have to work in two regimes. The current version does not use it at all; the competition's own card rate is in the model and carries part of the effect. Adding the referee is the next planned improvement to this metric.
+
+*Coverage is narrower.* Cards arrive in their own feed bundle, and a fixture can report shots without reporting cards. Expect noticeably fewer players to carry a `390` row than a `384` row in the same fixture — look rows up by `developer_name` and treat the metric as absent rather than zero when it is missing.
 
 ### How much they move between fixtures
 
@@ -158,12 +202,10 @@ Because `p_start` is published alongside, you can also see how much the confirma
 
 ## Planned expected metrics
 
-Expected Shots, Goals, Assists, Goal Involvements and Minutes are live today. The rest of the family is not. The rest are **not implemented yet — no `type_id` is assigned, and nothing for them is returned today.** They are listed so you can see where the family is going, not so you can code against them:
+Expected Shots, Shots on Target, Goals, Assists, Goal Involvements, Minutes and Booking Points are live today. The rest are **not implemented yet — no `type_id` is assigned, and nothing for them is returned today.** They are listed so you can see where the family is going, not so you can code against them:
 
 | Planned | Unit | Notes |
 |---------|------|-------|
-| Expected Shots on Target (xSoT) | Shots on target | Will be modelled as a share of Expected Shots, so `xSoT ≤ xSh` always holds |
-| Expected Booking Points (xBP) | Points | Yellow 10, straight red 25, second yellow 35 |
 | Expected Fouls (xF) | Fouls committed | |
 | Expected Tackles (xT) | Tackles | |
 | Expected Passes (xP) | Passes completed | |
@@ -174,7 +216,7 @@ Two things are worth knowing in advance:
 - **They will share the shape documented above.** Same row structure, same decimal `value`, same `meta` with `if_starts` / `if_benched` / `p_start`. Code written against Expected Shots will handle them unchanged.
 - **Coverage will differ per metric.** Each depends on its own underlying stat being recorded, and leagues carry different subsets — a competition that reports shots may not report tackles. Expect the player count to vary between metrics in the same fixture, which is another reason to look rows up by `developer_name` rather than by position in the array.
 
-> **Expected Booking Points and Expected Fouls are the least certain of the set.** Both depend heavily on the referee, and referee appointments arrive late: around half of fixtures have one assigned within 24 hours of kick-off, under a third at two days, and almost none beyond that. Expect these two to behave like the team sheet does — a usable number early, sharpened once the appointment is known.
+> **Expected Fouls will be the least certain of the set**, for the same reason Expected Booking Points is: how a match is refereed drives both, and the appointment arrives late. Roughly half of fixtures in the competitions we cover have a referee assigned within 48 hours of kick-off, and very few beyond a week. Expect both metrics to behave like the team sheet does — a usable number early, sharpened once the appointment is known.
 
 ---
 
@@ -189,7 +231,7 @@ Two things are worth knowing in advance:
 | `type_id`        | integer | Type id of the metric — see the table below. |
 | `developer_name` | string  | Developer name of the metric. **This is what tells the two families apart.** |
 | `value`          | number  | Integer 1–99 for ratings; a decimal count for expected metrics. |
-| `meta`           | object  | **Only present on expected metrics** (384, 385). Absent entirely from ratings. |
+| `meta`           | object  | **Only present on expected metrics** (384–390). Absent entirely from ratings. |
 
 ### Metric types
 
@@ -199,11 +241,13 @@ Two things are worth knowing in advance:
 | `381` | `PLAYER_AGGRESSION_INDEX` | Rating | Competes physically: lots of fouls and tackles. |
 | `382` | `PLAYER_DISCIPLINE_INDEX` | Rating | Rarely booked for the fouls they commit. |
 | `383` | `PLAYER_SST_RATING` | Rating | Strong overall, combining the three above, weighted for their position. |
-| `384` | `PLAYER_EXPECTED_SHOTS` | Expected | Shots attempted in this fixture. |
+| `384` | `PLAYER_EXPECTED_SHOTS` | Expected | Shots attempted in this fixture, on target or not. |
 | `385` | `PLAYER_EXPECTED_MINUTES` | Expected | Minutes played in this fixture. |
-| `386` | `PLAYER_EXPECTED_GOALS` | Expected | Goals scored in this fixture. Never exceeds Expected Shots. |
+| `386` | `PLAYER_EXPECTED_GOALS` | Expected | Goals scored in this fixture. Never exceeds Expected Shots on Target. |
 | `387` | `PLAYER_EXPECTED_ASSISTS` | Expected | Assists in this fixture. |
 | `388` | `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` | Expected | Goals plus assists. Exactly `386` + `387`. |
+| `389` | `PLAYER_EXPECTED_SHOTS_ON_TARGET` | Expected | Attempts on target in this fixture. Sits between `386` and `384`. |
+| `390` | `PLAYER_EXPECTED_BOOKING_POINTS` | Expected | Booking points in this fixture. **Points, not cards** — see below. |
 
 ### `meta` (expected metrics only)
 
@@ -213,6 +257,8 @@ Two things are worth knowing in advance:
 | `if_benched` | number | Expected value conditional on not starting, already accounting for not being brought on. |
 | `p_start` | number | Probability of starting, `0`–`1`. |
 | `p_play` | number | Probability of taking any part in the match, `0`–`1`. Always ≥ `p_start`. |
+| `p_booked` | number | **`390` only.** Probability he is shown a yellow card, `0`–`1`. Blended over the team sheet, like `value`. |
+| `p_sent_off` | number | **`390` only.** Probability he is sent off by any route, `0`–`1`. Blended the same way. |
 
 ---
 
@@ -261,10 +307,29 @@ Two things are worth knowing in advance:
   {
     "team_id": 4009,
     "player_id": 184521,
+    "type_id": 389,
+    "developer_name": "PLAYER_EXPECTED_SHOTS_ON_TARGET",
+    "value": 0.444,
+    "meta": { "if_starts": 0.561, "if_benched": 0.054, "p_start": 0.77, "p_play": 0.834768 }
+  },
+  {
+    "team_id": 4009,
+    "player_id": 184521,
     "type_id": 385,
     "developer_name": "PLAYER_EXPECTED_MINUTES",
     "value": 65.953,
     "meta": { "if_starts": 82.949, "if_benched": 9.053, "p_start": 0.77, "p_play": 0.834768 }
+  },
+  {
+    "team_id": 4009,
+    "player_id": 184521,
+    "type_id": 390,
+    "developer_name": "PLAYER_EXPECTED_BOOKING_POINTS",
+    "value": 1.005,
+    "meta": {
+      "if_starts": 1.269, "if_benched": 0.121, "p_start": 0.77, "p_play": 0.834768,
+      "p_booked": 0.09108, "p_sent_off": 0.00377
+    }
   }
 ]
 ```
@@ -273,7 +338,11 @@ Read together, and knowing from `squads[]` that this player is an `ATTACKER`: a 
 
 For this match he is a likely but not certain starter (`p_start` 0.77), which works out at 1.29 expected shots and 66 expected minutes. If the team sheet names him in the XI, those become **1.63 shots and 83 minutes**; if he is benched, **0.16 and 9**.
 
-The blend is checkable by hand: `0.77 × 1.632 + 0.23 × 0.158 = 1.293`.
+The blend is checkable by hand: `0.77 × 1.632 + 0.23 × 0.158 = 1.293`, and the same arithmetic reproduces every other expected row.
+
+Booking points work the same way but read on their own scale — `1.005` points is a mild card risk, not a near-certainty, and the two probabilities in `meta` say why: about a **9% chance of a yellow** and well under **1% of a red**. Those reconstruct the value, `10 × 0.09108 + 25 × 0.00377 = 1.005`, and `p_booked` is what you would price "to be carded" from, after dividing by `p_play`.
+
+Of those 1.63 shots if he starts, 0.56 are expected on target — an accuracy of about 34%, right at the typical level, so his scorer price here rests on volume rather than on him being unusually accurate.
 
 > **Not every squad player appears, and the two families have separate bars.** Players without enough recent playing time are omitted rather than given a placeholder — newly signed and youth players are the usual cases. Expected metrics need a longer and richer history than the ratings do, so **a player can have all four ratings and no expected metrics** — this is common rather than exceptional. Always look rows up by `player_id` **and** `developer_name` rather than assuming a fixed six rows per player.
 
@@ -290,10 +359,10 @@ filter[player_metrics]=types:380,383
 returns only Impact and SST Rating for each player, which is usually all a listing view needs.
 
 ```
-filter[player_metrics]=types:384,385,386
+filter[player_metrics]=types:384,385,386,389
 ```
 
-returns the expected metrics for shots and minutes; add `386` for goals. A player-props view usually wants all three.
+returns the expected metrics a player-props view usually needs: shots, minutes, goals and shots on target. Add `387` and `388` for assists and goal involvements.
 
 ---
 
@@ -333,13 +402,21 @@ Cross-check against `PLAYER_EXPECTED_MINUTES` before acting on a low number: a l
 
 Note the direction: it is a **low** Discipline that flags risk, not a high one. Weight the pair by `PLAYER_EXPECTED_MINUTES` — a reckless player expected to play 20 minutes is a smaller risk than a moderate one playing 90.
 
+**For an actual price, use `PLAYER_EXPECTED_BOOKING_POINTS` (390) instead.** The two indices are position-relative ratings that tell you *who* to look at; the expected metric is a number you can bet off, and it has already done the minutes weighting for you. Its `meta.p_booked` is the "to be carded" probability directly. The indices remain the better tool for scanning a squad, because they compare a player against his position rather than in absolute terms.
+
+### Shots on target markets
+
+`PLAYER_EXPECTED_SHOTS_ON_TARGET` is the direct input for "player to have 1+ / 2+ shots on target", one of the more liquid player markets. Everything said above about shots markets applies unchanged: compare the published `value` before the team sheet, switch to `meta.if_starts` after it.
+
+What this metric adds beyond xSh is the **accuracy split**. Two players with the same expected shots can have quite different expected shots on target, and the shots-on-target market pays for exactly that difference while the shots market does not. Take `xSoT / xSh` per player and rank the squad by it: the high end is where an on-target price built off shot volume alone is likely to be wrong.
+
 ### Goalscorer markets
 
 `PLAYER_EXPECTED_GOALS` is the direct input for anytime-scorer prices, but converting it takes two steps that are easy to skip — and skipping either loses money. See [Pricing markets](#pricing-markets) for the full derivation; the short version is that you must convert **each branch separately** and then divide by `p_play`.
 
 The same before/after team-sheet rule applies, and it bites hardest here: a fringe striker's published value is dominated by the chance he does not start, so confirmation can move it sharply. Switch to `meta.if_starts` the moment the XI is known.
 
-Read alongside `PLAYER_EXPECTED_SHOTS`, the pair separates the two halves of a scorer price — how many chances a player is expected to get, and how likely each is to go in. A high xSh with a low ratio is a volume shooter; the reverse is a clinical finisher who needs fewer chances.
+Read alongside `PLAYER_EXPECTED_SHOTS` and `PLAYER_EXPECTED_SHOTS_ON_TARGET`, the trio separates a scorer price into three parts rather than two — how many attempts a player is expected to get, how many of those hit the target, and how many of *those* go in. A high xSh with a low `xSoT / xSh` is a volume shooter whose scorer price is doing less work than it looks; a high `xG / xSoT` is a finisher who needs fewer chances.
 
 ### Matchup context
 
@@ -422,6 +499,59 @@ How the two families compare against settled results, as a percentage error on t
 | over 2.5 | **−6%** | **0%** |
 
 Poisson is not catastrophic, but it is biased in a consistent and exploitable direction — too generous on low lines, too stingy on high ones. The negative binomial removes most of that.
+
+### Shots on target lines
+
+`PLAYER_EXPECTED_SHOTS_ON_TARGET` prices "1+ / 2+ shots on target" and the structure is identical to shots — convert each branch, mix, divide by `p_play`.
+
+**What is not identical is the dispersion constant.** `D = 1.19` was fitted on shot attempts and does not transfer: on-target attempts are roughly a third as frequent, so the same player's count distribution is a different shape. Until we publish a measured constant for this metric, **Poisson is the honest default** — the rates are low enough that the two families barely separate at the 0.5 line, which is where most of the volume sits. Reusing `1.19` here would be borrowing a number from a distribution it was not measured on.
+
+```js
+const { p_start, p_play, if_starts, if_benched } = meta;   // from the 389 row
+const p_sub      = p_play - p_start;
+const lambda_sub = if_benched / (p_sub / (1 - p_start));
+
+// "1+ shot on target" is P(X >= 1).
+const p_on_target = p_start * (1 - Math.exp(-if_starts))
+                  + p_sub   * (1 - Math.exp(-lambda_sub));
+const fair        = p_play / p_on_target;
+```
+
+The higher the line, the more the missing dispersion term costs you — the same pattern the shots table shows, where Poisson runs stingy at 2.5. Treat 2+ and 3+ on-target prices as indicative until the constant is measured.
+
+### Booking points, and cards
+
+This one does **not** follow the Poisson pattern the rest of this section uses, and trying to make it fit is the mistake to avoid. Booking points are not a count — a player scores exactly one of **0, 10, 25 or 35**, and nothing else is reachable. So the distribution is a four-point one you can write down in full, and there is no dispersion constant to worry about.
+
+`meta` gives you the two probabilities directly, and everything else follows:
+
+```js
+const { p_booked, p_sent_off, p_play } = meta;   // from the 390 row
+
+// "To be carded" and "to be sent off", the two card markets.
+// Both void if he takes no part, so both divide by p_play.
+const fair_carded    = p_play / p_booked;
+const fair_sent_off  = p_play / p_sent_off;
+```
+
+For a **booking-points line** you need the four outcome probabilities, which needs one more fact: how often a dismissal came with a booking attached. Measured across the feed, about **54% of dismissals are straight reds** (25 points) and **46% arrive via a booking** (35 points) — a second yellow, or a booking followed by a separate red.
+
+```js
+const STRAIGHT_RED_SHARE = 0.54;                 // measured, global, not per player
+
+const p35 = (1 - STRAIGHT_RED_SHARE) * p_sent_off;
+const p25 = STRAIGHT_RED_SHARE * p_sent_off;
+const p10 = Math.max(0, p_booked - p35);         // booked, stayed on
+const p0  = Math.max(0, 1 - p10 - p25 - p35);
+
+// e.g. "over 10.5 booking points" = anything above a single yellow
+const p_over_10_5 = p25 + p35;
+const fair        = p_play / p_over_10_5;
+```
+
+Those four probabilities reproduce the published `value` exactly — `10·p10 + 25·p25 + 35·p35` is `10·p_booked + 25·p_sent_off` by construction — so you can check your implementation against the row you were given.
+
+> **The split is a global constant, not a per-player one.** Some players really are more likely to pick up a straight red than a second yellow, and 0.54 does not know that. It matters only for lines that separate 25 from 35, which is a thin market; for "over 10.5" the two are on the same side and the constant cancels out entirely.
 
 ### Assists, and goal involvements
 
