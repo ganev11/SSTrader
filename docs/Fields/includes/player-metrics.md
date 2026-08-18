@@ -18,7 +18,7 @@ The `player_metrics` include returns two different kinds of number for every pla
 | Family | `type_id` | What it is | Scale |
 |---|---|---|---|
 | **Ratings** | 380–383 | How good the player had been going into this fixture | Integer 1–99, 50 = average |
-| **Expected metrics** | 384–387 | What the player is predicted to do **in this fixture** | Decimal count (shots, goals, assists, minutes) |
+| **Expected metrics** | 384–388 | What the player is predicted to do **in this fixture** | Decimal count (shots, goals, assists, involvements, minutes) |
 
 They live in the same array and share the same row shape, so the one thing to get right is telling them apart — use `developer_name`, or the `type_id` ranges above. Everything else follows from which family a row belongs to.
 
@@ -90,7 +90,8 @@ So an Impact of `73` on a defender means a strong defender, and `73` on a strike
 
 # Part 2 — Expected metrics
 
-`PLAYER_EXPECTED_SHOTS` · `PLAYER_EXPECTED_GOALS` · `PLAYER_EXPECTED_ASSISTS` · `PLAYER_EXPECTED_MINUTES`
+`PLAYER_EXPECTED_SHOTS` · `PLAYER_EXPECTED_GOALS` · `PLAYER_EXPECTED_ASSISTS` ·
+`PLAYER_EXPECTED_GOAL_INVOLVEMENTS` · `PLAYER_EXPECTED_MINUTES`
 
 These are **predictions for the specific fixture**, not ratings. The value is a plain decimal count in the metric's own unit:
 
@@ -99,6 +100,7 @@ These are **predictions for the specific fixture**, not ratings. The value is a 
 | `PLAYER_EXPECTED_SHOTS` | `384` | Shots attempted | Usually below `1`; above `3` is rare |
 | `PLAYER_EXPECTED_GOALS` | `386` | Goals scored | Usually well below `0.5`; above `1` is rare |
 | `PLAYER_EXPECTED_ASSISTS` | `387` | Assists | Lower than Expected Goals for most players; creators are the exception |
+| `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` | `388` | Goals + assists | Always the sum of the two above, exactly |
 | `PLAYER_EXPECTED_MINUTES` | `385` | Minutes on the pitch | `0`–`90+` |
 
 Expected Shots counts **every attempt** — on target or not, blocked shots included.
@@ -156,12 +158,10 @@ Because `p_start` is published alongside, you can also see how much the confirma
 
 ## Planned expected metrics
 
-Expected Shots is the first of a wider set. The rest are **not implemented yet — no `type_id` is assigned, and nothing for them is returned today.** They are listed so you can see where the family is going, not so you can code against them:
+Expected Shots, Goals, Assists, Goal Involvements and Minutes are live today. The rest of the family is not. The rest are **not implemented yet — no `type_id` is assigned, and nothing for them is returned today.** They are listed so you can see where the family is going, not so you can code against them:
 
 | Planned | Unit | Notes |
 |---------|------|-------|
-| Expected Assists (xA) | Assists | |
-| Expected Goal Involvements (xGI) | Goals + assists | Will be derived from Expected Goals and Expected Assists rather than modelled separately |
 | Expected Shots on Target (xSoT) | Shots on target | Will be modelled as a share of Expected Shots, so `xSoT ≤ xSh` always holds |
 | Expected Booking Points (xBP) | Points | Yellow 10, straight red 25, second yellow 35 |
 | Expected Fouls (xF) | Fouls committed | |
@@ -203,6 +203,7 @@ Two things are worth knowing in advance:
 | `385` | `PLAYER_EXPECTED_MINUTES` | Expected | Minutes played in this fixture. |
 | `386` | `PLAYER_EXPECTED_GOALS` | Expected | Goals scored in this fixture. Never exceeds Expected Shots. |
 | `387` | `PLAYER_EXPECTED_ASSISTS` | Expected | Assists in this fixture. |
+| `388` | `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` | Expected | Goals plus assists. Exactly `386` + `387`. |
 
 ### `meta` (expected metrics only)
 
@@ -426,16 +427,27 @@ Poisson is not catastrophic, but it is biased in a consistent and exploitable di
 
 `PLAYER_EXPECTED_ASSISTS` prices "anytime assist" exactly like anytime goalscorer — Poisson per branch, mixed, divided by `p_play`. Assists are rarer than goals for most players, so the rate is low enough that the Poisson approximation is comfortable.
 
-**Expected goal involvements is `xG + xA`**, and there is deliberately no `type_id` for it: a stored sum can drift from its own addends, so add the two rows yourself.
+**Expected goal involvements is published directly** as `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` (`388`). You no longer need to add the rows yourself, though you still can — the identity holds exactly:
 
-Take care converting it. Goals and assists are separate events, so the sum is the expected **count** of involvements — but the probability of *either* is not the sum of the two probabilities. For "to score or assist", combine at the branch level:
-
-```js
-// per branch, not on the blended values
-const p_involved = 1 - Math.exp(-(xg_if_starts + xa_if_starts));
+```
+value(388)      = value(386)      + value(387)
+if_starts(388)  = if_starts(386)  + if_starts(387)
+if_benched(388) = if_benched(386) + if_benched(387)
 ```
 
-One honest caveat: a player cannot assist his own goal, so the two are mildly negatively correlated within a match. Treating them as independent slightly overstates "score or assist" — a small effect next to the void adjustment, but real.
+That is exact on the published 3dp numbers, not approximate: the sum is taken from the same rounded conditionals the other two rows carry, so it cannot drift from its own addends.
+
+**It is a count, not a probability, and the difference matters here more than anywhere else.** Goals and assists are separate events, so their expected counts add — but the probability of *either* is not the sum of the two probabilities. Convert at the branch level, exactly as for the other metrics:
+
+```js
+// per branch, never on the blended value
+const p_involved = 1 - Math.exp(-gi_if_starts);
+```
+
+Two caveats worth carrying:
+
+- A player **cannot assist his own goal**, so the two events are mildly negatively correlated within a match. That does not affect the published value — expectation is linear whatever the correlation — but treating them as independent when converting slightly overstates "score or assist". Small next to the void adjustment, and real.
+- The row is emitted **only when both addends are**. Coverage differs per metric, and a league recording goals but not assists would otherwise produce an "involvements" figure that quietly means goals only. If `388` is missing while `386` is present, that is why.
 
 ### Other markets
 
