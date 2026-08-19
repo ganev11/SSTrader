@@ -2647,6 +2647,22 @@ components:
         inverted back into them.
 
 
+        It is also the one metric that **sharpens as kick-off approaches**. The
+        appointed referee is the largest single influence on cards and
+        appointments are published only days out, so a value requested a week
+        ahead reflects the competition's average officiating and updates once
+        the official is known. Re-request the fixture close to kick-off if the
+        card price matters; the earlier number is not wrong, it is the
+        expectation given an unknown referee.
+
+
+        Knowing the official does not change the average card price across all
+        matches - strict and lenient referees cancel out - it changes the price
+        of each individual match. See docs/player-metrics.md for the full
+        explanation, including why figures carried over from before referees
+        were modelled are worth re-requesting rather than merely refreshing.
+
+
         Coverage differs per metric, because each depends on its own underlying
         statistic being recorded and leagues carry different subsets. Look rows
         up by `player_id` **and** `developer_name` rather than assuming a fixed
@@ -2793,11 +2809,19 @@ components:
         present on the four ratings.
 
 
-        `PLAYER_EXPECTED_BOOKING_POINTS` carries two extra fields, `p_booked`
-        and `p_sent_off`, and they are what a card market is priced off - the
-        points `value` mixes the two events at a 1:2.5 weight and cannot be
-        split back apart. The identity `value = 10 x p_booked + 25 x p_sent_off`
-        holds to the precision published.
+        `PLAYER_EXPECTED_BOOKING_POINTS` carries three extra fields. `p_booked`
+        and `p_sent_off` are what a card market is priced off - the points
+        `value` mixes the two events at a 1:2.5 weight and cannot be split back
+        apart. The identity `value = 10 x p_booked + 25 x p_sent_off` holds to
+        the precision published.
+
+
+        `referee_known` is a boolean saying whether the officiating appointment
+        had been published when the value was computed. `false` means the figure
+        reflects the competition's average refereeing rather than a named
+        official's record, and that it will still move - not that it is
+        unreliable. Use it to decide whether a cached card price is worth
+        re-requesting closer to kick-off.
 
 
         `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` is derived rather than modelled: its
