@@ -18,7 +18,7 @@ The `player_metrics` include returns two different kinds of number for every pla
 | Family | `type_id` | What it is | Scale |
 |---|---|---|---|
 | **Ratings** | 380–383 | How good the player had been going into this fixture | Integer 1–99, 50 = average |
-| **Expected metrics** | 384–390 | What the player is predicted to do **in this fixture** | Decimal count (shots, shots on target, goals, assists, involvements, minutes), or booking points |
+| **Expected metrics** | 384–392 | What the player is predicted to do **in this fixture** | Decimal count (shots, shots on target, goals, assists, involvements, minutes, fouls, tackles), or booking points |
 
 They live in the same array and share the same row shape, so the one thing to get right is telling them apart — use `developer_name`, or the `type_id` ranges above. Everything else follows from which family a row belongs to.
 
@@ -92,7 +92,7 @@ So an Impact of `73` on a defender means a strong defender, and `73` on a strike
 
 `PLAYER_EXPECTED_SHOTS` · `PLAYER_EXPECTED_SHOTS_ON_TARGET` · `PLAYER_EXPECTED_GOALS` ·
 `PLAYER_EXPECTED_ASSISTS` · `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` · `PLAYER_EXPECTED_MINUTES` ·
-`PLAYER_EXPECTED_BOOKING_POINTS`
+`PLAYER_EXPECTED_BOOKING_POINTS` · `PLAYER_EXPECTED_FOULS` · `PLAYER_EXPECTED_TACKLES`
 
 These are **predictions for the specific fixture**, not ratings. The value is a plain decimal count in the metric's own unit — with one exception, Expected Booking Points, which is a points score rather than a count:
 
@@ -105,6 +105,8 @@ These are **predictions for the specific fixture**, not ratings. The value is a 
 | `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` | `388` | Goals + assists | Always the sum of the two above, exactly |
 | `PLAYER_EXPECTED_MINUTES` | `385` | Minutes on the pitch | `0`–`90+` |
 | `PLAYER_EXPECTED_BOOKING_POINTS` | `390` | **Booking points** (yellow 10, red 25, second yellow 35) | Around `2.5` for a regular; capped at `35` |
+| `PLAYER_EXPECTED_FOULS` | `391` | Fouls committed | Around `1` for a regular starter; goalkeepers near `0` |
+| `PLAYER_EXPECTED_TACKLES` | `392` | Tackles | Similar to fouls for defenders and midfielders, lower for forwards — **but see the note on competitions below** |
 
 Expected Shots counts **every attempt** — on target or not, blocked shots included. Expected Shots on Target counts the subset that hits the target, on the same definition the match feed uses.
 
@@ -173,6 +175,47 @@ Two things follow for how you use it. **Re-request the fixture close to kick-off
 
 *Coverage is narrower.* Cards arrive in their own feed bundle, and a fixture can report shots without reporting cards. Expect noticeably fewer players to carry a `390` row than a `384` row in the same fixture — look rows up by `developer_name` and treat the metric as absent rather than zero when it is missing.
 
+### Expected Fouls and Expected Tackles
+
+`PLAYER_EXPECTED_FOULS` (391) and `PLAYER_EXPECTED_TACKLES` (392) are plain counts and behave like
+Expected Shots — same row shape, same `meta`, same decimal `value`. Two things are specific to
+them.
+
+**Expected Fouls sharpens as kick-off approaches, for the same reason booking points does.**
+Everything written above about Expected Booking Points and the referee applies here:
+`meta.referee_known` says which state a row is in, and the same advice follows — re-request close
+to kick-off if the number matters, and do not read the early value as wrong.
+
+Two differences are worth knowing. **Who the official is, is a more consistent trait for fouls
+than for cards** — a referee's foul rate relative to his competition repeats from one half of his
+season to the other more reliably than his card rate does, which is unsurprising: whether a
+challenge is *called* a foul is his decision outright, while a card is a second decision layered
+on top. **But the appointment moves the number less than it moves a card price**, because the
+spread between officials is narrower here: the strictest tenth call roughly 30% more fouls per
+match than the most lenient tenth, against roughly 65% more cards.
+
+So the appointment matters in both directions and matters more for `390` than for `391`. What it
+is *not* is optional on either — a value computed without an official is the competition's normal
+behaviour, and for an unusual referee that is the wrong answer for that specific match rather
+than a slightly blurred one.
+
+**Expected Tackles has no referee in it at all, deliberately.** A tackle is something a player
+does, not something an official awards, and we measured the referee's influence on it as
+indistinguishable from noise. A `392` row therefore carries no `referee_known` field and does not
+sharpen at appointment time — it is as good a week out as it is an hour out.
+
+> **Compare tackles within a competition, not across them.** What a match scorer records as a
+> "tackle" varies between competitions far more than a foul does, because a foul has already been
+> judged by the referee and a tackle has not. The model accounts for the competition it is
+> predicting, so the number is right for that match — but the same player would read differently
+> in a different league, and a cross-competition ranking on `392` measures recording convention as
+> much as it measures the player. Fouls are much less affected; shots and goals barely at all.
+
+*Coverage.* Fouls are carried on essentially every fixture that reports shots, so a `391` row is
+the most widely available of the expected metrics. Tackles are carried slightly less often, and
+unevenly — a few competitions do not report them at all, so no player in them will have a `392`
+row. Look rows up by `developer_name` and treat a missing metric as absent rather than zero.
+
 ### How much they move between fixtures
 
 Expected metrics vary far more from match to match than the ratings do, because the opponent, the venue and the player's chance of starting all bear on them directly. Across a few fixtures the same player's expected shots can differ by well over half, while his ratings drift by only a point or two.
@@ -220,12 +263,10 @@ Because `p_start` is published alongside, you can also see how much the confirma
 
 ## Planned expected metrics
 
-Expected Shots, Shots on Target, Goals, Assists, Goal Involvements, Minutes and Booking Points are live today. The rest are **not implemented yet — no `type_id` is assigned, and nothing for them is returned today.** They are listed so you can see where the family is going, not so you can code against them:
+Expected Shots, Shots on Target, Goals, Assists, Goal Involvements, Minutes, Booking Points, Fouls and Tackles are live today. The rest are **not implemented yet — no `type_id` is assigned, and nothing for them is returned today.** They are listed so you can see where the family is going, not so you can code against them:
 
 | Planned | Unit | Notes |
 |---------|------|-------|
-| Expected Fouls (xF) | Fouls committed | |
-| Expected Tackles (xT) | Tackles | |
 | Expected Passes (xP) | Passes completed | |
 | Expected Saves (xS) | Saves | Goalkeepers only |
 
@@ -234,7 +275,7 @@ Two things are worth knowing in advance:
 - **They will share the shape documented above.** Same row structure, same decimal `value`, same `meta` with `if_starts` / `if_benched` / `p_start`. Code written against Expected Shots will handle them unchanged.
 - **Coverage will differ per metric.** Each depends on its own underlying stat being recorded, and leagues carry different subsets — a competition that reports shots may not report tackles. Expect the player count to vary between metrics in the same fixture, which is another reason to look rows up by `developer_name` rather than by position in the array.
 
-> **Expected Fouls will behave like Expected Booking Points**, because the same thing drives both: how a match is refereed, and the appointment arrives late. Expect it to sharpen as kick-off approaches in the same way — a usable number early, based on the competition's norms, refined once the official is known.
+> **Expected Saves will depend on the opponent more than on the goalkeeper**, in the way Expected Assists depends on the finisher: a keeper cannot make a save nobody attempts. Expect it to track how much shooting the opposing side does at least as closely as it tracks the keeper himself.
 
 ---
 
@@ -249,7 +290,7 @@ Two things are worth knowing in advance:
 | `type_id`        | integer | Type id of the metric — see the table below. |
 | `developer_name` | string  | Developer name of the metric. **This is what tells the two families apart.** |
 | `value`          | number  | Integer 1–99 for ratings; a decimal count for expected metrics. |
-| `meta`           | object  | **Only present on expected metrics** (384–390). Absent entirely from ratings. |
+| `meta`           | object  | **Only present on expected metrics** (384–392). Absent entirely from ratings. |
 
 ### Metric types
 
@@ -266,6 +307,8 @@ Two things are worth knowing in advance:
 | `388` | `PLAYER_EXPECTED_GOAL_INVOLVEMENTS` | Expected | Goals plus assists. Exactly `386` + `387`. |
 | `389` | `PLAYER_EXPECTED_SHOTS_ON_TARGET` | Expected | Attempts on target in this fixture. Sits between `386` and `384`. |
 | `390` | `PLAYER_EXPECTED_BOOKING_POINTS` | Expected | Booking points in this fixture. **Points, not cards** — see below. |
+| `391` | `PLAYER_EXPECTED_FOULS` | Expected | Fouls committed in this fixture. Sharpens once the referee is appointed. |
+| `392` | `PLAYER_EXPECTED_TACKLES` | Expected | Tackles in this fixture. Compare within a competition, not across them. |
 
 ### `meta` (expected metrics only)
 
@@ -277,7 +320,7 @@ Two things are worth knowing in advance:
 | `p_play` | number | Probability of taking any part in the match, `0`–`1`. Always ≥ `p_start`. |
 | `p_booked` | number | **`390` only.** Probability he is shown a yellow card, `0`–`1`. Blended over the team sheet, like `value`. |
 | `p_sent_off` | number | **`390` only.** Probability he is sent off by any route, `0`–`1`. Blended the same way. |
-| `referee_known` | boolean | **`390` only.** Whether the officiating appointment was published when this value was computed. `false` means the figure reflects the competition's average refereeing and will move once the official is named. |
+| `referee_known` | boolean | **`390` and `391` only.** Whether the officiating appointment was published when this value was computed. `false` means the figure reflects the competition's average refereeing and will move once the official is named. Absent on `392`, which has no referee term. |
 
 ---
 
