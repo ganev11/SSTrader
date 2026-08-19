@@ -149,9 +149,27 @@ That changes what a typical value looks like. A regular midfielder sits near **2
 >
 > The identity holds up to rounding — `value` is published to 3 decimals and the two probabilities to 5, so a reconstruction can differ by one unit in `value`'s last digit and no more. `p_booked` is the "player to be carded" price directly; remember to divide by `p_play`, since card markets void if he takes no part.
 
-**Two things about it are weaker than the rest of the family, and both are worth knowing before you price off it.**
+**Two things set it apart from the rest of the family, and both are worth knowing before you price off it.**
 
-*The referee is not in it yet.* Who officiates is the single largest influence on cards — across officials with at least 20 matches, the strictest tenth show roughly 75% more cards per match than the most lenient tenth. The appointment is known for the great majority of finished fixtures but only about half of those kicking off inside two days, and almost none a week out, so a model using it would have to work in two regimes. The current version does not use it at all; the competition's own card rate is in the model and carries part of the effect. Adding the referee is the next planned improvement to this metric.
+*The referee is in it now, but only once he is appointed.* This is the biggest thing to understand about Expected Booking Points, so it is worth setting out slowly.
+
+**Referees are not interchangeable.** Some hand out a lot of cards, some hardly any. Among officials with at least 20 matches, the strictest tenth show roughly 75% more cards per match than the most lenient tenth. Who is in the middle is the single largest influence on how many cards a match produces — larger than anything about the players.
+
+**Knowing who it is does not change the average.** Over a season the strict referees and the lenient ones cancel out. Ask "how many cards in a typical match?" and the answer is the same whether or not anyone has been appointed yet. So this feature does not move the overall level of card prices, and it was not meant to.
+
+**It changes the answer for each individual match.** You are not pricing a typical match, you are pricing one match. If Saturday's official is a strict one, that match will run well above the competition's norm; if he is lenient, well below. Previously both got the competition's average. Now they get their own numbers.
+
+It is the same as a weather forecast. Checking it does not change the average temperature of the city. It still tells you whether to take a coat *tomorrow*.
+
+> **One thing worth knowing if you priced off an earlier version.** Before the referee was included, the model leaned on how many fouls a competition produces as a stand-in — more fouls, more cards. That works in general and fails on a specific and common type of official: one who blows the whistle constantly but rarely reaches for a card. On those matches the old model read the high foul count and predicted *more* cards where fewer actually came.
+>
+> So the change is not "vague number becomes sharper number". For unusual referees the earlier figure could lean the wrong way. **Card prices carried over from before this release are worth re-requesting**, not just refreshing for precision.
+
+**How it is weighted.** The model reads how far the appointed official's record sits from his competition's average, discounted by how much of a record he has. A referee we have seen twice barely moves the number; one we have seen fifty times moves it a lot. That keeps a new or rarely-seen official from swinging a price on almost no evidence.
+
+**The practical consequence: this metric sharpens as kick-off approaches.** Appointments are published days out at most — a week before a match there is usually no official named, and the number you get is the competition's average behaviour. When the appointment lands the value updates, and for an unusually strict or lenient referee it can move materially. Nothing about the players has changed; the model simply knows more.
+
+Two things follow for how you use it. **Re-request the fixture close to kick-off** if the card price matters, rather than carrying an early number forward — `meta.referee_known` tells you which state a row is in. And **do not read the early number as wrong**: it is the honest expectation given an unknown official, and it is deliberately identical to what you would get for a perfectly average one, so the value does not drift for its own sake.
 
 *Coverage is narrower.* Cards arrive in their own feed bundle, and a fixture can report shots without reporting cards. Expect noticeably fewer players to carry a `390` row than a `384` row in the same fixture — look rows up by `developer_name` and treat the metric as absent rather than zero when it is missing.
 
@@ -216,7 +234,7 @@ Two things are worth knowing in advance:
 - **They will share the shape documented above.** Same row structure, same decimal `value`, same `meta` with `if_starts` / `if_benched` / `p_start`. Code written against Expected Shots will handle them unchanged.
 - **Coverage will differ per metric.** Each depends on its own underlying stat being recorded, and leagues carry different subsets — a competition that reports shots may not report tackles. Expect the player count to vary between metrics in the same fixture, which is another reason to look rows up by `developer_name` rather than by position in the array.
 
-> **Expected Fouls will be the least certain of the set**, for the same reason Expected Booking Points is: how a match is refereed drives both, and the appointment arrives late. Roughly half of fixtures in the competitions we cover have a referee assigned within 48 hours of kick-off, and very few beyond a week. Expect both metrics to behave like the team sheet does — a usable number early, sharpened once the appointment is known.
+> **Expected Fouls will behave like Expected Booking Points**, because the same thing drives both: how a match is refereed, and the appointment arrives late. Expect it to sharpen as kick-off approaches in the same way — a usable number early, based on the competition's norms, refined once the official is known.
 
 ---
 
@@ -259,6 +277,7 @@ Two things are worth knowing in advance:
 | `p_play` | number | Probability of taking any part in the match, `0`–`1`. Always ≥ `p_start`. |
 | `p_booked` | number | **`390` only.** Probability he is shown a yellow card, `0`–`1`. Blended over the team sheet, like `value`. |
 | `p_sent_off` | number | **`390` only.** Probability he is sent off by any route, `0`–`1`. Blended the same way. |
+| `referee_known` | boolean | **`390` only.** Whether the officiating appointment was published when this value was computed. `false` means the figure reflects the competition's average refereeing and will move once the official is named. |
 
 ---
 
@@ -328,7 +347,7 @@ Two things are worth knowing in advance:
     "value": 1.005,
     "meta": {
       "if_starts": 1.269, "if_benched": 0.121, "p_start": 0.77, "p_play": 0.834768,
-      "p_booked": 0.09108, "p_sent_off": 0.00377
+      "p_booked": 0.09108, "p_sent_off": 0.00377, "referee_known": false
     }
   }
 ]
