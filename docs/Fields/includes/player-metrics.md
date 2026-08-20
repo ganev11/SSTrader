@@ -18,7 +18,7 @@ The `player_metrics` include returns two different kinds of number for every pla
 | Family | `type_id` | What it is | Scale |
 |---|---|---|---|
 | **Ratings** | 380–383 | How good the player had been going into this fixture | Integer 1–99, 50 = average |
-| **Expected metrics** | 384–392 | What the player is predicted to do **in this fixture** | Decimal count (shots, shots on target, goals, assists, involvements, minutes, fouls, tackles), or booking points |
+| **Expected metrics** | 384–394 | What the player is predicted to do **in this fixture** | Decimal count (shots, shots on target, goals, assists, involvements, minutes, fouls, tackles, passes, saves), or booking points |
 
 They live in the same array and share the same row shape, so the one thing to get right is telling them apart — use `developer_name`, or the `type_id` ranges above. Everything else follows from which family a row belongs to.
 
@@ -107,6 +107,8 @@ These are **predictions for the specific fixture**, not ratings. The value is a 
 | `PLAYER_EXPECTED_BOOKING_POINTS` | `390` | **Booking points** (yellow 10, red 25, second yellow 35) | Around `2.5` for a regular; capped at `35` |
 | `PLAYER_EXPECTED_FOULS` | `391` | Fouls committed | Around `1` for a regular starter; goalkeepers near `0` |
 | `PLAYER_EXPECTED_TACKLES` | `392` | Tackles | Similar to fouls for defenders and midfielders, lower for forwards — **but see the note on competitions below** |
+| `PLAYER_EXPECTED_PASSES` | `393` | **Passes completed** | Much the largest of these numbers — around `30` for a full-match player, and highest for defenders |
+| `PLAYER_EXPECTED_SAVES` | `394` | Saves | Around `3` for a full-match goalkeeper. **Goalkeepers only — no row is returned for anyone else** |
 
 Expected Shots counts **every attempt** — on target or not, blocked shots included. Expected Shots on Target counts the subset that hits the target, on the same definition the match feed uses.
 
@@ -216,6 +218,92 @@ the most widely available of the expected metrics. Tackles are carried slightly 
 unevenly — a few competitions do not report them at all, so no player in them will have a `392`
 row. Look rows up by `developer_name` and treat a missing metric as absent rather than zero.
 
+### Expected Passes
+
+`PLAYER_EXPECTED_PASSES` (393) is the newest of the family and behaves differently enough from the
+rest to be worth reading before you use it. It is the only one where the typical value is in the
+tens rather than around one, and three things follow from that.
+
+**It counts passes COMPLETED, not attempted.** Around 80% of attempted passes are completed, so if
+you are pricing against a market quoted on attempts, this number will look about a fifth low and
+nothing is wrong. There is no attempted-passes metric today.
+
+**Read it against the player's position, not against other players.** This is the one expected
+metric whose position ordering runs opposite to the rest of the family:
+
+| Position | Typical completions per 90 |
+|---|---|
+| Defenders | highest — roughly `38` |
+| Midfielders | roughly `32` |
+| Goalkeepers | roughly `19` |
+| Forwards | lowest — roughly `17` |
+
+Defenders complete well over twice what forwards do. So a forward on `20` is having an unusually
+involved match while a defender on `30` is having a quiet one, which is the reverse of how you
+would read Expected Fouls or Expected Tackles on the same two players.
+
+**Treat the number as a central estimate, not as a tight one.** Every expected metric is an
+average over how the match might go, but the spread around it is wider here than for any other
+metric in the family. The reason is possession: how much of the ball a side ends up with on the
+day is a large part of how many passes its players complete, and it is genuinely not knowable
+before kick-off — a team protecting a lead and the same team chasing one play very different
+matches.
+
+Concretely, if you are pricing an over/under: **the realised count scatters roughly twice as
+widely as a Poisson assumption would imply**, and the multiple grows with the value — it is
+smallest for low-minute substitutes and largest for the high-volume midfielders and defenders
+these markets are usually quoted on. Do not derive a spread from the square root of the value.
+Goals and assists are close to Poisson and shots are mildly over-dispersed; passes are not in
+that range, and the difference is large enough to move a price rather than shade it.
+
+**No referee term, and none needed.** Unlike Expected Booking Points and Expected Fouls, this
+value does not sharpen when the officiating appointment lands — we measured the referee's
+influence on passing as indistinguishable from noise. A `393` row carries no `referee_known`
+field and is as good a week out as an hour out, subject only to the team-sheet question below.
+
+*Coverage.* Passes are the best-covered statistic in the feed — carried on essentially every
+fixture that reports shots — so `393` is the most widely available expected metric we publish.
+
+*Stability.* It is also the most predictable. How much a player passes is a function of his role,
+and roles change slowly, so a player's own history is a much stronger guide here than it is for
+shots or cards. Expect `393` to move less between fixtures than the shooting metrics do, once
+expected minutes are held constant.
+
+### Expected Saves
+
+`PLAYER_EXPECTED_SAVES` (394) is the newest of the family and the only one published for a single
+position. Three things about it are unlike every other expected metric, and all three matter
+before you price anything off it.
+
+**It exists for goalkeepers and nobody else.** A fixture carries roughly four `394` rows against
+roughly forty of every other expected metric. There is no row for an outfield player — not a zero
+row, no row at all — because a striker's expected saves is undefined rather than zero. This is
+the clearest reason to look rows up by `developer_name` rather than by position in the array.
+
+**It depends on the opponent at least as much as on the goalkeeper**, in the way Expected Assists
+depends on the finisher. A keeper cannot make a save nobody attempts, so the strongest thing we
+know before kick-off is how much on-target shooting the opposing side does and how much his own
+defence tends to concede. The keeper's own record matters, but it is not the largest of the three
+inputs — it is roughly the smallest, which is the reverse of every other metric here. In
+particular, **a high `394` is not a compliment.** Keepers behind weak defences post the highest
+values in the league.
+
+**Treat it as a centre, not a forecast.** This is the least predictable value we publish, and the
+reason is football rather than modelling. Saves are a low-frequency event driven almost entirely
+by what the opposition happens to do on the day: most of the variation in a keeper's save count
+from match to match cannot be known in advance by anyone. The number is the average over how the
+match might go, and a realised `1` or a realised `6` against a published `3` are both completely
+ordinary outcomes. If you are pricing an over/under, size the spread generously.
+
+**No referee term, and none is possible.** A referee decides whether a challenge is a foul; he has
+no influence over whether a shot is on target. We measured his effect on saves as indistinguishable
+from noise — the cleanest such result of any metric in the family — so a `394` row carries no
+`referee_known` field and does not sharpen when the appointment lands.
+
+*Coverage.* Saves are carried on about 97.5% of the fixtures that report shots, reaching 331
+competitions. That is the narrowest coverage of the count metrics — passes reach essentially every
+fixture — so expect `394` to be missing somewhat more often than `391`, `392` or `393`.
+
 ### How much they move between fixtures
 
 Expected metrics vary far more from match to match than the ratings do, because the opponent, the venue and the player's chance of starting all bear on them directly. Across a few fixtures the same player's expected shots can differ by well over half, while his ratings drift by only a point or two.
@@ -261,21 +349,21 @@ Because `p_start` is published alongside, you can also see how much the confirma
 
 `p_start` is useful on its own as a rotation read — a nominal first-choice player sitting at `0.5` is a rotation risk the ratings will not show you.
 
-## Planned expected metrics
+## The expected-metric family is complete
 
-Expected Shots, Shots on Target, Goals, Assists, Goal Involvements, Minutes, Booking Points, Fouls and Tackles are live today. The rest are **not implemented yet — no `type_id` is assigned, and nothing for them is returned today.** They are listed so you can see where the family is going, not so you can code against them:
+All eleven expected metrics — Shots, Shots on Target, Goals, Assists, Goal Involvements, Minutes,
+Booking Points, Fouls, Tackles, Passes and Saves — are live today. Nothing further is planned.
 
-| Planned | Unit | Notes |
-|---------|------|-------|
-| Expected Passes (xP) | Passes completed | |
-| Expected Saves (xS) | Saves | Goalkeepers only |
+Two properties hold across all of them and are worth relying on:
 
-Two things are worth knowing in advance:
-
-- **They will share the shape documented above.** Same row structure, same decimal `value`, same `meta` with `if_starts` / `if_benched` / `p_start`. Code written against Expected Shots will handle them unchanged.
-- **Coverage will differ per metric.** Each depends on its own underlying stat being recorded, and leagues carry different subsets — a competition that reports shots may not report tackles. Expect the player count to vary between metrics in the same fixture, which is another reason to look rows up by `developer_name` rather than by position in the array.
-
-> **Expected Saves will depend on the opponent more than on the goalkeeper**, in the way Expected Assists depends on the finisher: a keeper cannot make a save nobody attempts. Expect it to track how much shooting the opposing side does at least as closely as it tracks the keeper himself.
+- **They share one shape.** Same row structure, same decimal `value`, same `meta` with `if_starts`
+  / `if_benched` / `p_start`. Code written against Expected Shots handles every one of them
+  unchanged.
+- **Coverage differs per metric.** Each depends on its own underlying statistic being recorded,
+  and competitions carry different subsets — one that reports shots may not report tackles, and
+  Expected Saves is the narrowest of the set. So the player count varies between metrics in the
+  same fixture, which is why rows should be looked up by `developer_name` rather than by position
+  in the array.
 
 ---
 
@@ -290,7 +378,7 @@ Two things are worth knowing in advance:
 | `type_id`        | integer | Type id of the metric — see the table below. |
 | `developer_name` | string  | Developer name of the metric. **This is what tells the two families apart.** |
 | `value`          | number  | Integer 1–99 for ratings; a decimal count for expected metrics. |
-| `meta`           | object  | **Only present on expected metrics** (384–392). Absent entirely from ratings. |
+| `meta`           | object  | **Only present on expected metrics** (384–394). Absent entirely from ratings. |
 
 ### Metric types
 
@@ -309,6 +397,8 @@ Two things are worth knowing in advance:
 | `390` | `PLAYER_EXPECTED_BOOKING_POINTS` | Expected | Booking points in this fixture. **Points, not cards** — see below. |
 | `391` | `PLAYER_EXPECTED_FOULS` | Expected | Fouls committed in this fixture. Sharpens once the referee is appointed. |
 | `392` | `PLAYER_EXPECTED_TACKLES` | Expected | Tackles in this fixture. Compare within a competition, not across them. |
+| `393` | `PLAYER_EXPECTED_PASSES` | Expected | Passes **completed** in this fixture, not attempted. Read against the player's position, not against other players. |
+| `394` | `PLAYER_EXPECTED_SAVES` | Expected | Saves in this fixture. **Goalkeepers only** — absent for every other player, and absent is not zero. |
 
 ### `meta` (expected metrics only)
 
@@ -320,7 +410,7 @@ Two things are worth knowing in advance:
 | `p_play` | number | Probability of taking any part in the match, `0`–`1`. Always ≥ `p_start`. |
 | `p_booked` | number | **`390` only.** Probability he is shown a yellow card, `0`–`1`. Blended over the team sheet, like `value`. |
 | `p_sent_off` | number | **`390` only.** Probability he is sent off by any route, `0`–`1`. Blended the same way. |
-| `referee_known` | boolean | **`390` and `391` only.** Whether the officiating appointment was published when this value was computed. `false` means the figure reflects the competition's average refereeing and will move once the official is named. Absent on `392`, which has no referee term. |
+| `referee_known` | boolean | **`390` and `391` only.** Whether the officiating appointment was published when this value was computed. `false` means the figure reflects the competition's average refereeing and will move once the official is named. Absent on `392`, `393` and `394`, none of which has a referee term. |
 
 ---
 
