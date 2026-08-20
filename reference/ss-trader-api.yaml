@@ -2608,7 +2608,7 @@ components:
 
 
         **Two families share this shape, and they are read differently.** Tell
-        them apart by `developer_name` (or by `type_id`: 380–383 vs 384–392).
+        them apart by `developer_name` (or by `type_id`: 380–383 vs 384–394).
 
 
         Every row belongs to **one fixture** and freezes at kick-off — it
@@ -2782,6 +2782,40 @@ components:
               match scorer records as a tackle varies between competitions far more than a foul
               does, and a cross-competition ranking measures that convention as much as the
               player.
+
+            - `PLAYER_EXPECTED_PASSES` (393) — how many passes the player is
+            expected to
+              **complete**, not attempt. About 80% of attempts are completed, so a market quoted
+              on attempted passes will sit roughly a fifth above this; there is no
+              attempted-passes metric today. Much the largest value in the family — around 30 for
+              a full-match player — and the only one whose position ordering runs the other way:
+              per 90, defenders complete roughly 38, midfielders 32, goalkeepers 19 and forwards
+              17, so a forward on 20 is heavily involved while a defender on 30 is quiet. No
+              referee term and no `referee_known`. **Treat it as a central estimate rather than a
+              tight one** — how much of the ball a side ends up with is a large part of this and
+              is not knowable before kick-off. The realised count scatters roughly twice as
+              widely as a Poisson assumption implies, and the multiple grows with the value, so
+              do not derive an over/under spread from the square root of the value.
+
+            - `PLAYER_EXPECTED_SAVES` (394) — how many saves the goalkeeper is
+            expected to make.
+              **Goalkeepers only.** No row is returned for any other player — not a zero row, no
+              row at all — so a fixture carries roughly four of these against roughly forty of
+              every other expected metric, and rows must be looked up by `developer_name` rather
+              than by position in the array. Around 3 for a full-match keeper.
+
+              It depends on the **opponent** at least as much as on the keeper, in the way
+              Expected Assists depends on the finisher: a keeper cannot make a save nobody
+              attempts, so the strongest pre-match inputs are the opposing side's on-target
+              volume and how much his own defence concedes. **A high value is not a compliment**
+              — keepers behind weak defences post the highest numbers. No referee term and no
+              `referee_known`: an official has no influence over whether a shot is on target, and
+              we measured his effect here as the clearest null in the family.
+
+              **This is the least predictable value we publish.** Most of the variation in a
+              keeper's save count is what the opposition happened to do on the day, which nobody
+              can know in advance. Read it as the centre of a wide distribution: a realised 1 or
+              6 against a published 3 are both ordinary. Size over/under spreads generously.
         value:
           type: number
           example: 73
@@ -2791,18 +2825,18 @@ components:
             metric.
 
 
-            **Expected metrics** (384–392): a decimal count for this fixture —
-            shots, goals, minutes, fouls or tackles — with no upper bound and no
-            relation to the 1–99 scale. `PLAYER_EXPECTED_BOOKING_POINTS` (390)
-            is the exception: a points total rather than a count. Reported to 3
-            decimal places. This is the **pre-team-sheet** number, already
-            weighted by the player's chance of starting; `meta` carries the two
-            conditionals.
+            **Expected metrics** (384–394): a decimal count for this fixture —
+            shots, goals, minutes, fouls, tackles, completed passes or saves —
+            with no upper bound and no relation to the 1–99 scale.
+            `PLAYER_EXPECTED_BOOKING_POINTS` (390) is the exception: a points
+            total rather than a count. Reported to 3 decimal places. This is the
+            **pre-team-sheet** number, already weighted by the player's chance
+            of starting; `meta` carries the two conditionals.
         meta:
           type: object
           nullable: true
           description: >
-            Present **only on expected metrics** (384–392) and omitted entirely
+            Present **only on expected metrics** (384–394) and omitted entirely
             from the four ratings — check for presence rather than assuming it.
             See `PlayerMetricMeta`.
           allOf:
