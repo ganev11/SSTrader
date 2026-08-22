@@ -59,6 +59,7 @@ Request both together (`include=lineups,squads`) when you want the full roster *
 | `fullname`       | string  | Full registered name. |
 | `firstname`      | string  | Given name(s). |
 | `lastname`       | string  | Family name(s). |
+| `birthdate`      | string  | Date of birth as `YYYY-MM-DD`. |
 
 Any name field may be `null` where the provider holds no value for it.
 
@@ -117,7 +118,8 @@ For a player present in both, the squad row wins: only its *empty* fields are fi
     "display_name": "Miguel Silva",
     "fullname": "Miguel Alejandro Silva Jaimes",
     "firstname": "Miguel",
-    "lastname": "Silva Jaimes"
+    "lastname": "Silva Jaimes",
+    "birthdate": "1998-03-14"
   },
   {
     "team_id": 4009,
@@ -131,7 +133,8 @@ For a player present in both, the squad row wins: only its *empty* fields are fi
     "display_name": "James Okoro",
     "fullname": "James Chidi Okoro",
     "firstname": "James",
-    "lastname": "Okoro"
+    "lastname": "Okoro",
+    "birthdate": "2005-01-19"
   }
 ]
 ```
