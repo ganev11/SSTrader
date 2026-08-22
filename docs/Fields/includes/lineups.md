@@ -55,6 +55,7 @@ Entries are ordered by team, then by slot type (starters before bench), then by 
 | `fullname`       | string  | Full registered name. |
 | `firstname`      | string  | Given name(s). |
 | `lastname`       | string  | Family name(s). |
+| `birthdate`      | string  | Date of birth as `YYYY-MM-DD`. |
 
 Any field on the player object may be `null` where the provider holds no value for it. The four name variants exist because sources spell the same player differently; having all of them is what makes it possible to recognise a player across feeds.
 
@@ -104,7 +105,8 @@ GET /fixtures?start_date=2026-08-05T00:00:00Z&end_date=2026-08-05T23:59:59Z&incl
       "display_name": "Miguel Silva",
       "fullname": "Miguel Alejandro Silva Jaimes",
       "firstname": "Miguel Alejandro",
-      "lastname": "Silva Jaimes"
+      "lastname": "Silva Jaimes",
+      "birthdate": "1998-03-14"
     }
   },
   {
@@ -121,7 +123,8 @@ GET /fixtures?start_date=2026-08-05T00:00:00Z&end_date=2026-08-05T23:59:59Z&incl
       "display_name": "Alexander David González Sibulo",
       "fullname": "Alexander David González Sibulo",
       "firstname": "Alexander David",
-      "lastname": "González Sibulo"
+      "lastname": "González Sibulo",
+      "birthdate": "1996-11-02"
     }
   },
   {
@@ -138,7 +141,8 @@ GET /fixtures?start_date=2026-08-05T00:00:00Z&end_date=2026-08-05T23:59:59Z&incl
       "display_name": "Edson Martinho da Silva",
       "fullname": "Edson Martinho Silva",
       "firstname": "Edson",
-      "lastname": "Martinho Silva"
+      "lastname": "Martinho Silva",
+      "birthdate": "2004-06-27"
     }
   }
 ]
