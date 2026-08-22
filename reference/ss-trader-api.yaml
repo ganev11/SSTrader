@@ -1900,6 +1900,7 @@ components:
           fullname: Edson Martinho Silva
           firstname: Edson
           lastname: Martinho Silva
+          birthdate: '1998-03-14'
     LineupPlayer:
       type: object
       description: >
@@ -1956,6 +1957,14 @@ components:
           type: string
           nullable: true
           description: Family name(s).
+        birthdate:
+          type: string
+          nullable: true
+          description: >
+            Date of birth as `YYYY-MM-DD`. `null` where the player has no date
+            on record; a few older records carry only a year or a year and
+            month.
+          example: '1998-03-14'
     SquadEntry:
       type: object
       description: >
@@ -2042,6 +2051,14 @@ components:
           type: string
           nullable: true
           description: Family name(s).
+        birthdate:
+          type: string
+          nullable: true
+          description: >
+            Date of birth as `YYYY-MM-DD`. `null` where the player has no date
+            on record; a few older records carry only a year or a year and
+            month.
+          example: '1998-03-14'
       example:
         team_id: 4009
         season_id: 25580
@@ -2055,6 +2072,7 @@ components:
         fullname: Miguel Alejandro Silva Jaimes
         firstname: Miguel
         lastname: Silva Jaimes
+        birthdate: '1998-03-14'
     FixturesLivescoreResponse:
       type: object
       required:
