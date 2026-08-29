@@ -7,19 +7,19 @@ metadata:
 ---
 # Team Expected Metrics (V2)
 
-Per-team pre-match expectations for goals, corners, yellow cards and red cards — a new model published alongside the original FT_EXPECTED_* family, under its own developer names, with per-fixture confidence flags.
+Per-team pre-match expectations for goals, corners, yellow cards and red cards — a new model published alongside the original `FT_EXPECTED_*` family, under its own developer names, with per-fixture confidence flags.
 
 `include=metrics`
 
 The `*_V2` family answers one question per team, per fixture: **how many of this thing is this
 side expected to produce in this match?**
 
-| Metric | `type_id` | Unit | Typical per side |
-|---|---|---|---|
-| `FT_EXPECTED_GOALS_V2` | `395` | Goals | Around `1.3`; `2.5` is a strong favourite |
-| `FT_EXPECTED_CORNERS_V2` | `396` | Corners won | Around `5` |
-| `FT_EXPECTED_YELLOWCARDS_V2` | `397` | Yellow cards shown to this side | Around `2` |
-| `FT_EXPECTED_REDCARDS_V2` | `401` | Red cards shown to this side | Around `0.11` |
+| Metric                       | `type_id` | Unit                            | Typical per side                          |
+| ---------------------------- | --------- | ------------------------------- | ----------------------------------------- |
+| `FT_EXPECTED_GOALS_V2`       | `395`     | Goals                           | Around `1.3`; `2.5` is a strong favourite |
+| `FT_EXPECTED_CORNERS_V2`     | `396`     | Corners won                     | Around `5`                                |
+| `FT_EXPECTED_YELLOWCARDS_V2` | `397`     | Yellow cards shown to this side | Around `2`                                |
+| `FT_EXPECTED_REDCARDS_V2`    | `401`     | Red cards shown to this side    | Around `0.11`                             |
 
 Every value is a plain decimal count in the metric's own unit, published to **3 decimals**. All
 four are full-time figures and cover the whole match.
@@ -31,7 +31,7 @@ are pre-match statements throughout: nothing is revised once the match has start
 > `FT_EXPECTED_CORNERS` and `FT_EXPECTED_YELLOWCARDS` are unchanged and still published. Nothing
 > you already read has moved. See [Migrating from the original family](#migrating-from-the-original-family).
 
----
+***
 
 ## Reading a row
 
@@ -63,7 +63,7 @@ not assume every metric is present — see below.
 > **Match totals are the sum of the two sides.** Expected corners in the match is the home value
 > plus the away value. The same holds for goals and for each card metric.
 
----
+***
 
 ## Coverage is not uniform, and a missing row means absent
 
@@ -73,7 +73,7 @@ This is the single most important thing to handle, and the most likely source of
 covers essentially every finished fixture, so `FT_EXPECTED_GOALS_V2` is available across roughly
 1,250 competitions. Corners and cards come from match statistics, which are reported on a little
 under half of fixtures — those three metrics cover roughly 600 competitions. **A fixture
-routinely carries `FT_EXPECTED_GOALS_V2` and no `FT_EXPECTED_CORNERS_V2`.** That is the shape of
+routinely carries&#x20;**`FT_EXPECTED_GOALS_V2`**&#x20;and no&#x20;**`FT_EXPECTED_CORNERS_V2`**.** That is the shape of
 the data, not a failure.
 
 **Some competitions are skipped entirely.** The model measures how good a side is relative to
@@ -93,20 +93,20 @@ The practical consequences:
 > **Look rows up by name.** Never index into `metrics[]` by position, and never assume the four
 > metrics arrive as a set.
 
----
+***
 
 ## The `meta` block
 
 Every V2 row carries a small `meta` object that says how much of the number was measured and how
 much was assumed. It is worth reading before you price off the value.
 
-| Field | Meaning |
-|---|---|
-| `home_known` | `true` when the home side had its own measured strength in this competition |
-| `away_known` | Same, for the away side |
-| `estimated` | `true` when at least one side was **not** known, so its figure falls back to the competition average |
-| `fitted_at` | When the model behind this number was last refreshed |
-| `referee_known` | **Yellow cards only.** Whether the match official was known at the time of the request |
+| Field           | Meaning                                                                                              |
+| --------------- | ---------------------------------------------------------------------------------------------------- |
+| `home_known`    | `true` when the home side had its own measured strength in this competition                          |
+| `away_known`    | Same, for the away side                                                                              |
+| `estimated`     | `true` when at least one side was **not** known, so its figure falls back to the competition average |
+| `fitted_at`     | When the model behind this number was last refreshed                                                 |
+| `referee_known` | **Yellow cards only.** Whether the match official was known at the time of the request               |
 
 ### `home_known` / `away_known` / `estimated`
 
@@ -126,14 +126,14 @@ The match is likely early in a promoted team's first season in this division.
 
 Two things follow:
 
-- **`estimated: true` does not mean the number is wrong.** It means it is the honest expectation
+- `estimated: true`**&#x20;does not mean the number is wrong.** It means it is the honest expectation
   for a team we have no record of, which is the competition average. It is the best available
   answer, not a broken one.
 - **It fixes itself.** Once the team has played enough matches in the competition, the next
   refresh gives it its own figures and the flag goes to `false`. If you cache values, do not
   cache an estimated one for long.
 
-> **`estimated` is only ever `true` where knowing the team would have changed the number.** For a
+> `estimated`**&#x20;is only ever&#x20;**`true`**&#x20;where knowing the team would have changed the number.** For a
 > metric where team identity carries no measurable signal, an unrecognised team is priced exactly
 > as well as a recognised one, and the flag stays `false` rather than warning you off a number
 > that is as good as any other.
@@ -144,7 +144,7 @@ The timestamp of the model refresh behind this value. It applies to the whole co
 to this fixture — two fixtures in the same competition share it. Use it to tell whether a cached
 value is stale after a refresh; it says nothing on its own about the quality of the number.
 
----
+***
 
 ## Cards
 
@@ -156,10 +156,10 @@ feed reports it.
 Keeping them apart is what lets you settle whichever rule your market actually uses. The two
 common ones:
 
-| Settlement rule | Weights | Expected value for one side |
-|---|---|---|
-| Card points | Yellow 10, red 25 | `10 × FT_EXPECTED_YELLOWCARDS_V2 + 25 × FT_EXPECTED_REDCARDS_V2` |
-| Card count | Yellow 1, red 2 | `FT_EXPECTED_YELLOWCARDS_V2 + 2 × FT_EXPECTED_REDCARDS_V2` |
+| Settlement rule | Weights           | Expected value for one side                                      |
+| --------------- | ----------------- | ---------------------------------------------------------------- |
+| Card points     | Yellow 10, red 25 | `10 × FT_EXPECTED_YELLOWCARDS_V2 + 25 × FT_EXPECTED_REDCARDS_V2` |
+| Card count      | Yellow 1, red 2   | `FT_EXPECTED_YELLOWCARDS_V2 + 2 × FT_EXPECTED_REDCARDS_V2`       |
 
 Check the rule you are pricing against before you combine — the two conventions give noticeably
 different numbers, and a single blended metric would have forced one of them on you.
@@ -181,7 +181,7 @@ Yellow cards are the one metric in this family that reads who is officiating.
 the middle is among the largest single influences on how many cards a match produces.
 
 **Knowing who it is does not change the average.** Over a season strict and lenient officials
-cancel out, so the *typical* match is unaffected. What changes is the answer for **this** match:
+cancel out, so the _typical_ match is unaffected. What changes is the answer for **this** match:
 a strict official pushes it well above the competition norm, a lenient one well below.
 
 **So the value sharpens as kick-off approaches.** Appointments are usually published a day or
@@ -199,17 +199,17 @@ Two things follow for how you use it:
   does not drift for its own sake, and the movement when the appointment lands is the model
   working rather than a correction.
 
-> **`referee_known` appears only on `FT_EXPECTED_YELLOWCARDS_V2`.** Goals, corners and red cards
+> `referee_known`**&#x20;appears only on&#x20;**`FT_EXPECTED_YELLOWCARDS_V2`**.** Goals, corners and red cards
 > do not consult the official, so publishing the flag on them would imply he was considered and
 > missing rather than never consulted. Its absence on those three is not ambiguity — it is the
 > answer.
 >
 > **Red cards genuinely do not use it**, and that is measured rather than an oversight: a referee
 > shows only a handful of reds a year, far too few to tell one official from another. So a red
-> card figure does *not* sharpen when the appointment lands, and there is no reason to re-request
+> card figure does _not_ sharpen when the appointment lands, and there is no reason to re-request
 > it near kick-off the way there is for yellows.
 
----
+***
 
 ## Migrating from the original family
 
@@ -236,11 +236,11 @@ computed against them, which is why it was not done.
 does not, and keep both in your own store for a period so you can see where they part company on
 fixtures you care about.
 
-> **There is no `FT_EXPECTED_REDCARDS` to migrate from.** Red cards are new in this family — the
+> **There is no&#x20;**`FT_EXPECTED_REDCARDS`**&#x20;to migrate from.** Red cards are new in this family — the
 > original publishes goals, corners and yellow cards only, so there is nothing to compare against
 > and nothing to switch over. Add it where you want it.
 
----
+***
 
 ## Half-time metrics
 
@@ -253,7 +253,7 @@ possible and not yet built.
 
 The original `HT_EXPECTED_*` metrics are unaffected and continue as before.
 
----
+***
 
 ## Checklist
 
