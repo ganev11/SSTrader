@@ -1,14 +1,14 @@
 ---
 title: Team Expected Metrics (V2)
-excerpt: >-
-  Per-team pre-match expectations for goals, corners, yellow cards and red cards
-  — a new model published alongside the original FT\_EXPECTED\_* family, under
-  its own developer names, with per-fixture confidence flags.
 deprecated: false
 hidden: false
 metadata:
   robots: index
 ---
+# Team Expected Metrics (V2)
+
+Per-team pre-match expectations for goals, corners, yellow cards and red cards — a new model published alongside the original FT_EXPECTED_* family, under its own developer names, with per-fixture confidence flags.
+
 `include=metrics`
 
 The `*_V2` family answers one question per team, per fixture: **how many of this thing is this
