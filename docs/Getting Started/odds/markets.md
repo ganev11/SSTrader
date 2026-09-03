@@ -8,6 +8,7 @@ hidden: false
 metadata:
   robots: index
 ---
+
 ## SSTrader Markets Reference
 
 This guide explains `market_id` and `label_id` mappings used in the SSTrader API.
@@ -290,6 +291,15 @@ Compound label\_id: first digit = team (`1` = Home, `2` = Away), second digit = 
 
 ***
 
+### Market 60 - To Qualify
+
+| label\_id | Outcome | 
+| --------- | ------- |
+| 1         | Home    |
+| 2         | Away    |
+
+***
+
 ### Market 203 — Asian Total Cards
 
 | label\_id | Outcome |
@@ -438,6 +448,7 @@ Which named player scores or provides an assist in the match. The specific playe
 | 57         | Team Total Goals                | Compound: 1st digit=team (1=Home,2=Away), 2nd=outcome (1=Under,2=Over) |
 | 58         | Double Chance                   | 10=Home/Draw, 2=Draw/Away, 12=Home/Away                                |
 | 59         | Clean Sheet                     | Compound: 1st digit=team (1=Home,2=Away), 2nd=outcome (1=Yes,2=No)     |
+| 60         | To Qualify                      | 1=Home, 2=Away                                                         |
 | 203        | Asian Total Cards               | **1=Under**, 2=Over                                                    |
 | 300        | Player to be booked              | 1=Yes                                                                 |
 | 301        | 1st Player Booked               | 1=Yes                                                                 |
