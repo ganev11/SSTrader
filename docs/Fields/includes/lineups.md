@@ -8,7 +8,6 @@ hidden: false
 metadata:
   robots: index
 ---
-# Lineups
 
 `include=lineups`
 
@@ -17,6 +16,8 @@ The `lineups` include attaches the team sheets for a fixture: every player named
 Lineups are published by the data provider shortly before kick-off — typically around an hour before, sometimes later for smaller competitions. Requesting the include for a fixture whose team sheets have not been announced yet returns an empty array.
 
 > **Availability:** Only returned when `include=lineups` is added to a request to `GET /fixtures`. Not available on `/fixtures/search` or `/livescores`.
+
+> **Knowing whether a team sheet is confirmed — or is ever coming.** An empty `lineups` array on its own cannot tell you whether the sheets are merely late or will never be published, and a populated one cannot tell you whether it is the confirmed XI or a provisional sheet. The `LINEUP_CONFIRMED` entry in [`include=metadata`](/docs/metadata) (`type_id` `402`) answers both. See [Reading it with `LINEUP_CONFIRMED`](#reading-it-with-lineup_confirmed) below.
 
 ---
 
@@ -152,15 +153,55 @@ GET /fixtures?start_date=2026-08-05T00:00:00Z&end_date=2026-08-05T23:59:59Z&incl
 
 ---
 
+## Reading it with `LINEUP_CONFIRMED`
+
+`include=lineups` tells you what has been published. The `LINEUP_CONFIRMED` entry in [`include=metadata`](/docs/metadata) tells you what that publication *means*. Request both together:
+
+```
+GET /fixtures?fixture_id=1105585&include=lineups,metadata
+```
+
+`LINEUP_CONFIRMED` is fixture-wide, so its entry carries `team_id: null`:
+
+```json
+{
+  "team_id": null,
+  "type_id": 402,
+  "developer_name": "LINEUP_CONFIRMED",
+  "value": 1,
+  "meta": { "confirmed": true }
+}
+```
+
+The two includes combine into five states. The last two are the ones worth handling explicitly:
+
+| `LINEUP_CONFIRMED` | `lineups` | Meaning |
+|---|---|---|
+| `confirmed: true` | populated | The confirmed starting XI. Safe to present as the team sheet. |
+| `confirmed: true` | `[]` | Confirmed upstream but the sheet has not reached us. Uncommon — a feed gap, not a normal pre-match state. |
+| `confirmed: false` | `[]` | Not confirmed yet. Team sheets are expected closer to kick-off. |
+| `confirmed: false` | populated | A **provisional** sheet — published but not confirmed, and still subject to change. Do not present it as the starting XI. |
+| *entry absent* | `[]` | No lineup coverage for this fixture. Team sheets are very unlikely to arrive at any point, including after kick-off. |
+
+That last row is the important one: a missing `LINEUP_CONFIRMED` entry is **not** the same as `confirmed: false`. Fixtures with no entry almost never receive team sheets at all, so treating them as "still waiting" means polling a fixture that will never fill in.
+
+---
+
 ## Real-World Use Cases
 
 ### Team sheet display
 
 Split the array on `team_id`, then on `developer_name`, to render the classic two-column starting XI plus substitutes, using `formation_position` for the pitch layout and `number` for shirt numbers.
 
+### Knowing when to stop waiting
+
+Rather than re-requesting `lineups` for every upcoming fixture, request `metadata` alongside it and let `LINEUP_CONFIRMED` drive the polling: fixtures with no entry can be dropped from the schedule entirely, `confirmed: false` fixtures are worth re-checking as kick-off approaches, and `confirmed: true` fixtures are done.
+
 ### Availability checks before betting
 
 Confirm a key player is in the starting XI (`developer_name` = `LINEUP`) rather than on the bench or sidelined before showing markets that depend on him — a striker starting on the bench changes the value of a goalscorer bet considerably.
+
+Gate this on `LINEUP_CONFIRMED` being `true`. Acting on a provisional sheet means acting on a team that may still change before kick-off.
 
 ### Line-up-driven market context
 
