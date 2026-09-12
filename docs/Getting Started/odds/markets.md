@@ -8,6 +8,7 @@ hidden: false
 metadata:
   robots: index
 ---
+
 ## SSTrader Markets Reference
 
 This guide explains `market_id` and `label_id` mappings used in the SSTrader API.
@@ -66,6 +67,7 @@ Common mistakes to avoid:
 | 307        | Player Shots On Target          | 2=Over                                                                |
 | 308        | Player Shots                    | 2=Over                                                                |
 | 309        | Player Fouls Committed          | 2=Over                                                                |
+| 312        | Goalkeeper Saves                | 2=Over                                                                |
 | 313        | Score or Assist                 | 1=Yes                                                                 |
 
 ***
@@ -90,6 +92,7 @@ See [Golden Substitute](#golden-substitute) below for how these markets settle.
 | 357        | 307             | Player Shots On Target (Golden Sub)      | 2=Over                     |
 | 358        | 308             | Player Shots (Golden Sub)                | 2=Over                     |
 | 359        | 309             | Player Fouls Committed (Golden Sub)      | 2=Over                     |
+| 362        | 312             | Goalkeeper Saves (Golden Sub)            | 2=Over                     |
 | 363        | 313             | Score or Assist (Golden Sub)             | 1=Yes                      |
 
 ***
@@ -524,6 +527,16 @@ Which named player commits fouls in the match. The specific player is identified
 | label\_id | Outcome |
 | --------- | ------- |
 | 2         | Over     |
+
+***
+
+### Market 312 - Goalkeeper Saves
+
+How many saves a named goalkeeper makes in the match. The specific player is identified elsewhere in the Odd object; the Odd line property indicates the number of saves.
+
+| label\_id | Outcome |
+| --------- | ------- |
+| 2         | Over    |
 
 ***
 
