@@ -216,6 +216,49 @@ paths:
             type: integer
           description: The ID of the season to filter fixtures by.
         - in: query
+          name: status
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - ABANDONED
+                - AWAITING_UPDATES
+                - AWARDED
+                - BREAK
+                - CANCELLED
+                - DELETED
+                - DELAYED
+                - EXTRA_TIME_BREAK
+                - FT
+                - FT_AET
+                - FT_PEN
+                - HT
+                - INPLAY_1ST_HALF
+                - INPLAY_2ND_HALF
+                - INPLAY_ET
+                - INPLAY_PENALTIES
+                - INTERRUPTED
+                - NOT_STARTED
+                - PENDING
+                - PEN_BREAK
+                - POSTPONED
+                - SUSPENDED
+                - TBA
+                - WALKOVER
+          description: >
+            Comma-separated list of fixture statuses to include.
+
+            When omitted, fixtures of any status are returned **except**
+            `DELETED` — deleted fixtures are only returned when `DELETED` is
+            named here explicitly.
+
+            👉 **[View State
+            Definitions](https://sstrader.readme.io/docs/states)**
+          x-llm-hint: Full state definitions available at /docs/states
+        - in: query
           name: date
           schema:
             type: string
@@ -439,6 +482,9 @@ paths:
 
             When omitted: `window=live` defaults to all in-play statuses;
             numeric windows default to in-play + `NOT_STARTED`.
+
+            Neither default includes `DELETED` — deleted fixtures are only
+            returned when `DELETED` is named here explicitly.
 
             👉 **[View State
             Definitions](https://sstrader.readme.io/docs/states)**
@@ -3005,17 +3051,30 @@ components:
       type: object
       description: >
         Fixture-level metadata. Currently only kit/participant colors
-        (`PARTICIPANT_COLORS`) and formations (`FORMATION`) are returned; other
-        raw metadata stored against a fixture is not yet exposed.
+        (`PARTICIPANT_COLORS`), formations (`FORMATION`) and lineup confirmation
+        (`LINEUP_CONFIRMED`) are returned; other raw metadata stored against a
+        fixture is not yet exposed.
+
+
+        Entries appear only once known, with one exception: `LINEUP_CONFIRMED`
+        is present before the lineups are confirmed, carrying `false`. A missing
+        `LINEUP_CONFIRMED` entry means no lineup information is held for the
+        fixture at all, which is not the same as an entry saying `false`.
       properties:
         team_id:
           type: integer
+          nullable: true
           example: 85
-          description: The team this metadata entry belongs to.
+          description: >
+            The team this metadata entry belongs to, or null when the entry
+            describes the fixture as a whole rather than one side
+            (LINEUP_CONFIRMED).
         type_id:
           type: integer
           example: 348
-          description: The external type ID. 348 = PARTICIPANT_COLORS, 349 = FORMATION.
+          description: >-
+            The external type ID. 348 = PARTICIPANT_COLORS, 349 = FORMATION, 402
+            = LINEUP_CONFIRMED.
         developer_name:
           type: string
           example: PARTICIPANT_COLORS
@@ -3025,15 +3084,16 @@ components:
           nullable: true
           example: null
           description: >-
-            Always null for PARTICIPANT_COLORS and FORMATION. Present for
-            template consistency with other type-based includes.
+            Null for PARTICIPANT_COLORS and FORMATION. 1 or 0 for
+            LINEUP_CONFIRMED, the same fact as meta.confirmed.
         meta:
           type: object
           nullable: true
           additionalProperties: true
           description: >-
             Context-specific payload. For PARTICIPANT_COLORS, contains `kit` and
-            `participant`. For FORMATION, contains `formation`.
+            `participant`. For FORMATION, contains `formation`. For
+            LINEUP_CONFIRMED, contains `confirmed`.
           properties:
             kit:
               type: string
@@ -3052,6 +3112,12 @@ components:
               type: string
               example: 3-4-2-1
               description: The team's formation for this fixture.
+            confirmed:
+              type: boolean
+              example: true
+              description: >-
+                Whether the starting lineups for this fixture have been
+                confirmed.
     LastFixtureEntry:
       allOf:
         - $ref: '#/components/schemas/FixtureBase'
