@@ -288,10 +288,16 @@ paths:
                 - lineups
                 - squads
                 - metadata
+                - integration
           description: >
             Comma-separated list of modules to include. Example:
             `include=odds,metrics`. Note: Using an include unlocks the
             corresponding `filter[entity]` parameter.
+
+
+            `integration` attaches the bookmaker-integration mapping payload and
+            is restricted to clients entitled to an integration — see
+            `filter[integration]` and docs/integration.md.
 
 
             `squads` is in **beta** — its shape and coverage may still change.
@@ -300,6 +306,22 @@ paths:
             `player_metrics` must be requested together with `squads`
             (`include=squads,player_metrics`) — the metric rows identify players
             by `player_id` only, and `squads` carries their names and positions.
+        - name: filter[integration]
+          in: query
+          schema:
+            type: string
+            pattern: ^providers:[a-z_]+(,[a-z_]+)*$
+          example: providers:first
+          description: >
+            Selects which integration the `integration` module is served from.
+            Only ONE integration per request: if several are listed, the first
+            is honoured and the rest ignored. The one that answered is named by
+            `provider` inside each fixture's `integration` object.
+
+
+            Omitted, it defaults to the integration your API key is entitled to.
+            Naming an integration you are not entitled to returns **403**;
+            naming one that does not exist returns **400**.
         - name: filter[player_metrics]
           in: query
           schema:
@@ -542,11 +564,29 @@ paths:
                 - metrics
                 - statistics
                 - metadata
+                - integration
           description: >
             Comma-separated list of modules to attach to each fixture. Allowed
-            values: `odds`, `metrics`, `statistics`, `metadata`. Note:
-            `fair_odds` and `movement` are not available on this endpoint. Using
-            an include unlocks the corresponding `filter[entity]` parameter.
+            values: `odds`, `metrics`, `statistics`, `metadata`, `integration`.
+            Note: `fair_odds` and `movement` are not available on this endpoint.
+            Using an include unlocks the corresponding `filter[entity]`
+            parameter.
+        - name: filter[integration]
+          in: query
+          schema:
+            type: string
+            pattern: ^providers:[a-z_]+(,[a-z_]+)*$
+          example: providers:first
+          description: >
+            Selects which integration the `integration` module is served from.
+            Only ONE integration per request: if several are listed, the first
+            is honoured and the rest ignored. The one that answered is named by
+            `provider` inside each fixture's `integration` object.
+
+
+            Omitted, it defaults to the integration your API key is entitled to.
+            Naming an integration you are not entitled to returns **403**;
+            naming one that does not exist returns **400**.
         - name: filter[metrics]
           in: query
           schema:
@@ -2480,13 +2520,39 @@ components:
           description: Human-readable name of the specific pick (e.g., 'Over 3.5').
         raw:
           type: object
+          additionalProperties: true
           description: >
-            Container for external provider data. Use these IDs for betslip
-            injection  or deep-linking to bookmaker platforms.
+            The bookmaker's own reference data for this exact price — enough to
+            place the selection on their platform or deep-link to it. Opaque,
+            and the set of fields varies by bookmaker; `{}` when the bookmaker
+            publishes none.
+
+
+            **Treat every id here as an opaque string.** Some are alphanumeric;
+            others are integers too large for an IEEE-754 double (`event_id`
+            runs to 18 digits on some bookmakers) and are therefore sent quoted,
+            so every digit survives `JSON.parse`. Depending on the bookmaker the
+            same field may arrive quoted or unquoted — compare and store these
+            as text, and never parse them into numbers.
+
+
+            Do not confuse these with the sibling `market_id`, `label_id` and
+            `player_id` fields, which are SSTrader's own numbering and unrelated
+            despite the similar names.
+
+
+            Filter to a single bookmaker (`filter[odds]=bookmakers:<id>`) before
+            reading this — an unfiltered response mixes several bookmakers'
+            formats in one list. For the matching event-level ids, see
+            `include=integration` on the fixture.
           example:
-            event_id: 13936816
-            market_id: 1339290698
-            selection_id: 3314639099
+            event_id: '881531765548929024'
+            market_id: 0QA883694268420845586
+            market_type_id: QA6431
+            selection_id: 0QA883694268420845586Q1Q250956
+            selection_type_id: 0
+            ext_player_id: 250956
+            player_name: Ricardo Pepi
     FairOdd:
       type: object
       description: Mathematical 'true' odds and probability for a specific market outcome.
