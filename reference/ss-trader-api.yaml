@@ -693,6 +693,37 @@ paths:
       security:
         - BearerAuth: []
       parameters:
+        - in: query
+          name: include
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - integration
+          description: >
+            Comma-separated list of modules to attach to each fixture.
+            `integration` adds your platform's own event payload to every
+            fixture in the response — see `filter[integration]`. Restricted to
+            clients entitled to an integration.
+        - name: filter[integration]
+          in: query
+          schema:
+            type: string
+            pattern: ^providers:[a-z_]+(,[a-z_]+)*$
+          example: providers:first
+          description: >
+            Selects which integration the `integration` module is served from.
+            Only ONE integration per request: if several are listed, the first
+            is honoured and the rest ignored. The one that answered is named by
+            `provider` inside each fixture's `integration` object.
+
+
+            Omitted, it defaults to the integration your API key is entitled to.
+            Naming an integration you are not entitled to returns **403**;
+            naming one that does not exist returns **400**.
         - name: model_id
           in: query
           description: >-
@@ -822,6 +853,37 @@ paths:
       security:
         - BearerAuth: []
       parameters:
+        - in: query
+          name: include
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - integration
+          description: >
+            Comma-separated list of modules to attach to each fixture.
+            `integration` adds your platform's own event payload to every
+            fixture in the response — see `filter[integration]`. Restricted to
+            clients entitled to an integration.
+        - name: filter[integration]
+          in: query
+          schema:
+            type: string
+            pattern: ^providers:[a-z_]+(,[a-z_]+)*$
+          example: providers:first
+          description: >
+            Selects which integration the `integration` module is served from.
+            Only ONE integration per request: if several are listed, the first
+            is honoured and the rest ignored. The one that answered is named by
+            `provider` inside each fixture's `integration` object.
+
+
+            Omitted, it defaults to the integration your API key is entitled to.
+            Naming an integration you are not entitled to returns **403**;
+            naming one that does not exist returns **400**.
         - name: model_id
           in: query
           description: >-
@@ -927,6 +989,37 @@ paths:
       security:
         - BearerAuth: []
       parameters:
+        - in: query
+          name: include
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - integration
+          description: >
+            Comma-separated list of modules to attach to each fixture.
+            `integration` adds your platform's own event payload to every
+            fixture in the response — see `filter[integration]`. Restricted to
+            clients entitled to an integration.
+        - name: filter[integration]
+          in: query
+          schema:
+            type: string
+            pattern: ^providers:[a-z_]+(,[a-z_]+)*$
+          example: providers:first
+          description: >
+            Selects which integration the `integration` module is served from.
+            Only ONE integration per request: if several are listed, the first
+            is honoured and the rest ignored. The one that answered is named by
+            `provider` inside each fixture's `integration` object.
+
+
+            Omitted, it defaults to the integration your API key is entitled to.
+            Naming an integration you are not entitled to returns **403**;
+            naming one that does not exist returns **400**.
         - name: model_id
           in: query
           description: >-
