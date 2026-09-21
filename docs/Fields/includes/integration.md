@@ -17,6 +17,9 @@ without a second lookup or a mapping table of your own:
 
 They are independent — request either, or both.
 
+Every id in `integration` can also be sent back as a **filter**, so you can query with your own
+ids instead of pulling a list and matching on your side — see "Filtering by your own ids" below.
+
 ---
 
 # Event ids on fixtures (`include=integration`)
@@ -99,6 +102,142 @@ same fixture. You always get the **most recently updated** one, resolved determi
 repeat the same request and the same event id comes back every time.
 
 If you need the superseded ids as well, ask us; they exist, they are just not exposed here.
+
+---
+
+# Filtering by your own ids
+
+Every id we hand you in the `integration` object can also be sent back as a filter, so you can
+query in your own vocabulary instead of pulling a list and matching on your side.
+
+## Syntax
+
+One parameter, `filter[integration]`. Segments are separated by `;`, values inside a segment by `,`.
+
+```
+GET /v1/fixtures?filter[integration]=ext_league_ids:860235927002570752
+GET /v1/fixtures?filter[integration]=ext_event_ids:886928362927575040,886956863147749376
+GET /v1/fixtures?filter[integration]=ext_country_ids:65&include=integration
+GET /v1/insights?filter[integration]=ext_team_ids:300
+GET /v1/bet-builders?filter[integration]=ext_master_league_ids:38
+```
+
+You do not need `providers:` — your API key already resolves to your integration. Add it only if
+you want to be explicit: `filter[integration]=providers:first;ext_league_ids:…`.
+
+Filtering does **not** require `include=integration`. They are independent: filter to choose which
+fixtures come back, include to get your ids attached to them. Combining both is usually what you
+want.
+
+## The filters
+
+| Filter | Takes | Returns |
+|---|---|---|
+| `ext_event_ids` | your event ids | those exact fixtures |
+| `ext_league_ids` | your league ids | every fixture in the matching leagues |
+| `ext_master_league_ids` | your master league ids | same, keyed on the stable id |
+| `ext_country_ids` | your country ids | every league we hold under that country |
+| `ext_team_ids` | your team ids | fixtures with that team on **either** side |
+| `ext_home_ids` / `ext_away_ids` | your team ids | that team at home / away only |
+| `mapped_only` | `1` or `0` | narrows to fixtures your feed carries (`/fixtures` only) |
+
+One of the three league-shaped keys, and one of the three team-shaped keys, per request. Sending
+two of either returns `400` — a league *and* a country is a union to one reader and an intersection
+to another, and there is nothing in the request to say which you meant.
+
+## Where each one works
+
+| | `/fixtures` | `/insights` | `/bet-builders` | `/fixtures/search` | `/insights/archive` |
+|---|:--:|:--:|:--:|:--:|:--:|
+| `ext_event_ids` | ✓ | ✓ | ✓ | — | — |
+| `ext_league_ids` | ✓ | ✓ | ✓ | ✓ | — |
+| `ext_master_league_ids` | ✓ | ✓ | ✓ | ✓ | — |
+| `ext_country_ids` | ✓ | ✓ | ✓ | ✓ | — |
+| `ext_team_ids` / `ext_home_ids` / `ext_away_ids` | ✓ | ✓ | ✓ | — | — |
+| `mapped_only` | ✓ | — | — | — | — |
+
+A dash is a `400`, never a silently ignored filter. `/fixtures/search` selects by metric value
+ranges and has no event or team predicate; `/insights/archive` filters on model and time only.
+
+## Three things to handle
+
+**Send ids as strings.** Exactly as you receive them. `886928362927575040` does not survive
+`JSON.parse` in a language with IEEE-754 numbers — it becomes `886928362927575100`, silently, in
+one id per batch. This is the same reason we quote them in the response.
+
+**An unknown id returns an empty list, not an error.** If we have no mapping for a league or team
+you name, you get `{"fixtures": []}`. That is not a failure — it means we have not yet seen enough
+of your events in that league to map it, and coverage grows over time. It is never an *unfiltered*
+list: a filter that matches nothing returns nothing.
+
+**A filter we do not support returns `400`.** We would rather refuse than quietly drop it and hand
+you back the full schedule, which you would have no way to distinguish from a real result. The same
+goes for naming the same thing twice: `league_id` together with a league filter, or `fixture_id`
+together with `ext_event_ids`.
+
+## One of your leagues can be several of ours
+
+Where you carry a regionalised division as a single league, we split it into groups. Spain's
+Tercera is one league to you and **18** to us; Italy's Serie D is one to you and 9 to us.
+
+`ext_league_ids` handles this for you — it returns fixtures from all of them, and you never see our
+ids unless you ask for them. It is worth knowing only because the result can be larger than a
+one-league query would suggest.
+
+## Prefer `ext_master_league_ids`
+
+Your platform reissues `ext_league_id` from time to time. `ext_master_league_id` does not change,
+and it is the id your provider recommends keying on.
+
+Both work, and a retired `ext_league_id` keeps resolving — we accumulate them rather than replacing
+them, so an id you cached months ago still finds its league. But a filter written against the
+master id will not need revisiting.
+
+## `mapped_only` — your events, not ours
+
+Our fixture coverage runs further ahead than your platform's publishing schedule. You list an event
+roughly two to three days before kickoff; inside that window you have 75–85% of our fixtures, but
+seven days out you have around 5%.
+
+So by default a league filter returns fixtures you cannot act on yet:
+
+```
+GET /v1/fixtures?filter[integration]=ext_country_ids:65
+    → the full schedule, including fixtures not yet on your platform
+
+GET /v1/fixtures?filter[integration]=ext_country_ids:65;mapped_only:1
+    → only the ones you carry
+```
+
+Both are useful — the first is a view of what is coming, the second is what your users can bet on
+today. Full coverage is the default because that is how our `league_id` filter already behaves.
+
+`mapped_only` needs a league, country or team filter alongside it; on its own it would mean "every
+fixture you have ever carried", which is not a query we serve. Note also that the result grows on
+its own as kickoff approaches and you publish more events, so do not treat it as a stable set.
+
+## Pagination
+
+Filters narrow the query itself, so pages come back full and pagination behaves normally.
+
+One thing to know: `has_more` is inferred from whether the page came back full, not from a count.
+If your result is an exact multiple of `per_page`, the last page will report `has_more: true` and
+the next page will be empty. **Stop on an empty page, not only on `has_more: false`.**
+
+## Worked example
+
+Your league page, showing only what you can price, with your ids attached:
+
+```
+GET /v1/fixtures
+  ?filter[integration]=ext_master_league_ids:38;mapped_only:1
+  &include=integration,odds
+  &filter[odds]=bookmakers:<your bookmaker_id>
+  &per_page=50
+```
+
+That gives you the fixtures, your event ids on each one, and your selection ids on every price —
+a full round trip without ever touching our ids.
 
 ---
 
