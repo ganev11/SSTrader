@@ -310,18 +310,74 @@ paths:
           in: query
           schema:
             type: string
-            pattern: ^providers:[a-z_]+(,[a-z_]+)*$
-          example: providers:first
+            pattern: ^[a-z_]+:[^;]+(;[a-z_]+:[^;]+)*$
+          example: providers:first;ext_league_ids:860235927002570752
           description: >
-            Selects which integration the `integration` module is served from.
-            Only ONE integration per request: if several are listed, the first
-            is honoured and the rest ignored. The one that answered is named by
-            `provider` inside each fixture's `integration` object.
+            Selects which integration answers, and filters by **your platform's
+            own ids**.
+
+            Segments are separated by `;`, values inside a segment by `,`.
 
 
-            Omitted, it defaults to the integration your API key is entitled to.
-            Naming an integration you are not entitled to returns **403**;
-            naming one that does not exist returns **400**.
+            `providers:<name>` picks the integration. Only ONE per request: if
+            several are listed, the
+
+            first is honoured and the rest ignored. The one that answered is
+            named by `provider` inside
+
+            each fixture's `integration` object. Omitted, it defaults to the
+            integration your API key is
+
+            entitled to. Naming an integration you are not entitled to returns
+            **403**; naming one that
+
+            does not exist returns **400**.
+
+
+            **Supported here:**
+
+            - `ext_event_ids` — your event ids. A superseded id from a
+            republished event still resolves.
+
+            - `ext_league_ids` — your league ids. One of yours can map to
+            several of ours (a regionalised
+              division is one league to you and several groups to us); every one of them is returned.
+            - `ext_master_league_ids` — prefer this over `ext_league_ids`: it
+            survives your id rotations.
+
+            - `ext_country_ids` — every league we hold under that country of
+            yours.
+
+            - `ext_team_ids` — the team on either side; `ext_home_ids` /
+            `ext_away_ids` pin the side.
+
+            - One of the three league keys, and one of the three team keys, per
+            request.
+
+            - `mapped_only:1` — restrict to fixtures your own feed carries. Your
+            platform publishes an
+              event roughly 2-3 days before kickoff, so a plain league filter over the default 7-day
+              window returns many fixtures you do not have yet. Needs a league, country or team key.
+
+            Send ids exactly as you receive them in the `integration` object, as
+            **strings** — they are
+
+            64-bit values that a JSON number cannot hold without corruption.
+
+
+            An id we have no mapping for is not an error: you get an **empty
+            list**, never an unfiltered
+
+            one. Coverage grows as we see more of your events.
+
+
+            A key this endpoint does not support returns **400** rather than
+            being ignored, and so does
+
+            naming the same thing twice — `league_id` with a league key, or
+            `fixture_id` with
+
+            `ext_event_ids`.
         - name: filter[player_metrics]
           in: query
           schema:
@@ -575,18 +631,62 @@ paths:
           in: query
           schema:
             type: string
-            pattern: ^providers:[a-z_]+(,[a-z_]+)*$
-          example: providers:first
+            pattern: ^[a-z_]+:[^;]+(;[a-z_]+:[^;]+)*$
+          example: providers:first;ext_country_ids:65
           description: >
-            Selects which integration the `integration` module is served from.
-            Only ONE integration per request: if several are listed, the first
-            is honoured and the rest ignored. The one that answered is named by
-            `provider` inside each fixture's `integration` object.
+            Selects which integration answers, and filters by **your platform's
+            own ids**.
+
+            Segments are separated by `;`, values inside a segment by `,`.
 
 
-            Omitted, it defaults to the integration your API key is entitled to.
-            Naming an integration you are not entitled to returns **403**;
-            naming one that does not exist returns **400**.
+            `providers:<name>` picks the integration. Only ONE per request: if
+            several are listed, the
+
+            first is honoured and the rest ignored. The one that answered is
+            named by `provider` inside
+
+            each fixture's `integration` object. Omitted, it defaults to the
+            integration your API key is
+
+            entitled to. Naming an integration you are not entitled to returns
+            **403**; naming one that
+
+            does not exist returns **400**.
+
+
+            **Supported here:**
+
+            - `ext_league_ids`, `ext_master_league_ids`, `ext_country_ids` — one
+            of the three per request.
+
+
+            This endpoint selects fixtures by metric value ranges and has no
+            event or team predicate, so
+
+            `ext_event_ids`, the team keys and `mapped_only` return **400**
+            here. Use `/fixtures`.
+
+
+            Send ids exactly as you receive them in the `integration` object, as
+            **strings** — they are
+
+            64-bit values that a JSON number cannot hold without corruption.
+
+
+            An id we have no mapping for is not an error: you get an **empty
+            list**, never an unfiltered
+
+            one. Coverage grows as we see more of your events.
+
+
+            A key this endpoint does not support returns **400** rather than
+            being ignored, and so does
+
+            naming the same thing twice — `league_id` with a league key, or
+            `fixture_id` with
+
+            `ext_event_ids`.
         - name: filter[metrics]
           in: query
           schema:
@@ -712,18 +812,73 @@ paths:
           in: query
           schema:
             type: string
-            pattern: ^providers:[a-z_]+(,[a-z_]+)*$
-          example: providers:first
+            pattern: ^[a-z_]+:[^;]+(;[a-z_]+:[^;]+)*$
+          example: providers:first;ext_event_ids:886928362927575040
           description: >
-            Selects which integration the `integration` module is served from.
-            Only ONE integration per request: if several are listed, the first
-            is honoured and the rest ignored. The one that answered is named by
-            `provider` inside each fixture's `integration` object.
+            Selects which integration answers, and filters by **your platform's
+            own ids**.
+
+            Segments are separated by `;`, values inside a segment by `,`.
 
 
-            Omitted, it defaults to the integration your API key is entitled to.
-            Naming an integration you are not entitled to returns **403**;
-            naming one that does not exist returns **400**.
+            `providers:<name>` picks the integration. Only ONE per request: if
+            several are listed, the
+
+            first is honoured and the rest ignored. The one that answered is
+            named by `provider` inside
+
+            each fixture's `integration` object. Omitted, it defaults to the
+            integration your API key is
+
+            entitled to. Naming an integration you are not entitled to returns
+            **403**; naming one that
+
+            does not exist returns **400**.
+
+
+            **Supported here:**
+
+            - `ext_event_ids` — your event ids. A superseded id from a
+            republished event still resolves.
+
+            - `ext_league_ids` — your league ids. One of yours can map to
+            several of ours (a regionalised
+              division is one league to you and several groups to us); every one of them is returned.
+            - `ext_master_league_ids` — prefer this over `ext_league_ids`: it
+            survives your id rotations.
+
+            - `ext_country_ids` — every league we hold under that country of
+            yours.
+
+            - `ext_team_ids` — the team on either side; `ext_home_ids` /
+            `ext_away_ids` pin the side.
+
+            - One of the three league keys, and one of the three team keys, per
+            request.
+
+            - `mapped_only` is **not** available here: insights are selected
+            from your own models, so
+              there is no separate fixture set to intersect against.
+
+            Send ids exactly as you receive them in the `integration` object, as
+            **strings** — they are
+
+            64-bit values that a JSON number cannot hold without corruption.
+
+
+            An id we have no mapping for is not an error: you get an **empty
+            list**, never an unfiltered
+
+            one. Coverage grows as we see more of your events.
+
+
+            A key this endpoint does not support returns **400** rather than
+            being ignored, and so does
+
+            naming the same thing twice — `league_id` with a league key, or
+            `fixture_id` with
+
+            `ext_event_ids`.
         - name: model_id
           in: query
           description: >-
@@ -875,15 +1030,32 @@ paths:
             pattern: ^providers:[a-z_]+(,[a-z_]+)*$
           example: providers:first
           description: >
-            Selects which integration the `integration` module is served from.
-            Only ONE integration per request: if several are listed, the first
-            is honoured and the rest ignored. The one that answered is named by
-            `provider` inside each fixture's `integration` object.
+            Selects which integration answers, and filters by **your platform's
+            own ids**.
+
+            Segments are separated by `;`, values inside a segment by `,`.
 
 
-            Omitted, it defaults to the integration your API key is entitled to.
-            Naming an integration you are not entitled to returns **403**;
-            naming one that does not exist returns **400**.
+            `providers:<name>` picks the integration. Only ONE per request: if
+            several are listed, the
+
+            first is honoured and the rest ignored. The one that answered is
+            named by `provider` inside
+
+            each fixture's `integration` object. Omitted, it defaults to the
+            integration your API key is
+
+            entitled to. Naming an integration you are not entitled to returns
+            **403**; naming one that
+
+            does not exist returns **400**.
+
+
+            This endpoint filters on model and time only, so it accepts no id
+            filters: any `ext_*` key
+
+            or `mapped_only` returns **400**. Use `/insights` when you need to
+            filter by your own ids.
         - name: model_id
           in: query
           description: >-
@@ -1008,18 +1180,73 @@ paths:
           in: query
           schema:
             type: string
-            pattern: ^providers:[a-z_]+(,[a-z_]+)*$
-          example: providers:first
+            pattern: ^[a-z_]+:[^;]+(;[a-z_]+:[^;]+)*$
+          example: providers:first;ext_team_ids:300
           description: >
-            Selects which integration the `integration` module is served from.
-            Only ONE integration per request: if several are listed, the first
-            is honoured and the rest ignored. The one that answered is named by
-            `provider` inside each fixture's `integration` object.
+            Selects which integration answers, and filters by **your platform's
+            own ids**.
+
+            Segments are separated by `;`, values inside a segment by `,`.
 
 
-            Omitted, it defaults to the integration your API key is entitled to.
-            Naming an integration you are not entitled to returns **403**;
-            naming one that does not exist returns **400**.
+            `providers:<name>` picks the integration. Only ONE per request: if
+            several are listed, the
+
+            first is honoured and the rest ignored. The one that answered is
+            named by `provider` inside
+
+            each fixture's `integration` object. Omitted, it defaults to the
+            integration your API key is
+
+            entitled to. Naming an integration you are not entitled to returns
+            **403**; naming one that
+
+            does not exist returns **400**.
+
+
+            **Supported here:**
+
+            - `ext_event_ids` — your event ids. A superseded id from a
+            republished event still resolves.
+
+            - `ext_league_ids` — your league ids. One of yours can map to
+            several of ours (a regionalised
+              division is one league to you and several groups to us); every one of them is returned.
+            - `ext_master_league_ids` — prefer this over `ext_league_ids`: it
+            survives your id rotations.
+
+            - `ext_country_ids` — every league we hold under that country of
+            yours.
+
+            - `ext_team_ids` — the team on either side; `ext_home_ids` /
+            `ext_away_ids` pin the side.
+
+            - One of the three league keys, and one of the three team keys, per
+            request.
+
+            - `mapped_only` is **not** available here, for the same reason as
+            `/insights`.
+
+
+            Send ids exactly as you receive them in the `integration` object, as
+            **strings** — they are
+
+            64-bit values that a JSON number cannot hold without corruption.
+
+
+            An id we have no mapping for is not an error: you get an **empty
+            list**, never an unfiltered
+
+            one. Coverage grows as we see more of your events.
+
+
+            A key this endpoint does not support returns **400** rather than
+            being ignored, and so does
+
+            naming the same thing twice — `league_id` with a league key, or
+            `fixture_id` with
+
+            `ext_event_ids`.
         - name: model_id
           in: query
           description: >-
