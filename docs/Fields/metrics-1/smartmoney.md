@@ -44,3 +44,18 @@ Example smartmoney metric with `meta` property:
     }
 }
 ```
+
+Example Asian Handicap (market 2) smartmoney metric. `label_id` is `1` for home and `2` for away, and `line` is always the home team's handicap, for both labels. So the metric below is support for the away team at +0.5 (home -0.5):
+
+```json
+{
+    "team_id": 0,
+    "developer_name": "SMARTMONEY_AH_AWAY",
+    "value": 4.1,
+    "meta": {
+        "market_id": 2,
+        "label_id": 2,
+        "line": -0.5
+    }
+}
+```
