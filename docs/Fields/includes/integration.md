@@ -38,6 +38,18 @@ GET /v1/fixtures?league_id=8&include=odds,metrics,integration
 
 `include=integration` combines freely with the other modules.
 
+It works on every endpoint that returns fixtures, and the payload always lands in the same place —
+on the fixture, next to whatever that endpoint nests under it:
+
+| Endpoint | Where the payload appears |
+|---|---|
+| `GET /fixtures`, `GET /fixtures/search` | `fixture.integration` |
+| `GET /insights`, `/insights/archive`, `/insights/pending` | `fixture.integration`, beside `insights[]` |
+| `GET /bet-builders`, `/bet-builders/archive`, `/bet-builders/pending` | `fixture.integration`, beside `bet_builders[]` |
+
+`GET /bet-builders/:id` returns a single bet builder without its fixture, so it has nowhere to
+carry the payload; use `GET /bet-builders?fixture_id=…&include=integration` instead.
+
 Access is granted per API key, and your key resolves to your integration automatically — you do
 not normally need to name one. If you do, `filter[integration]=providers:first` selects it
 explicitly. Only one integration is served per request: if several are listed, the first is used
@@ -56,20 +68,23 @@ Each fixture gains an `integration` object holding your feed's payload for that 
   "fixtures": [
     {
       "id": 1147719,
-      "date_time": "2026-10-07T23:30:00.000Z",
+      "date_time": "2026-10-17T11:30:00.000Z",
       "participants": [ /* ... */ ],
       "integration": {
         "provider": "first",
-        "home_team": "Botafogo RJ",
-        "away_team": "Vasco da Gama",
-        "country_name": "Brazil",
-        "league_name": "Serie A",
-        "date_time": "2026-10-07T23:30:00.000Z",
-        "ext_event_id": "887346598991204352",
-        "ext_home_id": "122061",
-        "ext_away_id": "2028",
-        "ext_country_id": "29",
-        "ext_league_id": "801347706789560320",
+        "home_team": "Everton",
+        "away_team": "Chelsea",
+        "country_name": "England",
+        "league_name": "Premier League",
+        "date_time": "2026-10-17T11:30:00.000Z",
+        "ext_event_id": "889172430101516288",
+        "ext_home_id": 239,
+        "ext_away_id": 231,
+        "ext_country_id": 260,
+        "ext_league_id": "740557258543472640",
+        "ext_master_league_id": 24,
+        "ext_region_id": 260,
+        "ext_region_code": "EN",
         "is_betbuilder": true
       }
     }
@@ -78,17 +93,34 @@ Each fixture gains an `integration` object holding your feed's payload for that 
 }
 ```
 
+| Field | Meaning |
+|---|---|
+| `provider` | the integration that answered — added by us, everything else is your feed's own |
+| `home_team`, `away_team`, `country_name`, `league_name` | the event as your feed names it |
+| `date_time` | kickoff, UTC |
+| `ext_event_id` | your event id — the same id as `raw.event_id` on this event's odds |
+| `ext_home_id`, `ext_away_id` | your team ids |
+| `ext_country_id` | your country id |
+| `ext_league_id` | your league id; can be reissued — prefer `ext_master_league_id` |
+| `ext_master_league_id` | your stable league id |
+| `ext_region_id` | your region id |
+| `ext_region_code` | your region code, e.g. `"EN"` |
+| `is_betbuilder` | present when the event offers bet-builder combinations |
+
 ### Three things to handle
 
-**Ids are JSON strings, and that is deliberate.** `ext_event_id` and the other external ids are
-64-bit integers. A value like `887346598991204352` cannot survive `JSON.parse` in a language with
+**Long ids are JSON strings, and that is deliberate.** `ext_event_id` and `ext_league_id` are 64-bit
+integers. A value like `889172430101516288` cannot survive `JSON.parse` in a language with
 IEEE-754 numbers — JavaScript silently rounds it to `887346598991204400`, and you would corrupt one
 id in every batch with no error raised anywhere. Sending them quoted means every digit reaches you
-intact. Compare them as strings, or parse them with a bigint-aware reader; do not cast them to a
-double.
+intact. Ids small enough to be exact as a double — team, country, master league and region ids —
+arrive as plain numbers. Do not rely on either form for a given field: accept both, and compare and
+store ids as strings.
 
 **Fields vary by event.** The payload is your feed's own record of that event, and not every event
 carries every field. Read the fields you need defensively rather than assuming they are present.
+`ext_region_id` and `ext_region_code` in particular were added in October 2026 and appear only on
+events updated since; `ext_master_league_id` is missing from a minority of events.
 
 **A missing `integration` key is normal.** A fixture your feed does not carry simply has no
 `integration` key — not `null`, not an empty object. SSTrader's fixture coverage is wider than any
