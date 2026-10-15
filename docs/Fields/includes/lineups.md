@@ -8,10 +8,11 @@ hidden: false
 metadata:
   robots: index
 ---
+# Lineups
 
 `include=lineups`
 
-The `lineups` include attaches the team sheets for a fixture: every player named by either team, with the slot they occupy (starting XI, bench or sidelined), their shirt number, their position in this match, and their name in all the spellings the API holds.
+The `lineups` include attaches the team sheets for a fixture: every player named by either team, with the slot they occupy (starting XI or bench), their shirt number, their position in this match, and their name in all the spellings the API holds.
 
 Lineups are published by the data provider shortly before kick-off — typically around an hour before, sometimes later for smaller competitions. Requesting the include for a fixture whose team sheets have not been announced yet returns an empty array.
 
@@ -31,7 +32,7 @@ Lineups are published by the data provider shortly before kick-off — typically
 | `number`             | integer | Shirt number. `null` when the provider did not supply one. |
 | `formation_position` | integer | The player's slot index within the team's formation, for starting players. `null` for bench entries and where the provider did not supply one. |
 | `type_id`            | integer | Type id of the slot itself — see the table below. |
-| `developer_name`     | string  | Developer name of the slot: `LINEUP`, `BENCH` or `SIDELINED`. |
+| `developer_name`     | string  | Developer name of the slot: `LINEUP` or `BENCH`. |
 | `player`             | object  | The player filling the slot — see [Player object](#player-object). |
 
 ### Slot types
@@ -40,9 +41,10 @@ Lineups are published by the data provider shortly before kick-off — typically
 |-----------|------------------|---------|
 | `377`     | `LINEUP`         | Named in the starting XI. |
 | `378`     | `BENCH`          | Named as a substitute. |
-| `379`     | `SIDELINED`      | Unavailable for this match (injury, suspension). Rarely present — most feeds report team sheets as starters and substitutes only. |
 
 Entries are ordered by team, then by slot type (starters before bench), then by formation position and shirt number.
+
+> **Note:** `lineups` never contains injured or suspended players. A team sheet only names the players who are in the matchday squad; players unavailable for the match are a separate feed with different properties (absence category, start/end date, games missed).
 
 ### Player object
 
@@ -199,7 +201,7 @@ Rather than re-requesting `lineups` for every upcoming fixture, request `metadat
 
 ### Availability checks before betting
 
-Confirm a key player is in the starting XI (`developer_name` = `LINEUP`) rather than on the bench or sidelined before showing markets that depend on him — a striker starting on the bench changes the value of a goalscorer bet considerably.
+Confirm a key player is in the starting XI (`developer_name` = `LINEUP`) rather than on the bench before showing markets that depend on him — a striker starting on the bench changes the value of a goalscorer bet considerably.
 
 Gate this on `LINEUP_CONFIRMED` being `true`. Acting on a provisional sheet means acting on a team that may still change before kick-off.
 
