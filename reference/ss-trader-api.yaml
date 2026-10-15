@@ -1482,11 +1482,21 @@ paths:
 
         Results are grouped by entity type; only the types requested are
         included in the response. Currently supported: `country`, `league`,
-        `team`, `fixture`.
+        `team`, `fixture`, `player`.
 
         `fixture` search only covers matches in a rolling window from a few
         hours ago to about a week ahead, in top-tier leagues — i.e. upcoming
         fixtures and recently finished ones.
+
+        `player` search covers the players of the teams in that same window
+        (from the team's squad, or its lineup when no squad has been published
+        yet). Each result lists the player's teams and, per team, his fixtures
+        in the window, plus his other current squads with no fixture. `q` may be
+        a name alone ("Kostic", "F. Kostić") or a name plus a team ("Kostic
+        Juventus"); when a team is recognised, `matched_team_id` says which, and
+        namesakes at other teams rank lower. A squad is often published only a
+        few days before a match, so a player can appear in results some hours
+        after his team's fixture does.
       operationId: searchEntities
       security:
         - BearerAuth: []
@@ -1512,9 +1522,10 @@ paths:
                 - league
                 - team
                 - fixture
+                - player
           description: >-
             Comma-separated list of entity types to search. Currently:
-            `country`, `league`, `team`, `fixture`.
+            `country`, `league`, `team`, `fixture`, `player`.
           example: country
         - in: query
           name: limit
@@ -1619,6 +1630,80 @@ paths:
                             name: Arsenal
                             location: away
                         score: 0.95
+                player_match:
+                  summary: Player match (q=Kostic Juventus)
+                  value:
+                    players:
+                      - id: 12826
+                        display_name: Filip Kostić
+                        common_name: F. Kostić
+                        fullname: Filip Kostić
+                        firstname: Filip
+                        lastname: Kostić
+                        birthdate: '1992-11-01'
+                        position:
+                          type_id: 374
+                          developer_name: MIDFIELDER
+                        teams:
+                          - id: 9482
+                            name: Serbia
+                            short_code: SRB
+                            national_team: true
+                            country:
+                              id: 36
+                              name: Serbia
+                              alpha3: SRB
+                            season_id: 18927
+                            source: squad
+                            fixtures:
+                              - id: 1140733
+                                date_time: '2026-10-01T18:45:00.000Z'
+                                status: NOT_STARTED
+                                league:
+                                  id: 788
+                                  name: UEFA Nations League
+                                  level: 1
+                                  sub_type: cup_international
+                                location: away
+                                opponent:
+                                  id: 9390
+                                  name: Germany
+                          - id: 473
+                            name: Juventus
+                            short_code: JUV
+                            national_team: false
+                            country:
+                              id: 33
+                              name: Italy
+                              alpha3: ITA
+                            season_id: 17436
+                            source: squad
+                            fixtures:
+                              - id: 1163073
+                                date_time: '2026-10-02T10:30:00.000Z'
+                                status: NOT_STARTED
+                                league:
+                                  id: 375
+                                  name: Club Friendlies 1
+                                  level: 3
+                                  sub_type: friendly
+                                location: home
+                                opponent:
+                                  id: 5484
+                                  name: Cremonese
+                          - id: 502
+                            name: PSV Eindhoven
+                            short_code: PSV
+                            national_team: false
+                            country:
+                              id: 10
+                              name: Netherlands
+                              alpha3: NLD
+                            season_id: 18169
+                            source: squad
+                            fixtures: []
+                        matched_team_id: 473
+                        score: 0.95
         '400':
           description: >
             Validation error. Possible causes: - Missing `q`. - Missing `types`.
@@ -1637,8 +1722,8 @@ paths:
                 unsupported_type:
                   value:
                     error: >-
-                      Unsupported type(s): player. Supported: country, league,
-                      team, fixture
+                      Unsupported type(s): coach. Supported: country, league,
+                      team, fixture, player
         '403':
           description: Unauthorized — missing or insufficient permissions.
 components:
@@ -1944,6 +2029,134 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchFixtureResult'
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchPlayerResult'
+    SearchPlayerResult:
+      type: object
+      description: >
+        A player with a fixture in the search window. Name fields come from the
+        data feed as-is (any may be null).
+      properties:
+        id:
+          type: integer
+          description: Player ID.
+        display_name:
+          type: string
+          nullable: true
+        common_name:
+          type: string
+          nullable: true
+        fullname:
+          type: string
+          nullable: true
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        birthdate:
+          type: string
+          nullable: true
+          example: '1992-11-01'
+        position:
+          type: object
+          nullable: true
+          properties:
+            type_id:
+              type: integer
+            developer_name:
+              type: string
+              example: DEFENDER
+        teams:
+          type: array
+          description: >
+            Every team the player is linked to through a fixture in the window
+            (e.g. club and national team), soonest fixture first; then any other
+            current-season squad of his with `fixtures: []` (typically his club
+            during an international break). A team named in `q` is recognised
+            among all of these.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              short_code:
+                type: string
+                nullable: true
+              national_team:
+                type: boolean
+              country:
+                type: object
+                nullable: true
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  alpha3:
+                    type: string
+              season_id:
+                type: integer
+              source:
+                type: string
+                enum:
+                  - squad
+                  - lineup
+                description: >-
+                  `lineup` when the player is known only from a published
+                  lineup, not the squad.
+              fixtures:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    date_time:
+                      type: string
+                      format: date-time
+                    status:
+                      type: string
+                    league:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        level:
+                          type: integer
+                        sub_type:
+                          type: string
+                    location:
+                      type: string
+                      enum:
+                        - home
+                        - away
+                    opponent:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+        matched_team_id:
+          type: integer
+          nullable: true
+          description: >-
+            The team recognised in `q`, when the query named one of this
+            player's teams.
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Name match confidence — higher means a closer match to `q`.
     SearchCountryResult:
       allOf:
         - $ref: '#/components/schemas/Country'
@@ -2214,8 +2427,9 @@ components:
             lineups:
               description: >
                 Included when `include=lineups` is passed. Flat array of both
-                teams' team-sheet entries (starting XI, bench and sidelined) —
-                not grouped, split them on `team_id`.
+                teams' team-sheet entries (starting XI and bench) — not grouped,
+                split them on `team_id`. Injured and suspended players are never
+                part of it.
 
                 Ordered by team, then slot type (starters before bench), then
                 formation position and shirt number.
@@ -2251,8 +2465,8 @@ components:
       type: object
       description: >
         One slot in a fixture's team sheet. The slot itself (`type_id` /
-        `developer_name`) says whether it is the starting XI, the bench or a
-        sidelined player; the player filling it is nested under `player`.
+        `developer_name`) says whether it is the starting XI or the bench; the
+        player filling it is nested under `player`.
       properties:
         team_id:
           type: integer
@@ -2273,9 +2487,7 @@ components:
         type_id:
           type: integer
           nullable: true
-          description: >-
-            Type id of the lineup slot: 377 = LINEUP, 378 = BENCH, 379 =
-            SIDELINED.
+          description: 'Type id of the lineup slot: 377 = LINEUP, 378 = BENCH.'
           example: 378
         developer_name:
           type: string
@@ -2283,12 +2495,9 @@ components:
           enum:
             - LINEUP
             - BENCH
-            - SIDELINED
           description: >
             The slot: `LINEUP` = named in the starting XI, `BENCH` = named as a
-            substitute, `SIDELINED` = unavailable for this match. `SIDELINED` is
-            rarely present — most feeds report team sheets as starters and
-            substitutes only.
+            substitute.
         player:
           $ref: '#/components/schemas/LineupPlayer'
       example:
@@ -3028,8 +3237,8 @@ components:
               type: integer
               description: >-
                 The betting market this metric relates to (e.g. 1 = Money Line,
-                2 = Asian Handicap, 3 = Goal Line, 6 = Corners, 203 = Yellow
-                Cards).
+                2 = Asian Handicap, 3 = Goal Line, 5 = Corners Asian Handicap, 6
+                = Corners, 203 = Yellow Cards).
             label_id:
               type: integer
               description: >-
