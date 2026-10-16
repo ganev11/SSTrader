@@ -9,13 +9,6 @@ hidden: false
 metadata:
   robots: index
 ---
-
-<Callout icon="🛑" theme="error">
-  ### **NB**
-
-  This endpoint is in beta testing.
-</Callout>
-
 `GET /bet-builders`
 
 A bet builder combines multiple selections from the **same match** into one bet (e.g. Match Winner + Over 2.5 Goals for the same fixture).
@@ -33,14 +26,24 @@ Results use the same layout as `/insights`: a list of fixtures, where each fixtu
 | `fixture_id` | integer | —       | Restrict results to a specific single fixture |
 | `league_id`  | string  | —       | Comma-separated list of League IDs |
 | `is_live`    | integer | —       | Use `1` to filter only for events currently in-play, `0` for events not yet started. Omitted by default — no filtering on match state. |
+| `page`       | integer | `1`     | Page number (1-based) |
+| `per_page`   | integer | `100`   | Maximum number of bet builder records per page. Maximum is `100` |
+| `order`      | string  | `desc`  | Sort direction on `created_at` — `desc` (newest first) or `asc` |
 
 ```
 GET /bet-builders?model_id=12&language=en
+GET /bet-builders?model_id=12&page=2
 ```
 
-> **Always active:** Results only ever include active, non-suspended bet builders — there's no way to include suspended or expired ones yet. That's coming with a dedicated `/bet-builders/archive` endpoint (TODO), mirroring `/insights/archive`.
+> **Always active:** Results only ever include active, non-suspended bet builders — suspended and expired ones are never returned here. Use [`GET /bet-builders/archive`](/docs/bet-builders-archive) for those.
 
-> **Pagination:** Not implemented yet (TODO) — a fixed internal result limit is applied for now.
+### Pagination notes
+
+Pagination operates at the **bet builder level**: `per_page` controls the maximum number of bet builder records returned. Because they are grouped by fixture in the response, the number of fixtures per page varies, and a fixture's bet builders can continue on the next page.
+
+`has_more` is exact: `true` only when at least one more bet builder exists past this page. Keep requesting `page + 1` while it is `true`.
+
+Active bet builders are generated and expire continuously, so the list can shift between two page requests — an entry may move across a page boundary. Use `fixture_id`, `league_id`, `model_id` or `is_live` to keep the result set small when you need a complete, consistent view.
 
 ---
 
@@ -55,7 +58,7 @@ GET /bet-builders?model_id=12&language=en
 | `value`          | number / null   | Current combined decimal odds. `null` while the combination is still being priced. |
 | `sp`             | number / null   | Starting Price — the combined odds at the time this bet builder was generated. |
 | `suspend`        | integer         | Boolean flag (`0` or `1`). If `1`, this bet builder is temporarily unavailable (e.g. one of its selections is currently suspended). Treat this as "wait", not "cancelled" — it can flip back to `0` once the selection becomes available again. |
-| `status`         | integer         | Settlement status. Same codes as the [Odd Object](/docs/odds) `status` field. |
+| `status`         | integer         | Settlement status of the combination as a whole — `0` pending, `1` won, `-1` lost, `-3` void. Same codes as the [Odd Object](/docs/odds) `status` field, but only these four occur: a bet builder wins only if **every** selection wins, and a single void selection voids the whole bet builder (stake returned). It stays `0` until every selection has a result, so a bet builder with one already-losing selection still reads `0` while another selection is open. |
 | `last_priced_at` | string / null   | ISO 8601 timestamp of the last time `value`/`sp` were updated. |
 | `raw`            | object          | Bookmaker-specific reference data for this exact combination of selections. Opaque and varies by bookmaker; returns `{}` when not available. |
 | `meta`           | object          | Additional bookmaker-specific metadata (e.g. promotional price boosts). Shape may vary and is not guaranteed to be present. |
@@ -264,9 +267,24 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
         }
       ]
     }
-  ]
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 100,
+    "has_more": false,
+    "order": "desc"
+  }
 }
 ```
+
+### Pagination Object
+
+| Field      | Type    | Description |
+|------------|---------|-------------|
+| `page`     | integer | The current page number |
+| `per_page` | integer | The page size applied |
+| `has_more` | boolean | `true` if at least one more bet builder exists on the next page |
+| `order`    | string  | The sort direction applied (`desc` or `asc`) |
 
 ---
 
