@@ -1152,11 +1152,15 @@ paths:
         Results use the same layout as `/insights`: a list of fixtures, where
         each fixture contains a `bet_builders[]` array.
 
-        Results only ever include active, non-suspended bet builders — there's
-        no way to include suspended or expired ones yet (a dedicated
-        `/bet-builders/archive` endpoint, mirroring `/insights/archive`, is
-        planned). Pagination is not implemented yet — a fixed internal result
-        limit is applied for now.
+        Results only ever include active, non-suspended bet builders.
+
+
+        Paginated at the **bet builder** level: `per_page` counts bet builder
+        records, not fixtures, so a fixture with many bet builders can continue
+        on the next page. `has_more` is exact — `true` only when at least one
+        more bet builder exists past this page. The set of active bet builders
+        changes while you page (new ones are generated, old ones expire), so
+        entries can shift between page requests.
       operationId: getBetBuilders
       security:
         - BearerAuth: []
@@ -1282,9 +1286,29 @@ paths:
             enum:
               - 0
               - 1
+        - $ref: '#/components/parameters/pageParam'
+        - name: per_page
+          in: query
+          description: >-
+            Maximum number of bet builder records returned per page. Maximum is
+            100.
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 100
+        - name: order
+          in: query
+          description: Sort direction on `created_at`.
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
       responses:
         '200':
-          description: A list of fixtures with bet builder suggestions.
+          description: A paginated list of fixtures with bet builder suggestions.
           content:
             application/json:
               schema:
@@ -1294,6 +1318,11 @@ paths:
                   summary: No matching bet builders
                   value:
                     fixtures: []
+                    pagination:
+                      page: 1
+                      per_page: 100
+                      has_more: false
+                      order: desc
         '403':
           description: Unauthorized — missing or invalid authentication.
           content:
@@ -1783,11 +1812,16 @@ components:
           $ref: '#/components/schemas/PaginationMetadata'
     BetBuildersResponse:
       type: object
+      required:
+        - fixtures
+        - pagination
       properties:
         fixtures:
           type: array
           items:
             $ref: '#/components/schemas/FixtureWithBetBuilders'
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
     FixtureWithBetBuilders:
       allOf:
         - $ref: '#/components/schemas/FixtureBase'
