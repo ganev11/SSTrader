@@ -281,6 +281,7 @@ paths:
                 - statistics
                 - metrics
                 - player_metrics
+                - player_form
                 - fair_odds
                 - movement
                 - trends
@@ -306,6 +307,10 @@ paths:
             `player_metrics` must be requested together with `squads`
             (`include=squads,player_metrics`) — the metric rows identify players
             by `player_id` only, and `squads` carries their names and positions.
+
+
+            `player_form` must likewise be requested together with `squads`
+            (`include=squads,player_form`).
         - name: filter[integration]
           in: query
           schema:
@@ -2446,6 +2451,24 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/PlayerMetric'
+            player_form:
+              description: >
+                Included when `include=player_form` is passed, which requires
+                `include=squads` alongside it. Flat array covering both teams'
+                current squads — not grouped, split on `team_id` / `player_id`
+                and join to `squads[]` for names and positions.
+
+
+                Up to 5 entries per player, newest first: his last appearances
+                (`MINUTES_PLAYED` above 0, any competition, past 365 days)
+                before this fixture's kick-off. Because the window ends at
+                kick-off, the entries never change for a fixture — before,
+                during or after it. A player with no appearance in the window
+                has no entries. Ordered by `team_id`, `player_id`, then
+                `date_time` descending.
+              type: array
+              items:
+                $ref: '#/components/schemas/PlayerFormEntry'
             trends:
               description: >-
                 Included when `include=trends` is passed. Per-minute cumulative
@@ -2495,6 +2518,99 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/MetadataEntry'
+    PlayerFormEntry:
+      type: object
+      description: One past appearance of a player, with his statistics in that game.
+      properties:
+        team_id:
+          type: integer
+          example: 4009
+          description: >-
+            The player's team in THIS fixture. Match against `participants[].id`
+            to tell home from away.
+        player_id:
+          type: integer
+          example: 184521
+          description: The player. Join to `squads[].player_id` for name and position.
+        fixture_id:
+          type: integer
+          example: 19134512
+          description: The past fixture the statistics come from.
+        date_time:
+          type: string
+          format: date-time
+          example: '2026-10-11T19:00:00.000Z'
+          description: Kick-off of the past fixture, in UTC.
+        statistics:
+          type: array
+          description: >
+            The player's statistics in that game. A statistic is present only
+            when it was recorded for that game, and then `0` is a real zero; an
+            absent statistic means not recorded, never zero. `MINUTES_PLAYED` is
+            always present. `SAVES` is returned for the goalkeeper of that game
+            only.
+
+
+            Possible `developer_name` values: `MINUTES_PLAYED`, `SHOTS_TOTAL`,
+            `SHOTS_ON_TARGET`, `GOALS`, `ASSISTS`, `YELLOWCARDS`, `REDCARDS`,
+            `YELLOWRED_CARDS`, `FOULS`, `TACKLES`, `SAVES`. Treat an
+            unrecognised one as forward compatibility rather than an error.
+          items:
+            $ref: '#/components/schemas/PlayerStatistic'
+      example:
+        team_id: 4009
+        player_id: 184521
+        fixture_id: 19134512
+        date_time: '2026-10-11T19:00:00.000Z'
+        statistics:
+          - type_id: 42
+            developer_name: MINUTES_PLAYED
+            value: 90
+          - type_id: 11
+            developer_name: SHOTS_TOTAL
+            value: 3
+          - type_id: 22
+            developer_name: SHOTS_ON_TARGET
+            value: 2
+          - type_id: 15
+            developer_name: GOALS
+            value: 1
+          - type_id: 17
+            developer_name: ASSISTS
+            value: 0
+          - type_id: 20
+            developer_name: YELLOWCARDS
+            value: 0
+          - type_id: 19
+            developer_name: REDCARDS
+            value: 0
+          - type_id: 21
+            developer_name: YELLOWRED_CARDS
+            value: 0
+          - type_id: 31
+            developer_name: FOULS
+            value: 1
+          - type_id: 73
+            developer_name: TACKLES
+            value: 2
+    PlayerStatistic:
+      type: object
+      description: One statistic of one player in one game.
+      properties:
+        type_id:
+          type: integer
+          example: 15
+          description: The unique ID of the statistic type.
+        developer_name:
+          type: string
+          example: GOALS
+          description: The unique, constant-style identifier used for programmatic logic.
+        value:
+          type: integer
+          example: 1
+          description: >-
+            The player's count for this statistic in that game (minutes for
+            `MINUTES_PLAYED`).
     LineupEntry:
       type: object
       description: >
