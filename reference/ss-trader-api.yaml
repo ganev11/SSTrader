@@ -3012,8 +3012,9 @@ components:
           type: integer
           nullable: true
           description: >-
-            Unique identifier for a player. Populated for performance markets
-            (e.g., Shots, Goalscorer).
+            Unique identifier for a player. Populated for player markets (e.g.,
+            Shots, Goalscorer); null on every team or match market (Match
+            Winner, totals, corners, ...).
         value:
           type: number
           format: float
