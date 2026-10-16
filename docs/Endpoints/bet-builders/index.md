@@ -70,7 +70,12 @@ Active bet builders are generated and expire continuously, so the list can shift
 
 ### Selection Object
 
-Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`, `fixture_id`, `market_id`, `value`, `suspend`, `status`, `outcome`, `market_name`, `label_name`, etc.).
+Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`, `fixture_id`, `market_id`, `value`, `suspend`, `status`, `outcome`, `market_name`, `label_name`, etc.), plus two player fields:
+
+| Field           | Type           | Description |
+|-----------------|----------------|-------------|
+| `player_id`     | integer / null | The player this selection is about, on player markets (goalscorer, player to be booked, player shots, ...). Join to [`squads`](/docs/squads) or [`lineups`](/docs/lineups) on `player_id` for the name and position. **`null` on every team or match market** (Match Winner, totals, corners, Both Teams to Score, ...) — there is no player to identify, so a `null` here is expected, not missing data. |
+| `lineup_policy` | string / null  | Player selections only: what the bet builder requires of that player's team sheet status — `starting` (must start), `included` (starting XI or bench) or `ignore`. `null` on non-player selections. If the player does not meet it once lineups are confirmed, the bet builder is voided. |
 
 ---
 
@@ -221,6 +226,8 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
               "home_score": 0,
               "away_score": 0,
               "status": 0,
+              "player_id": null,
+              "lineup_policy": null,
               "raw": {
                 "event_id": "864430242864062464",
                 "market_id": "0ML864430244147548160",
@@ -250,6 +257,8 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
               "home_score": 0,
               "away_score": 0,
               "status": 0,
+              "player_id": null,
+              "lineup_policy": null,
               "raw": {
                 "event_id": "864430242864062464",
                 "market_id": "0QA864430244147548195",
