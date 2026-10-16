@@ -1,5 +1,5 @@
 ---
-title: Bet Builders Archive
+title: Archive
 excerpt: >-
   Paginated bet builder history for the authenticated user — every bet builder
   in a time range, including settled, suspended and expired ones.
