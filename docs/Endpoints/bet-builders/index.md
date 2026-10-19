@@ -26,6 +26,11 @@ Results use the same layout as `/insights`: a list of fixtures, where each fixtu
 | `fixture_id` | integer | —       | Restrict results to a specific single fixture |
 | `league_id`  | string  | —       | Comma-separated list of League IDs |
 | `is_live`    | integer | —       | Use `1` to filter only for events currently in-play, `0` for events not yet started. Omitted by default — no filtering on match state. |
+| `market_id`  | string  | —       | Comma-separated list of Market IDs (e.g. `1,53`). Keeps bet builders with **at least one** selection on one of these markets — their other selections can be on any market. |
+| `value_from` | string  | —       | Minimum combined decimal odds, e.g. `2.00`. Inclusive. |
+| `value_to`   | string  | —       | Maximum combined decimal odds, e.g. `5.00`. Inclusive. |
+| `legs_from`  | integer | —       | Minimum number of selections in the bet builder. Inclusive. |
+| `legs_to`    | integer | —       | Maximum number of selections in the bet builder. Inclusive. `legs_from=3&legs_to=3` returns only 3-selection bet builders. |
 | `page`       | integer | `1`     | Page number (1-based) |
 | `per_page`   | integer | `100`   | Maximum number of bet builder records per page. Maximum is `100` |
 | `order`      | string  | `desc`  | Sort direction on `created_at` — `desc` (newest first) or `asc` |
@@ -33,7 +38,16 @@ Results use the same layout as `/insights`: a list of fixtures, where each fixtu
 ```
 GET /bet-builders?model_id=12&language=en
 GET /bet-builders?model_id=12&page=2
+GET /bet-builders?market_id=1,53&value_from=2.00&value_to=5.00
+GET /bet-builders?legs_from=3&legs_to=4
 ```
+
+### Market, odds and selection-count filters
+
+- `market_id` checks each bet builder's selections, not the bet builder as a whole: a bet builder made of Match Winner (`1`) + Both Teams to Score (`53`) is returned for `market_id=1`, for `market_id=53` and for `market_id=1,53`. It is returned once, however many of its selections match.
+- `value_from` / `value_to` filter on the bet builder's **current combined price** (`value`), not on the price it was first published at (`sp`), and not on the odds of its individual selections. A bet builder that is still being priced (`value` is `null`) never matches when either is given.
+- `legs_from` / `legs_to` count every selection of the bet builder, whatever its market — they are not narrowed by `market_id`.
+- `value_from` greater than `value_to`, `legs_from` greater than `legs_to`, or a `legs_*` value that is not a positive integer returns `400`.
 
 > **Always active:** Results only ever include active, non-suspended bet builders — suspended and expired ones are never returned here. Use [`GET /bet-builders/archive`](/docs/bet-builders-archive) for those.
 
@@ -43,7 +57,9 @@ Pagination operates at the **bet builder level**: `per_page` controls the maximu
 
 `has_more` is exact: `true` only when at least one more bet builder exists past this page. Keep requesting `page + 1` while it is `true`.
 
-Active bet builders are generated and expire continuously, so the list can shift between two page requests — an entry may move across a page boundary. Use `fixture_id`, `league_id`, `model_id` or `is_live` to keep the result set small when you need a complete, consistent view.
+`total` is the number of bet builders matching your filters across all pages, and `total_pages` is `ceil(total / per_page)` — use them to show progress or a page count. They count bet builders, not fixtures.
+
+Active bet builders are generated and expire continuously, so the list can shift between two page requests — an entry may move across a page boundary, and `total` reflects the moment of each request, so it can change from one page to the next. Use `fixture_id`, `league_id`, `model_id` or `is_live` to keep the result set small when you need a complete, consistent view.
 
 ---
 
@@ -280,6 +296,8 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
   "pagination": {
     "page": 1,
     "per_page": 100,
+    "total": 1,
+    "total_pages": 1,
     "has_more": false,
     "order": "desc"
   }
@@ -288,11 +306,13 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
 
 ### Pagination Object
 
-| Field      | Type    | Description |
-|------------|---------|-------------|
-| `page`     | integer | The current page number |
-| `per_page` | integer | The page size applied |
-| `has_more` | boolean | `true` if at least one more bet builder exists on the next page |
+| Field         | Type    | Description |
+|---------------|---------|-------------|
+| `page`        | integer | The current page number |
+| `per_page`    | integer | The page size applied |
+| `total`       | integer | Number of bet builders matching the filters, across all pages (counted at the time of the request) |
+| `total_pages` | integer | `ceil(total / per_page)`; `0` when nothing matches |
+| `has_more`    | boolean | `true` if at least one more bet builder exists on the next page |
 | `order`    | string  | The sort direction applied (`desc` or `asc`) |
 
 ---
@@ -310,6 +330,14 @@ GET /bet-builders/501?language=en
 ## Response Codes
 
 **200 OK** — see example above.
+
+**400 Bad Request** — an invalid range filter, e.g. `value_from` greater than `value_to`
+
+```json
+{ "error": "value_from must not be greater than value_to" }
+```
+
+Same shape for `legs_from must not be greater than legs_to` and `legs_from and legs_to must be positive integers`.
 
 **403 Forbidden** — missing or invalid authentication
 
