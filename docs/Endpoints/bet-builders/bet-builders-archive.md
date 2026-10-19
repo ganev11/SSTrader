@@ -48,6 +48,8 @@ Pagination operates at the **bet builder level**: `per_page` controls the maximu
 
 `has_more` is exact: `true` only when at least one more bet builder exists past this page, so a last page that happens to be exactly full reports `false`.
 
+`total` is the number of bet builders matching your filters across all pages, and `total_pages` is `ceil(total / per_page)`. Like the pages themselves, they count bet builders, not fixtures. With a fixed `time_to` in the past the archive does not change, so `total` stays the same while you page; an open-ended range can grow as new bet builders are created.
+
 ### Language notes
 
 Only bet builders that have a translation in the requested `language` are returned. A bet builder whose content was never generated in that language is omitted from the archive entirely — it is not returned with empty content. If a history view looks unexpectedly short, retry with `language=en`.
@@ -148,18 +150,20 @@ Fields that matter most in an archive context:
   "pagination": {
     "page": 1,
     "per_page": 25,
+    "total": 48,
+    "total_pages": 2,
     "has_more": true,
     "order": "desc"
   }
 }
 ```
 
-An empty page returns the same envelope with no fixtures:
+A page past the end returns the same envelope with no fixtures; `total` still reports the full count:
 
 ```json
 {
   "fixtures": [],
-  "pagination": { "page": 3, "per_page": 25, "has_more": false, "order": "desc" }
+  "pagination": { "page": 3, "per_page": 25, "total": 48, "total_pages": 2, "has_more": false, "order": "desc" }
 }
 ```
 
