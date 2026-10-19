@@ -1163,9 +1163,11 @@ paths:
         Paginated at the **bet builder** level: `per_page` counts bet builder
         records, not fixtures, so a fixture with many bet builders can continue
         on the next page. `has_more` is exact — `true` only when at least one
-        more bet builder exists past this page. The set of active bet builders
-        changes while you page (new ones are generated, old ones expire), so
-        entries can shift between page requests.
+        more bet builder exists past this page. `total` / `total_pages` give the
+        number of matching bet builders and pages. The set of active bet
+        builders changes while you page (new ones are generated, old ones
+        expire), so entries can shift between page requests and `total` is the
+        count at the time of each request.
       operationId: getBetBuilders
       security:
         - BearerAuth: []
@@ -1291,6 +1293,45 @@ paths:
             enum:
               - 0
               - 1
+        - name: market_id
+          in: query
+          description: >
+            Comma-separated list of Market IDs. Keeps bet builders with at least
+            one selection on one of these markets; their other selections can be
+            on any market. Example: `market_id=1,53`.
+          schema:
+            type: string
+        - name: value_from
+          in: query
+          description: >
+            Minimum combined decimal odds, inclusive, e.g. `2.00`. Applies to
+            the current combined price (`value`), not `sp`; a bet builder still
+            being priced (`value` null) never matches.
+          schema:
+            type: string
+        - name: value_to
+          in: query
+          description: >
+            Maximum combined decimal odds, inclusive, e.g. `5.00`. Same rules as
+            `value_from`. `value_from` greater than `value_to` returns 400.
+          schema:
+            type: string
+        - name: legs_from
+          in: query
+          description: >
+            Minimum number of selections in the bet builder, inclusive. Counts
+            every selection, whatever its market.
+          schema:
+            type: integer
+            minimum: 1
+        - name: legs_to
+          in: query
+          description: >
+            Maximum number of selections in the bet builder, inclusive.
+            `legs_from` greater than `legs_to` returns 400.
+          schema:
+            type: integer
+            minimum: 1
         - $ref: '#/components/parameters/pageParam'
         - name: per_page
           in: query
@@ -1326,8 +1367,22 @@ paths:
                     pagination:
                       page: 1
                       per_page: 100
+                      total: 0
+                      total_pages: 0
                       has_more: false
                       order: desc
+        '400':
+          description: >-
+            Invalid filter — `value_from` > `value_to`, `legs_from` > `legs_to`,
+            a `legs_*` value that is not a positive integer, or a conflicting
+            `filter[integration]`.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
         '403':
           description: Unauthorized — missing or invalid authentication.
           content:
@@ -1826,7 +1881,25 @@ components:
           items:
             $ref: '#/components/schemas/FixtureWithBetBuilders'
         pagination:
-          $ref: '#/components/schemas/PaginationMetadata'
+          $ref: '#/components/schemas/BetBuilderPaginationMetadata'
+    BetBuilderPaginationMetadata:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMetadata'
+        - type: object
+          required:
+            - total
+            - total_pages
+          properties:
+            total:
+              type: integer
+              example: 1053
+              description: >
+                Number of bet builders (not fixtures) matching the filters,
+                across all pages. Counted at the time of the request.
+            total_pages:
+              type: integer
+              example: 11
+              description: '`ceil(total / per_page)`; `0` when nothing matches.'
     FixtureWithBetBuilders:
       allOf:
         - $ref: '#/components/schemas/FixtureBase'
