@@ -2614,7 +2614,36 @@ components:
           items:
             $ref: '#/components/schemas/Fixture'
         pagination:
-          $ref: '#/components/schemas/PaginationMetadata'
+          $ref: '#/components/schemas/FixturesPaginationMetadata'
+    FixturesPaginationMetadata:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMetadata'
+        - type: object
+          required:
+            - total
+            - total_pages
+          properties:
+            total:
+              type: integer
+              example: 7802
+              description: >
+                Number of fixtures matching the filters, across all pages.
+                Counted at the time of the request.
+            total_pages:
+              type: integer
+              example: 313
+              description: '`ceil(total / per_page)`; `0` when nothing matches.'
+            has_more:
+              type: boolean
+              example: true
+              description: >
+                Exact: `true` only when at least one more fixture exists past
+                this page (`page * per_page < total`).
+          description: >
+            With `is_live` set, `page` and `per_page` are ignored and every live
+            fixture is returned on one page: `page: 1`, `per_page` and `total`
+            equal to the number of live fixtures, `total_pages` `1` (or `0` when
+            none are live), `has_more: false`.
     FixtureBase:
       type: object
       properties:
