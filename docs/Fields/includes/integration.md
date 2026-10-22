@@ -89,7 +89,7 @@ Each fixture gains an `integration` object holding your feed's payload for that 
       }
     }
   ],
-  "pagination": { "page": 1, "per_page": 25, "has_more": false, "order": "asc" }
+  "pagination": { "page": 1, "per_page": 25, "total": 1, "total_pages": 1, "has_more": false, "order": "asc" }
 }
 ```
 
@@ -262,7 +262,8 @@ endpoint reports a `total`, it counts only what your filters let through, not ev
 |---|---|---|
 | `/insights`, `/insights/archive`, `/insights/pending` | exact | yes — counts insights, not fixtures |
 | `/bet-builders`, `/bet-builders/archive`, `/bet-builders/pending` | exact | yes — counts bet builders, not fixtures |
-| `/fixtures`, `/fixtures/search` | inferred from a full page | no |
+| `/fixtures` | exact | yes — counts fixtures |
+| `/fixtures/search` | inferred from a full page | no |
 
 **Exact `has_more`** is `true` only when at least one more item exists past this page, so you can
 stop as soon as it is `false`. `total` is counted at the time of each request: insights and bet
@@ -270,7 +271,7 @@ builders are published, suspended and expire continuously, so `total` can change
 and an item can move across a page boundary. Narrow with `fixture_id`, a league filter or a time
 range when you need a complete, consistent view.
 
-**Inferred `has_more`** on `/fixtures` and `/fixtures/search` comes from whether the page came back
+**Inferred `has_more`** on `/fixtures/search` comes from whether the page came back
 full, not from a count. If your result is an exact multiple of `per_page`, the last page will
 report `has_more: true` and the next page will be empty. **Stop on an empty page, not only on
 `has_more: false`.**
