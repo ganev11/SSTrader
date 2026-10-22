@@ -1,0 +1,5 @@
+- get_integrations-integration-brands
+- get_integrations-integration-brands-domain-id-agent-id
+- get_integrations-integration-brands-domain-id-agent-id-sport-product
+- put_integrations-integration-brands-domain-id-agent-id-sport-product
+- delete_integrations-integration-brands-domain-id-agent-id-sport-product

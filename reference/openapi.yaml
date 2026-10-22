@@ -1,0 +1,541 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: SSTrader B2B API
+  description: >
+    Endpoints for B2B integration partners that resell SSTrader content to their
+    own brands.
+
+    A brand is identified by the partner's `domain_id` + `agent_id` pair. See
+    brand-configuration.md.
+
+
+    Not part of the public SSTrader API documentation.
+servers:
+  - url: https://api.sstrader.com/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: Catalog
+    description: What a brand configuration can contain.
+  - name: Brand configuration
+    description: >-
+      Per-brand, per-sport, per-product configuration, written by the partner's
+      back office.
+  - name: Content
+    description: Content endpoints that apply a brand's configuration.
+paths:
+  /integrations/{integration}/{sport}/catalog:
+    get:
+      tags:
+        - Catalog
+      summary: Markets, selections and limits per product
+      parameters:
+        - $ref: '#/components/parameters/integration'
+        - $ref: '#/components/parameters/sport'
+      responses:
+        '200':
+          description: Catalog for the sport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Catalog'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /integrations/{integration}/brands:
+    get:
+      tags:
+        - Brand configuration
+      summary: List configured brands
+      description: >-
+        One entry per brand with at least one saved product configuration, most
+        recently changed first.
+      parameters:
+        - $ref: '#/components/parameters/integration'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+      responses:
+        '200':
+          description: Brands
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  brands:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        domain_id:
+                          type: string
+                        agent_id:
+                          type: string
+                        products:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              sport:
+                                type: string
+                              product:
+                                type: string
+                              enabled:
+                                type: boolean
+                        updated_at:
+                          type: string
+                          format: date-time
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total:
+                        type: integer
+                      total_pages:
+                        type: integer
+                      has_more:
+                        type: boolean
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /integrations/{integration}/brands/{domain_id}/{agent_id}:
+    get:
+      tags:
+        - Brand configuration
+      summary: All product configurations of one brand
+      parameters:
+        - $ref: '#/components/parameters/integration'
+        - $ref: '#/components/parameters/domain_id'
+        - $ref: '#/components/parameters/agent_id'
+      responses:
+        '200':
+          description: The brand's configurations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  domain_id:
+                    type: string
+                  agent_id:
+                    type: string
+                  configs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StoredConfig'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /integrations/{integration}/brands/{domain_id}/{agent_id}/{sport}/{product}:
+    parameters:
+      - $ref: '#/components/parameters/integration'
+      - $ref: '#/components/parameters/domain_id'
+      - $ref: '#/components/parameters/agent_id'
+      - $ref: '#/components/parameters/sport'
+      - $ref: '#/components/parameters/product'
+    get:
+      tags:
+        - Brand configuration
+      summary: One product configuration
+      responses:
+        '200':
+          description: Stored configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredConfig'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Brand configuration
+      summary: Save (fully replace) one product configuration
+      description: >
+        `insights` takes `InsightsConfig`; `bet_builders` and `acca` take
+        `MultiLegConfig`.
+
+        Takes effect on the next content request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/InsightsConfig'
+                - $ref: '#/components/schemas/MultiLegConfig'
+            examples:
+              insights:
+                value:
+                  enabled: true
+                  markets:
+                    - market_id: 4
+                      label_ids:
+                        - 2
+                      price:
+                        min: 1.9
+                    - market_id: 53
+                      label_ids:
+                        - 1
+                      price:
+                        min: 1.9
+                        max: 3
+              bet_builders:
+                value:
+                  enabled: true
+                  markets:
+                    - market_id: 4
+                      label_ids:
+                        - 2
+                      price:
+                        min: 1.2
+                    - market_id: 53
+                  legs:
+                    min: 2
+                    max: 4
+                  total_price:
+                    min: 3
+                    max: 15
+      responses:
+        '200':
+          description: Stored configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredConfig'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Brand configuration
+      summary: Remove one product configuration
+      description: The brand then receives nothing for this product.
+      responses:
+        '200':
+          description: Removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /insights:
+    get:
+      tags:
+        - Content
+      summary: Insights for a brand
+      description: >
+        Only the brand-related parameter is described here; every other
+        parameter of `GET /insights`
+
+        works as usual and is applied on top of the brand's configuration (it
+        can only narrow it).
+
+        A brand with no `insights` configuration, `enabled: false` or no markets
+        gets `{"fixtures": []}`
+
+        with a `pagination` object showing `total: 0`. `total` counts only the
+        insights the brand's
+
+        configuration lets through.
+      parameters:
+        - $ref: '#/components/parameters/brandFilter'
+      responses:
+        '200':
+          description: Fixtures with their insights, limited to the brand's configuration
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /bet-builders:
+    get:
+      tags:
+        - Content
+      summary: Bet builders for a brand
+      description: >
+        Only the brand-related parameter is described here; every other
+        parameter of `GET /bet-builders`
+
+        works as usual and is applied on top of the brand's configuration (it
+        can only narrow it).
+
+        Every leg must match one of the brand's markets. A brand with no
+        `bet_builders` configuration,
+
+        `enabled: false` or no markets gets an empty list.
+      parameters:
+        - $ref: '#/components/parameters/brandFilter'
+      responses:
+        '200':
+          description: >-
+            Fixtures with their bet builders, limited to the brand's
+            configuration
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    integration:
+      name: integration
+      in: path
+      required: true
+      description: Your integration name, e.g. `first`.
+      schema:
+        type: string
+    sport:
+      name: sport
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+          - football
+    product:
+      name: product
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+          - insights
+          - bet_builders
+          - acca
+    domain_id:
+      name: domain_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_.-]{1,64}$
+    agent_id:
+      name: agent_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_.-]{1,64}$
+    brandFilter:
+      name: filter[integration]
+      in: query
+      required: false
+      description: >
+        `domain_id:<id>;agent_id:<id>` selects the brand whose configuration is
+        applied. Both are
+
+        required together, one value each. Combines with the other
+        `filter[integration]` keys, e.g.
+
+        `domain_id:12;agent_id:345;ext_master_league_ids:38`.
+      schema:
+        type: string
+        example: domain_id:12;agent_id:345
+  responses:
+    BadRequest:
+      description: Invalid request; `error` names the field
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Not entitled to this integration
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Unknown sport or product, or nothing saved
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+    PriceRange:
+      type: object
+      description: Decimal odds, inclusive. Omit a side for no limit.
+      additionalProperties: false
+      properties:
+        min:
+          type: number
+          minimum: 1.01
+          maximum: 1000
+        max:
+          type: number
+          minimum: 1.01
+          maximum: 1000
+    MarketRule:
+      type: object
+      additionalProperties: false
+      required:
+        - market_id
+      properties:
+        market_id:
+          type: integer
+          description: From the catalog of the product. Each market at most once.
+        label_ids:
+          type: array
+          minItems: 1
+          items:
+            type: integer
+          description: Ticked selections of the market. Omit for every selection.
+        price:
+          $ref: '#/components/schemas/PriceRange'
+    InsightsConfig:
+      type: object
+      additionalProperties: false
+      required:
+        - enabled
+        - markets
+      properties:
+        enabled:
+          type: boolean
+        markets:
+          type: array
+          description: An insight is delivered when it matches any entry.
+          items:
+            $ref: '#/components/schemas/MarketRule'
+    MultiLegConfig:
+      type: object
+      additionalProperties: false
+      required:
+        - enabled
+        - markets
+      properties:
+        enabled:
+          type: boolean
+        markets:
+          type: array
+          description: >-
+            EVERY leg must match an entry; `price` applies to the leg's own
+            price.
+          items:
+            $ref: '#/components/schemas/MarketRule'
+        legs:
+          type: object
+          additionalProperties: false
+          description: Number of legs, within the catalog's `limits.legs`.
+          properties:
+            min:
+              type: integer
+            max:
+              type: integer
+        total_price:
+          $ref: '#/components/schemas/PriceRange'
+    StoredConfig:
+      type: object
+      properties:
+        domain_id:
+          type: string
+        agent_id:
+          type: string
+        sport:
+          type: string
+        product:
+          type: string
+        config:
+          description: Exactly what PUT accepts.
+          oneOf:
+            - $ref: '#/components/schemas/InsightsConfig'
+            - $ref: '#/components/schemas/MultiLegConfig'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Selection:
+      type: object
+      properties:
+        label_id:
+          type: integer
+        name:
+          type: string
+    CatalogMarket:
+      type: object
+      properties:
+        market_id:
+          type: integer
+        name:
+          type: string
+        selections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Selection'
+    Catalog:
+      type: object
+      properties:
+        sport:
+          type: string
+        products:
+          type: object
+          properties:
+            insights:
+              type: object
+              properties:
+                markets:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CatalogMarket'
+            bet_builders:
+              $ref: '#/components/schemas/CatalogMultiLeg'
+            acca:
+              $ref: '#/components/schemas/CatalogMultiLeg'
+    CatalogMultiLeg:
+      type: object
+      properties:
+        markets:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogMarket'
+        limits:
+          type: object
+          properties:
+            legs:
+              type: object
+              properties:
+                min:
+                  type: integer
+                max:
+                  type: integer
