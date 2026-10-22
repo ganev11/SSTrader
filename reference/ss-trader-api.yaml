@@ -791,9 +791,36 @@ paths:
       tags:
         - Insights
       summary: Retrieve Match Insights
-      description: >-
+      description: >
         Returns a list of fixtures containing AI-driven analysis and recommended
         bets.
+
+
+        Every response is paged (`page`, `per_page`, at most 100 per page) and
+        carries a
+
+        `pagination` object with `total` / `total_pages`. `limit` is no longer
+        supported: it is
+
+        ignored, not refused.
+
+
+        Pages count **insights**, newest first, so the number of fixtures per
+        page varies and one
+
+        fixture can span two pages. `has_more` is exact — `true` only when at
+        least one more insight
+
+        exists past this page. `total` is the number of insights matching your
+        filters across all
+
+        pages. The set of active insights changes while you page (new ones are
+        published, others
+
+        are suspended or expire), so entries can shift between page requests and
+        `total` is the
+
+        count at the time of each request.
       operationId: getInsights
       security:
         - BearerAuth: []
@@ -1029,6 +1056,21 @@ paths:
             format: float
             minimum: 1
             maximum: 1000
+        - name: page
+          in: query
+          description: Page number.
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: per_page
+          in: query
+          description: Insights per page (not fixtures). Maximum is 100.
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 100
       responses:
         '200':
           description: A list of fixtures with insights.
@@ -1052,7 +1094,8 @@ paths:
 
         Pagination operates at the **insight level**: `per_page` controls the
         maximum number of insight records returned, so the number of fixtures
-        per page varies.
+        per page varies. `total` / `total_pages` give the number of insights
+        matching your filters and the number of pages.
       operationId: getInsightsArchive
       security:
         - BearerAuth: []
@@ -1172,6 +1215,8 @@ paths:
                     pagination:
                       page: 1
                       per_page: 25
+                      total: 0
+                      total_pages: 0
                       has_more: false
                       order: desc
         '400':
@@ -1957,11 +2002,47 @@ components:
   schemas:
     InsightsResponse:
       type: object
+      required:
+        - fixtures
+        - pagination
       properties:
         fixtures:
           type: array
           items:
             $ref: '#/components/schemas/FixtureWithInsights'
+        pagination:
+          $ref: '#/components/schemas/InsightsPaginationMetadata'
+    InsightsPaginationMetadata:
+      type: object
+      required:
+        - page
+        - per_page
+        - total
+        - total_pages
+        - has_more
+      properties:
+        page:
+          type: integer
+          example: 1
+          description: The current page number.
+        per_page:
+          type: integer
+          example: 100
+          description: The page size applied (insights, not fixtures).
+        total:
+          type: integer
+          example: 572
+          description: >
+            Number of insights (not fixtures) matching the filters, across all
+            pages. Counted at the time of the request.
+        total_pages:
+          type: integer
+          example: 6
+          description: '`ceil(total / per_page)`; `0` when nothing matches.'
+        has_more:
+          type: boolean
+          example: true
+          description: '`true` only when at least one more insight exists past this page.'
     InsightsArchiveResponse:
       type: object
       required:
@@ -1973,7 +2054,25 @@ components:
           items:
             $ref: '#/components/schemas/FixtureWithInsights'
         pagination:
-          $ref: '#/components/schemas/PaginationMetadata'
+          $ref: '#/components/schemas/InsightsArchivePaginationMetadata'
+    InsightsArchivePaginationMetadata:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMetadata'
+        - type: object
+          required:
+            - total
+            - total_pages
+          properties:
+            total:
+              type: integer
+              example: 1053
+              description: >
+                Number of insights (not fixtures) matching the filters, across
+                all pages. Counted at the time of the request.
+            total_pages:
+              type: integer
+              example: 43
+              description: '`ceil(total / per_page)`; `0` when nothing matches.'
     BetBuildersResponse:
       type: object
       required:
