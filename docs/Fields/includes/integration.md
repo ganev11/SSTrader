@@ -179,7 +179,7 @@ to another, and there is nothing in the request to say which you meant.
 
 ## Where each one works
 
-| | `/fixtures` | `/insights` | `/bet-builders` | `/fixtures/search` | `/insights/archive` |
+| | `/fixtures` | `/insights` | `/bet-builders` | `/fixtures/search` | archive & pending |
 |---|:--:|:--:|:--:|:--:|:--:|
 | `ext_event_ids` | ✓ | ✓ | ✓ | — | — |
 | `ext_league_ids` | ✓ | ✓ | ✓ | ✓ | — |
@@ -188,8 +188,12 @@ to another, and there is nothing in the request to say which you meant.
 | `ext_team_ids` / `ext_home_ids` / `ext_away_ids` | ✓ | ✓ | ✓ | — | — |
 | `mapped_only` | ✓ | — | — | — | — |
 
+"Archive & pending" is `/insights/archive`, `/insights/pending`, `/bet-builders/archive` and
+`/bet-builders/pending`. They still accept `include=integration`; they just take no id filters.
+
 A dash is a `400`, never a silently ignored filter. `/fixtures/search` selects by metric value
-ranges and has no event or team predicate; `/insights/archive` filters on model and time only.
+ranges and has no event or team predicate; the archive and pending endpoints filter on model (and,
+for archive, time) only.
 
 ## Three things to handle
 
@@ -198,7 +202,8 @@ ranges and has no event or team predicate; `/insights/archive` filters on model 
 one id per batch. This is the same reason we quote them in the response.
 
 **An unknown id returns an empty list, not an error.** If we have no mapping for a league or team
-you name, you get `{"fixtures": []}`. That is not a failure — it means we have not yet seen enough
+you name, you get `{"fixtures": []}` (with a `pagination` object showing `total: 0` on endpoints
+that report one). That is not a failure — it means we have not yet seen enough
 of your events in that league to map it, and coverage grows over time. It is never an *unfiltered*
 list: a filter that matches nothing returns nothing.
 
@@ -250,11 +255,25 @@ its own as kickoff approaches and you publish more events, so do not treat it as
 
 ## Pagination
 
-Filters narrow the query itself, so pages come back full and pagination behaves normally.
+Filters narrow the query itself, so pages come back full and pagination behaves normally. Where an
+endpoint reports a `total`, it counts only what your filters let through, not everything we hold.
 
-One thing to know: `has_more` is inferred from whether the page came back full, not from a count.
-If your result is an exact multiple of `per_page`, the last page will report `has_more: true` and
-the next page will be empty. **Stop on an empty page, not only on `has_more: false`.**
+| Endpoint | `has_more` | `total` / `total_pages` |
+|---|---|---|
+| `/insights`, `/insights/archive`, `/insights/pending` | exact | yes — counts insights, not fixtures |
+| `/bet-builders`, `/bet-builders/archive`, `/bet-builders/pending` | exact | yes — counts bet builders, not fixtures |
+| `/fixtures`, `/fixtures/search` | inferred from a full page | no |
+
+**Exact `has_more`** is `true` only when at least one more item exists past this page, so you can
+stop as soon as it is `false`. `total` is counted at the time of each request: insights and bet
+builders are published, suspended and expire continuously, so `total` can change between two pages
+and an item can move across a page boundary. Narrow with `fixture_id`, a league filter or a time
+range when you need a complete, consistent view.
+
+**Inferred `has_more`** on `/fixtures` and `/fixtures/search` comes from whether the page came back
+full, not from a count. If your result is an exact multiple of `per_page`, the last page will
+report `has_more: true` and the next page will be empty. **Stop on an empty page, not only on
+`has_more: false`.**
 
 ## Worked example
 
