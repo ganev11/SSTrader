@@ -896,10 +896,54 @@ paths:
           description: Comma-separated list of market IDs.
           schema:
             type: string
+        - name: filter[markets]
+          in: query
+          description: >
+            Markets with **their selections and price range**, one segment per
+            market, separated by `;`:
+
+
+            `market_id[:label_id,label_id...][@min-max]`
+
+
+            | Segment | Keeps |
+
+            |---|---|
+
+            | `4:2@1.9-` | Match Goals (4), Over (label 2), price ≥ 1.90 |
+
+            | `53:1@1.9-3.0` | Both Teams To Score (53), Yes (label 1), price
+            1.90 – 3.00 |
+
+            | `1@-2.5` | Match Result (1), every selection, price ≤ 2.50 |
+
+            | `58` | Double Chance (58), every selection, any price |
+
+
+            An insight is returned when it matches **any** segment. Prices are
+            decimal odds, inclusive;
+
+            leave out `min` or `max` for no limit on that side. `label_id`
+            values are listed per market in
+
+            the [Markets guide](https://sstrader.readme.io/docs/markets).
+
+
+            Combines with the other filters (`market_id`,
+            `value_from`/`value_to`, ...), which all still
+
+            apply. A malformed segment, or the same market twice, returns
+            **400**.
+
+
+            Example: `filter[markets]=4:2@1.9-;53:1`
+          schema:
+            type: string
+            example: 4:2@1.9-;53:1
         - name: status
           in: query
           description: >
-            Filter by match status. 
+            Filter by match status.
 
 
             👉 **[View State
@@ -1332,6 +1376,65 @@ paths:
           schema:
             type: integer
             minimum: 1
+        - name: filter[markets]
+          in: query
+          description: >
+            Markets with **their selections and a per-selection price range**,
+            one segment per market,
+
+            separated by `;`:
+
+
+            `market_id[:label_id,label_id...][@min-max]`
+
+
+            | Segment | A selection matches when it is |
+
+            |---|---|
+
+            | `4:2@1.2-` | Match Goals (4), Over (label 2), priced ≥ 1.20 |
+
+            | `53` | Both Teams To Score (53), any selection, any price |
+
+            | `1:1,2@-3.0` | Match Result (1), Home or Away, priced ≤ 3.00 |
+
+
+            The price applies to each **selection's own price**, not the
+            combined price — use
+
+            `value_from` / `value_to` for that. `label_id` values are listed per
+            market in the
+
+            [Markets guide](https://sstrader.readme.io/docs/markets). Which
+            selections must match is
+
+            set by `legs_match`. A malformed segment, or the same market twice,
+            returns **400**.
+
+
+            Example: `filter[markets]=4:2;53;1&legs_match=all`
+          schema:
+            type: string
+            example: 4:2@1.2-;53
+        - name: legs_match
+          in: query
+          description: >
+            Used with `filter[markets]`:
+
+            - `any` (default) — keeps bet builders with **at least one**
+            selection matching a segment;
+
+            - `all` — keeps bet builders whose **every** selection matches a
+            segment, so no selection
+              is on a market, outcome or price you did not list.
+
+            Without `filter[markets]` it returns **400**.
+          schema:
+            type: string
+            enum:
+              - any
+              - all
+            default: any
         - $ref: '#/components/parameters/pageParam'
         - name: per_page
           in: query
@@ -1374,8 +1477,9 @@ paths:
         '400':
           description: >-
             Invalid filter — `value_from` > `value_to`, `legs_from` > `legs_to`,
-            a `legs_*` value that is not a positive integer, or a conflicting
-            `filter[integration]`.
+            a `legs_*` value that is not a positive integer, a malformed
+            `filter[markets]`, `legs_match` without `filter[markets]`, or a
+            conflicting `filter[integration]`.
           content:
             application/json:
               schema:
