@@ -9,6 +9,7 @@ hidden: false
 metadata:
   robots: index
 ---
+
 `GET /bet-builders`
 
 A bet builder combines multiple selections from the **same match** into one bet (e.g. Match Winner + Over 2.5 Goals for the same fixture).
@@ -31,6 +32,8 @@ Results use the same layout as `/insights`: a list of fixtures, where each fixtu
 | `value_to`   | string  | —       | Maximum combined decimal odds, e.g. `5.00`. Inclusive. |
 | `legs_from`  | integer | —       | Minimum number of selections in the bet builder. Inclusive. |
 | `legs_to`    | integer | —       | Maximum number of selections in the bet builder. Inclusive. `legs_from=3&legs_to=3` returns only 3-selection bet builders. |
+| `filter[markets]` | string | — | Markets with their selections and a per-selection price range, e.g. `4:2@1.2-;53`. See [Filtering by market, selection and price](#filtering-by-market-selection-and-price) |
+| `legs_match` | string  | `any`   | With `filter[markets]`: `any` = at least one selection matches, `all` = every selection matches |
 | `page`       | integer | `1`     | Page number (1-based) |
 | `per_page`   | integer | `100`   | Maximum number of bet builder records per page. Maximum is `100` |
 | `order`      | string  | `desc`  | Sort direction on `created_at` — `desc` (newest first) or `asc` |
@@ -40,6 +43,7 @@ GET /bet-builders?model_id=12&language=en
 GET /bet-builders?model_id=12&page=2
 GET /bet-builders?market_id=1,53&value_from=2.00&value_to=5.00
 GET /bet-builders?legs_from=3&legs_to=4
+GET /bet-builders?filter[markets]=4:2;53;1&legs_match=all
 ```
 
 ### Market, odds and selection-count filters
@@ -48,6 +52,44 @@ GET /bet-builders?legs_from=3&legs_to=4
 - `value_from` / `value_to` filter on the bet builder's **current combined price** (`value`), not on the price it was first published at (`sp`), and not on the odds of its individual selections. A bet builder that is still being priced (`value` is `null`) never matches when either is given.
 - `legs_from` / `legs_to` count every selection of the bet builder, whatever its market — they are not narrowed by `market_id`.
 - `value_from` greater than `value_to`, `legs_from` greater than `legs_to`, or a `legs_*` value that is not a positive integer returns `400`.
+
+### Filtering by market, selection and price
+
+`filter[markets]` lists markets together with the selections you want in them and a price range
+for those selections. Segments are separated by `;`:
+
+```
+market_id[:label_id,label_id...][@min-max]
+```
+
+| Segment | A selection matches when it is |
+|---|---|
+| `4:2@1.2-` | Match Goals (`4`), Over (label `2`), priced 1.20 or more |
+| `53` | Both Teams to Score (`53`), any selection, any price |
+| `1:1,2@-3.0` | Match Winner (`1`), Home or Away, priced 3.00 or less |
+
+`label_id` values per market are in the [Markets guide](/docs/markets). Prices are decimal odds,
+inclusive; leave out `min` or `max` for no limit on that side.
+
+`legs_match` decides which selections of a bet builder must match a segment:
+
+- `any` (default): at least one selection matches. This is the same containment as `market_id`,
+  with selections and prices added.
+- `all`: **every** selection matches a segment. No selection is on a market, outcome or price you
+  did not list, which is what you want when you can only offer certain markets.
+
+```
+GET /bet-builders?filter[markets]=4:2@1.2-;53;1&legs_match=all&legs_to=3&value_from=3.00
+```
+
+That request returns bet builders of at most 3 selections, combined price 3.00 or more, where every
+selection is Over in Match Goals priced 1.20 or more, either side of BTTS, or any Match Winner
+outcome.
+
+- The segment price applies to each **selection's own price**. `value_from` / `value_to` still
+  apply to the combined price, and every other filter still applies too.
+- A malformed segment, the same market twice, a `legs_match` value other than `any`/`all`, or
+  `legs_match` without `filter[markets]` returns `400`.
 
 > **Always active:** Results only ever include active, non-suspended bet builders — suspended and expired ones are never returned here. Use [`GET /bet-builders/archive`](/docs/bet-builders-archive) for those.
 
