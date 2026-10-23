@@ -8,13 +8,15 @@ hidden: false
 metadata:
   robots: index
 ---
+# Player Form
+
 `include=player_form`
 
 The `player_form` include returns the recent games of every player in both squads: his last **5 appearances** before this fixture's kick-off, with his statistics in each one. It is meant to sit next to the matching [player metric](/docs/player-metrics). For example, you can show the goals from his last five games next to `PLAYER_EXPECTED_GOALS`, or his shots next to `PLAYER_EXPECTED_SHOTS`.
 
 > **Requires `squads`.** Request them together: `include=squads,player_form`. Entries identify players by `player_id` only; `squads` carries their names and positions.
 
-> **Availability:** Only returned when `include=player_form` is added to a request to `GET /fixtures`. Not available on `/fixtures/search` or `/livescores`.
+> **Availability:** Only returned when `include=player_form` is added to a request to `GET /football/fixtures`. Not available on `/football/fixtures/search` or `/football/livescores`.
 
 ## Fixed per fixture
 
@@ -79,7 +81,7 @@ Coverage differs per competition and per statistic. A game can carry shots but n
 ## Example
 
 ```
-GET /fixtures?fixture_id=19134520&include=squads,player_form
+GET /football/fixtures?fixture_id=19134520&include=squads,player_form
 ```
 
 ```json
