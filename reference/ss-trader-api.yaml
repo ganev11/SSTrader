@@ -2,6 +2,15 @@ openapi: 3.0.0
 info:
   version: 1.0.0
   title: SSTrader API
+  description: >
+    Sport-specific endpoints live under a sport prefix, e.g.
+    `/v1/football/fixtures`. The same
+
+    endpoints without the prefix (`/v1/fixtures`, `/v1/insights`, ...) are
+    **deprecated aliases**:
+
+    they still work and return identical responses, but new integrations should
+    use `/football/...`.
 servers:
   - url: https://api.sstrader.com/v1
 tags:
@@ -31,7 +40,7 @@ tags:
       match combined into a single bet, with a natural-language explanation for
       the combination.
 paths:
-  /regions:
+  /football/regions:
     get:
       tags:
         - Regions
@@ -81,7 +90,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegionsResponse'
-  /countries:
+  /football/countries:
     get:
       tags:
         - Countries
@@ -108,7 +117,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CountriesResponse'
-  /livescores:
+  /football/livescores:
     get:
       tags:
         - Livescores
@@ -185,7 +194,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FixturesLivescoreResponse'
-  /fixtures:
+  /football/fixtures:
     get:
       tags:
         - Fixtures
@@ -483,20 +492,21 @@ paths:
                 $ref: '#/components/schemas/FixturesResponse'
         '400':
           description: Validation Error (e.g., date range exceeded or invalid format)
-  /fixtures/search:
+  /football/fixtures/search:
     get:
       tags:
         - Fixtures
       summary: Search fixtures by time window and value filters
       description: >
         A powerful query endpoint for discovering fixtures that match specific
-        metric or statistic thresholds. Unlike `/fixtures`, which retrieves
-        fixtures by date or ID, `/search` filters by **calculated values** — for
-        example, find all upcoming matches where the home team's classification
-        metric falls within a given range.
+        metric or statistic thresholds. Unlike `/football/fixtures`, which
+        retrieves fixtures by date or ID, `/football/search` filters by
+        **calculated values** — for example, find all upcoming matches where the
+        home team's classification metric falls within a given range.
 
         All `where[X]` filters must match simultaneously (AND logic). Results
-        are paginated and the fixture structure is identical to `/fixtures`.
+        are paginated and the fixture structure is identical to
+        `/football/fixtures`.
       operationId: searchFixtures
       security:
         - BearerAuth: []
@@ -587,9 +597,10 @@ paths:
             `AWAY`, or `LEAGUE` (default). Determines which team's value is
             tested.
 
-            Replace `DEVELOPER_NAME` with a `developer_name` from the `/types`
-            endpoint. Up to **10** filters may be specified; all must match (AND
-            logic). Duplicate keys with different locations are supported.
+            Replace `DEVELOPER_NAME` with a `developer_name` from the
+            `/football/types` endpoint. Up to **10** filters may be specified;
+            all must match (AND logic). Duplicate keys with different locations
+            are supported.
 
             **Examples:** - `where[TEAM_GOALS_CLASSIFICATION]=1100:1800:HOME` -
             `where[HOME_AWAY_CLASSIFICATION]=1:2`
@@ -607,9 +618,10 @@ paths:
             - `DIR` — `ASC` or `DESC`. - `location` — `HOME`, `AWAY`, or
             `LEAGUE` (default).
 
-            Replace `DEVELOPER_NAME` with a `developer_name` from the `/types`
-            endpoint. Only the first `order[...]` parameter is applied. Falls
-            back to `date_time ASC` when no matching value exists for a fixture.
+            Replace `DEVELOPER_NAME` with a `developer_name` from the
+            `/football/types` endpoint. Only the first `order[...]` parameter is
+            applied. Falls back to `date_time ASC` when no matching value exists
+            for a fixture.
 
             **Example:** `order[TEAM_GOALS_CLASSIFICATION]=DESC:HOME`
         - in: query
@@ -670,7 +682,7 @@ paths:
             event or team predicate, so
 
             `ext_event_ids`, the team keys and `mapped_only` return **400**
-            here. Use `/fixtures`.
+            here. Use `/football/fixtures`.
 
 
             Send ids exactly as you receive them in the `integration` object, as
@@ -786,7 +798,7 @@ paths:
                     error: Maximum of 10 where filters allowed
         '403':
           description: Unauthorized — missing or insufficient permissions.
-  /insights:
+  /football/insights:
     get:
       tags:
         - Insights
@@ -1078,7 +1090,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InsightsResponse'
-  /insights/archive:
+  /football/insights/archive:
     get:
       tags:
         - Insights
@@ -1146,8 +1158,8 @@ paths:
             This endpoint filters on model and time only, so it accepts no id
             filters: any `ext_*` key
 
-            or `mapped_only` returns **400**. Use `/insights` when you need to
-            filter by your own ids.
+            or `mapped_only` returns **400**. Use `/football/insights` when you
+            need to filter by your own ids.
         - name: model_id
           in: query
           description: >-
@@ -1234,7 +1246,7 @@ paths:
                     error: time_from must not be after time_to
         '403':
           description: Unauthorized — missing or insufficient role.
-  /bet-builders:
+  /football/bet-builders:
     get:
       tags:
         - Bet Builders
@@ -1243,8 +1255,8 @@ paths:
         A bet builder combines multiple selections from the **same match** into
         one bet (e.g. Match Winner + Over 2.5 Goals for the same fixture).
 
-        Results use the same layout as `/insights`: a list of fixtures, where
-        each fixture contains a `bet_builders[]` array.
+        Results use the same layout as `/football/insights`: a list of fixtures,
+        where each fixture contains a `bet_builders[]` array.
 
         Results only ever include active, non-suspended bet builders.
 
@@ -1325,7 +1337,7 @@ paths:
             request.
 
             - `mapped_only` is **not** available here, for the same reason as
-            `/insights`.
+            `/football/insights`.
 
 
             Send ids exactly as you receive them in the `integration` object, as
@@ -1545,7 +1557,7 @@ paths:
                 unauthorized:
                   value:
                     error: Unauthorized
-  /bet-builders/{id}:
+  /football/bet-builders/{id}:
     get:
       tags:
         - Bet Builders
@@ -1553,8 +1565,8 @@ paths:
       description: >
         Returns a single bet builder by id, as a flat object (not nested under a
         fixture). Includes expired/suspended bet builders regardless of the
-        active-only filtering that `GET /bet-builders` applies — a direct lookup
-        by id always works regardless of current state.
+        active-only filtering that `GET /football/bet-builders` applies — a
+        direct lookup by id always works regardless of current state.
       operationId: getBetBuilderById
       security:
         - BearerAuth: []
@@ -1619,7 +1631,7 @@ paths:
                 not_found:
                   value:
                     error: Bet builder not found
-  /standings:
+  /football/standings:
     get:
       tags:
         - Standings
@@ -1673,7 +1685,7 @@ paths:
                     error: season_id is required
         '403':
           description: Unauthorized — missing or insufficient role.
-  /types:
+  /football/types:
     get:
       tags:
         - Types
@@ -1706,17 +1718,17 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Type'
-  /search:
+  /football/search:
     get:
       tags:
         - Search
       summary: Search entities by free-text query
       description: >
         General-purpose lookup for finding entities by name. Unlike exact-match
-        endpoints (e.g. `/countries`), this endpoint tolerates misspellings,
-        abbreviations, and alternate phrasings — useful for search-as-you-type
-        UI and for mapping a free-text mention onto a canonical entity ID that
-        can be passed to other endpoints.
+        endpoints (e.g. `/football/countries`), this endpoint tolerates
+        misspellings, abbreviations, and alternate phrasings — useful for
+        search-as-you-type UI and for mapping a free-text mention onto a
+        canonical entity ID that can be passed to other endpoints.
 
         Results are grouped by entity type; only the types requested are
         included in the response. Currently supported: `country`, `league`,
@@ -2484,7 +2496,7 @@ components:
               maximum: 1
               description: Match confidence — higher means a closer match to `q`.
     SearchLeagueResult:
-      description: Same shape as a `GET /regions` item, with an added `score`.
+      description: Same shape as a `GET /football/regions` item, with an added `score`.
       allOf:
         - $ref: '#/components/schemas/RegionItem'
         - type: object
@@ -2532,8 +2544,8 @@ components:
               description: Match confidence — higher means a closer match to `q`.
     SearchFixtureResult:
       description: >
-        Same base shape as a `GET /fixtures` item (without any `include=`
-        modules), plus a `score`. Reranked by relevance to `q`.
+        Same base shape as a `GET /football/fixtures` item (without any
+        `include=` modules), plus a `score`. Reranked by relevance to `q`.
       allOf:
         - $ref: '#/components/schemas/FixtureBase'
         - type: object
@@ -4290,7 +4302,7 @@ components:
           description: >
             Breakdown stats for this team in this table (matches played,
             won/drawn/lost, goals scored/against, etc.). Available
-            `developer_name` values can be discovered via `GET /types`.
+            `developer_name` values can be discovered via `GET /football/types`.
           items:
             $ref: '#/components/schemas/Statistic'
     Team:
