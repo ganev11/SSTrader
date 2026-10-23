@@ -6,6 +6,7 @@ hidden: false
 metadata:
   robots: index
 ---
+# Trends
 
 `include=trends`
 
@@ -26,7 +27,7 @@ Each entry in the `trends` array represents one stat for one team at one minute.
 | `team_id`        | integer | The team the entry belongs to.                                              |
 | `period_id`      | integer | The period (half) the entry belongs to. Disambiguates repeated minute values across periods. |
 | `minute`         | integer | The match minute at which this value was recorded.                          |
-| `type_id`        | integer | The external type ID of the stat. Use `/types` to look up names and IDs.   |
+| `type_id`        | integer | The external type ID of the stat. Use `/football/types` to look up names and IDs.   |
 | `developer_name` | string  | The constant-style identifier for the stat (e.g. `CORNERS`, `ATTACKS`).    |
 | `value`          | integer | The cumulative value of the stat at this minute. See [Value Encoding](#value-encoding) for `EXPECTED_GOALS`. |
 
@@ -158,25 +159,25 @@ filter[trends]=types:117,118
 **All trends with defaults (no filter):**
 
 ```
-GET /fixtures?fixture_id=1063864&include=trends
+GET /football/fixtures?fixture_id=1063864&include=trends
 ```
 
 **Only goals and corners per minute:**
 
 ```
-GET /fixtures?fixture_id=1063864&include=trends&filter[trends]=developer_names:GOALS,CORNERS
+GET /football/fixtures?fixture_id=1063864&include=trends&filter[trends]=developer_names:GOALS,CORNERS
 ```
 
 **Expected Goals and Pressure Index only:**
 
 ```
-GET /fixtures?fixture_id=1063864&include=trends&filter[trends]=developer_names:EXPECTED_GOALS,PRESSURE_INDEX
+GET /football/fixtures?fixture_id=1063864&include=trends&filter[trends]=developer_names:EXPECTED_GOALS,PRESSURE_INDEX
 ```
 
 **Full trend picture for live match analysis:**
 
 ```
-GET /fixtures?status=INPLAY_1ST_HALF,INPLAY_2ND_HALF&include=trends&filter[trends]=developer_names:ATTACKS,DANGEROUS_ATTACKS,SHOTS_ON_TARGET,SHOTS_OFF_TARGET,CORNERS,EXPECTED_GOALS,PRESSURE_INDEX
+GET /football/fixtures?status=INPLAY_1ST_HALF,INPLAY_2ND_HALF&include=trends&filter[trends]=developer_names:ATTACKS,DANGEROUS_ATTACKS,SHOTS_ON_TARGET,SHOTS_OFF_TARGET,CORNERS,EXPECTED_GOALS,PRESSURE_INDEX
 ```
 
 ---
