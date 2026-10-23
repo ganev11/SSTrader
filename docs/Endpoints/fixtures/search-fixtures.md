@@ -8,6 +8,11 @@ hidden: false
 metadata:
   robots: index
 ---
+<Callout icon="🛑" theme="error">
+  ### **NB**
+
+  This endpoint is only for testing.
+</Callout>
 
 # Search Fixtures
 
