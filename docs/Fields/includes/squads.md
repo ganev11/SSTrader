@@ -20,7 +20,7 @@ The `squads` include attaches the **registered squad** for both teams: every pla
 
 This is the season roster, not the team sheet for this match. It is available as soon as a fixture is scheduled, which is what makes it useful long before kick-off — see [Squads vs lineups](#squads-vs-lineups).
 
-> **Availability:** Only returned when `include=squads` is added to a request to `GET /fixtures`. Not available on `/fixtures/search` or `/livescores`.
+> **Availability:** Only returned when `include=squads` is added to a request to `GET /football/fixtures`. Not available on `/football/fixtures/search` or `/football/livescores`.
 
 ---
 
@@ -102,7 +102,7 @@ For a player present in both, the squad row wins: only its *empty* fields are fi
 
 ## Example
 
-`GET /fixtures?fixture_id=1078883&include=squads`
+`GET /football/fixtures?fixture_id=1078883&include=squads`
 
 ```json
 "squads": [
