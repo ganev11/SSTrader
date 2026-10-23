@@ -6,18 +6,26 @@ hidden: false
 metadata:
   robots: index
 ---
+# Standings
+
+Returns league table standings for a given season.
+
 ## Endpoint
 
 ```
-GET /standings
+GET /football/standings
 ```
+
+## Authentication
+
+Requires a Bearer token belonging to a `premium`, `admin`, `staff`, or `system` role.
 
 ## Query parameters
 
-| Parameter   | Type    | Required | Description                                                     |
-| ----------- | ------- | -------- | --------------------------------------------------------------- |
-| `season_id` | integer | Yes      | The season to retrieve standings for.                           |
-| `language`  | string  | No       | Localization code for team names. Alias: `lang`. Default: `en`. |
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `season_id` | integer | Yes | The season to retrieve standings for. |
+| `language` | string | No | Localization code for team names. Alias: `lang`. Default: `en`. |
 
 ## Response
 
@@ -45,16 +53,16 @@ A single `standings` array. Each entry is one team's row in a league table.
 
 ### Fields
 
-| Field        | Description                                                                                                                                                                                                                             |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `season`     | The season this row belongs to (`id`, `name`).                                                                                                                                                                                          |
-| `stage`      | The competition stage this table belongs to (e.g. "Regular Season", "Group Stage"). `null` if the competition has no stages.                                                                                                            |
-| `group`      | The group within the stage (e.g. "Group A" in a cup competition). `null` if not applicable.                                                                                                                                             |
-| `position`   | The team's rank in this table.                                                                                                                                                                                                          |
-| `team`       | `id` and localized `name` of the team.                                                                                                                                                                                                  |
-| `points`     | Total points.                                                                                                                                                                                                                           |
-| `result`     | Qualification/relegation note for this position (e.g. "Champions League", "Relegation"), if any.                                                                                                                                        |
-| `statistics` | Breakdown stats for this team in this table (matches played, won/drawn/lost, goals scored/against, etc.) — same shape as the `statistics` include on `/fixtures`. Available `developer_name` values can be discovered via `GET /types`. |
+| Field | Description |
+|---|---|
+| `season` | The season this row belongs to (`id`, `name`). |
+| `stage` | The competition stage this table belongs to (e.g. "Regular Season", "Group Stage"). `null` if the competition has no stages. |
+| `group` | The group within the stage (e.g. "Group A" in a cup competition). `null` if not applicable. |
+| `position` | The team's rank in this table. |
+| `team` | `id` and localized `name` of the team. |
+| `points` | Total points. |
+| `result` | Qualification/relegation note for this position (e.g. "Champions League", "Relegation"), if any. |
+| `statistics` | Breakdown stats for this team in this table (matches played, won/drawn/lost, goals scored/against, etc.) — same shape as the `statistics` include on `/football/fixtures`. Available `developer_name` values can be discovered via `GET /football/types`. |
 
 ## Notes
 
@@ -63,9 +71,7 @@ A single `standings` array. Each entry is one team's row in a league table.
 
 ## Errors
 
-| Status | Cause                                       |
-| ------ | ------------------------------------------- |
-| `400`  | `season_id` missing or not a valid integer. |
-| `403`  | Missing or insufficient role.               |
-
-<br />
+| Status | Cause |
+|---|---|
+| `400` | `season_id` missing or not a valid integer. |
+| `403` | Missing or insufficient role. |
