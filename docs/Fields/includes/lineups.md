@@ -16,7 +16,7 @@ The `lineups` include attaches the team sheets for a fixture: every player named
 
 Lineups are published by the data provider shortly before kick-off — typically around an hour before, sometimes later for smaller competitions. Requesting the include for a fixture whose team sheets have not been announced yet returns an empty array.
 
-> **Availability:** Only returned when `include=lineups` is added to a request to `GET /fixtures`. Not available on `/fixtures/search` or `/livescores`.
+> **Availability:** Only returned when `include=lineups` is added to a request to `GET /football/fixtures`. Not available on `/football/fixtures/search` or `/football/livescores`.
 
 > **Knowing whether a team sheet is confirmed — or is ever coming.** An empty `lineups` array on its own cannot tell you whether the sheets are merely late or will never be published, and a populated one cannot tell you whether it is the confirmed XI or a provisional sheet. The `LINEUP_CONFIRMED` entry in [`include=metadata`](/docs/metadata) (`type_id` `402`) answers both. See [Reading it with `LINEUP_CONFIRMED`](#reading-it-with-lineup_confirmed) below.
 
@@ -73,19 +73,19 @@ The player object uses the same field names as an entry in the `squads` include,
 **Team sheets for a single fixture:**
 
 ```
-GET /fixtures?fixture_id=1105585&include=lineups
+GET /football/fixtures?fixture_id=1105585&include=lineups
 ```
 
 **Team sheets alongside odds and statistics:**
 
 ```
-GET /fixtures?fixture_id=1105585&include=lineups,odds,statistics
+GET /football/fixtures?fixture_id=1105585&include=lineups,odds,statistics
 ```
 
 **Every fixture on a date, with team sheets where they have been announced:**
 
 ```
-GET /fixtures?start_date=2026-08-05T00:00:00Z&end_date=2026-08-05T23:59:59Z&include=lineups
+GET /football/fixtures?start_date=2026-08-05T00:00:00Z&end_date=2026-08-05T23:59:59Z&include=lineups
 ```
 
 ---
@@ -160,7 +160,7 @@ GET /fixtures?start_date=2026-08-05T00:00:00Z&end_date=2026-08-05T23:59:59Z&incl
 `include=lineups` tells you what has been published. The `LINEUP_CONFIRMED` entry in [`include=metadata`](/docs/metadata) tells you what that publication *means*. Request both together:
 
 ```
-GET /fixtures?fixture_id=1105585&include=lineups,metadata
+GET /football/fixtures?fixture_id=1105585&include=lineups,metadata
 ```
 
 `LINEUP_CONFIRMED` is fixture-wide, so its entry carries `team_id: null`:
