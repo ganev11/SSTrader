@@ -9,13 +9,13 @@ metadata:
   robots: index
 ---
 
-# GET /bet-builders/archive
+# GET /football/bet-builders/archive
 
 Returns paginated bet builder history for the authenticated user.
 
-Unlike [`GET /bet-builders`](/docs/bet-builders) — which only ever returns active, non-expired suggestions — the archive returns **every** bet builder in the time range, regardless of settlement, suspend or expired state. Use it to build a results/history view: past picks, how they settled, and the odds they were generated at.
+Unlike [`GET /football/bet-builders`](/docs/bet-builders) — which only ever returns active, non-expired suggestions — the archive returns **every** bet builder in the time range, regardless of settlement, suspend or expired state. Use it to build a results/history view: past picks, how they settled, and the odds they were generated at.
 
-Results use the same layout as `GET /bet-builders`: a list of fixtures, where each fixture contains a `bet_builders` array, plus a `pagination` object.
+Results use the same layout as `GET /football/bet-builders`: a list of fixtures, where each fixture contains a `bet_builders` array, plus a `pagination` object.
 
 ---
 
@@ -32,7 +32,7 @@ Results use the same layout as `GET /bet-builders`: a list of fixtures, where ea
 | `order`     | string  | No       | `desc`  | Sort direction on `created_at`. Accepted values: `asc`, `desc` |
 
 ```
-GET /bet-builders/archive?model_id=168&page=1&per_page=25
+GET /football/bet-builders/archive?model_id=168&page=1&per_page=25
 ```
 
 ### Time range notes
@@ -58,7 +58,7 @@ Only bet builders that have a translation in the requested `language` are return
 
 ## Bet Builder Object
 
-Identical to the object returned by [`GET /bet-builders`](/docs/bet-builders) — same fields (`id`, `model_id`, `is_live`, `value`, `sp`, `suspend`, `status`, `last_priced_at`, `raw`, `meta`, `created_at`, `language`, `content`, `model`, `selections`). See that page for the full field reference.
+Identical to the object returned by [`GET /football/bet-builders`](/docs/bet-builders) — same fields (`id`, `model_id`, `is_live`, `value`, `sp`, `suspend`, `status`, `last_priced_at`, `raw`, `meta`, `created_at`, `language`, `content`, `model`, `selections`). See that page for the full field reference.
 
 Fields that matter most in an archive context:
 
@@ -191,33 +191,33 @@ A page past the end returns the same envelope with no fixtures; `total` still re
 
 ### Latest 25 bet builders (default)
 ```
-GET /bet-builders/archive
+GET /football/bet-builders/archive
 ```
 
 ### History for a single model
 ```
-GET /bet-builders/archive?model_id=168&page=1&per_page=25
+GET /football/bet-builders/archive?model_id=168&page=1&per_page=25
 ```
 
 ### Filter by several models, most recent before a date
 ```
-GET /bet-builders/archive?model_id=164,168&time_to=2026-07-01T00:00:00Z&order=desc
+GET /football/bet-builders/archive?model_id=164,168&time_to=2026-07-01T00:00:00Z&order=desc
 ```
 
 ### Specific date window, oldest first
 ```
-GET /bet-builders/archive?time_from=2026-06-01T00:00:00Z&time_to=2026-06-30T23:59:59Z&order=asc&per_page=50
+GET /football/bet-builders/archive?time_from=2026-06-01T00:00:00Z&time_to=2026-06-30T23:59:59Z&order=asc&per_page=50
 ```
 
 ### Page through all history
 ```
-GET /bet-builders/archive?page=1&per_page=100&order=desc
-GET /bet-builders/archive?page=2&per_page=100&order=desc
+GET /football/bet-builders/archive?page=1&per_page=100&order=desc
+GET /football/bet-builders/archive?page=2&per_page=100&order=desc
 ```
 
 ---
 
 ## Related
 
-- [`GET /bet-builders`](/docs/bet-builders) — active bet builders only, plus the full field reference
-- [`GET /insights/archive`](/docs/insights-archive) — the equivalent endpoint for insights, with the same parameters and pagination semantics
+- [`GET /football/bet-builders`](/docs/bet-builders) — active bet builders only, plus the full field reference
+- [`GET /football/insights/archive`](/docs/insights-archive) — the equivalent endpoint for insights, with the same parameters and pagination semantics
