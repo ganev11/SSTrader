@@ -20,6 +20,9 @@ They are independent — request either, or both.
 Every id in `integration` can also be sent back as a **filter**, so you can query with your own
 ids instead of pulling a list and matching on your side — see "Filtering by your own ids" below.
 
+> Sport-specific endpoints live under a sport prefix (`/v1/football/fixtures`). The unprefixed
+> paths (`/v1/fixtures`, `/v1/insights`, ...) are deprecated aliases that return identical responses.
+
 ---
 
 # Event ids on fixtures (`include=integration`)
@@ -31,9 +34,9 @@ Off by default. It costs nothing unless you ask for it.
 ## Requesting it
 
 ```
-GET /v1/fixtures?league_id=8&include=integration
-GET /v1/fixtures?fixture_id=1150093,1150091&include=integration
-GET /v1/fixtures?league_id=8&include=odds,metrics,integration
+GET /v1/football/fixtures?league_id=8&include=integration
+GET /v1/football/fixtures?fixture_id=1150093,1150091&include=integration
+GET /v1/football/fixtures?league_id=8&include=odds,metrics,integration
 ```
 
 `include=integration` combines freely with the other modules.
@@ -43,12 +46,12 @@ on the fixture, next to whatever that endpoint nests under it:
 
 | Endpoint | Where the payload appears |
 |---|---|
-| `GET /fixtures`, `GET /fixtures/search` | `fixture.integration` |
-| `GET /insights`, `/insights/archive`, `/insights/pending` | `fixture.integration`, beside `insights[]` |
-| `GET /bet-builders`, `/bet-builders/archive`, `/bet-builders/pending` | `fixture.integration`, beside `bet_builders[]` |
+| `GET /football/fixtures`, `GET /football/fixtures/search` | `fixture.integration` |
+| `GET /football/insights`, `/football/insights/archive`, `/football/insights/pending` | `fixture.integration`, beside `insights[]` |
+| `GET /football/bet-builders`, `/football/bet-builders/archive`, `/football/bet-builders/pending` | `fixture.integration`, beside `bet_builders[]` |
 
-`GET /bet-builders/:id` returns a single bet builder without its fixture, so it has nowhere to
-carry the payload; use `GET /bet-builders?fixture_id=…&include=integration` instead.
+`GET /football/bet-builders/:id` returns a single bet builder without its fixture, so it has nowhere to
+carry the payload; use `GET /football/bet-builders?fixture_id=…&include=integration` instead.
 
 Access is granted per API key, and your key resolves to your integration automatically — you do
 not normally need to name one. If you do, `filter[integration]=providers:first` selects it
@@ -147,11 +150,11 @@ query in your own vocabulary instead of pulling a list and matching on your side
 One parameter, `filter[integration]`. Segments are separated by `;`, values inside a segment by `,`.
 
 ```
-GET /v1/fixtures?filter[integration]=ext_league_ids:860235927002570752
-GET /v1/fixtures?filter[integration]=ext_event_ids:886928362927575040,886956863147749376
-GET /v1/fixtures?filter[integration]=ext_country_ids:65&include=integration
-GET /v1/insights?filter[integration]=ext_team_ids:300
-GET /v1/bet-builders?filter[integration]=ext_master_league_ids:38
+GET /v1/football/fixtures?filter[integration]=ext_league_ids:860235927002570752
+GET /v1/football/fixtures?filter[integration]=ext_event_ids:886928362927575040,886956863147749376
+GET /v1/football/fixtures?filter[integration]=ext_country_ids:65&include=integration
+GET /v1/football/insights?filter[integration]=ext_team_ids:300
+GET /v1/football/bet-builders?filter[integration]=ext_master_league_ids:38
 ```
 
 You do not need `providers:` — your API key already resolves to your integration. Add it only if
@@ -171,7 +174,7 @@ want.
 | `ext_country_ids` | your country ids | every league we hold under that country |
 | `ext_team_ids` | your team ids | fixtures with that team on **either** side |
 | `ext_home_ids` / `ext_away_ids` | your team ids | that team at home / away only |
-| `mapped_only` | `1` or `0` | narrows to fixtures your feed carries (`/fixtures` only) |
+| `mapped_only` | `1` or `0` | narrows to fixtures your feed carries (`/football/fixtures` only) |
 
 One of the three league-shaped keys, and one of the three team-shaped keys, per request. Sending
 two of either returns `400` — a league *and* a country is a union to one reader and an intersection
@@ -179,7 +182,7 @@ to another, and there is nothing in the request to say which you meant.
 
 ## Where each one works
 
-| | `/fixtures` | `/insights` | `/bet-builders` | `/fixtures/search` | archive & pending |
+| | `/football/fixtures` | `/football/insights` | `/football/bet-builders` | `/football/fixtures/search` | archive & pending |
 |---|:--:|:--:|:--:|:--:|:--:|
 | `ext_event_ids` | ✓ | ✓ | ✓ | — | — |
 | `ext_league_ids` | ✓ | ✓ | ✓ | ✓ | — |
@@ -188,10 +191,10 @@ to another, and there is nothing in the request to say which you meant.
 | `ext_team_ids` / `ext_home_ids` / `ext_away_ids` | ✓ | ✓ | ✓ | — | — |
 | `mapped_only` | ✓ | — | — | — | — |
 
-"Archive & pending" is `/insights/archive`, `/insights/pending`, `/bet-builders/archive` and
-`/bet-builders/pending`. They still accept `include=integration`; they just take no id filters.
+"Archive & pending" is `/football/insights/archive`, `/football/insights/pending`, `/football/bet-builders/archive` and
+`/football/bet-builders/pending`. They still accept `include=integration`; they just take no id filters.
 
-A dash is a `400`, never a silently ignored filter. `/fixtures/search` selects by metric value
+A dash is a `400`, never a silently ignored filter. `/football/fixtures/search` selects by metric value
 ranges and has no event or team predicate; the archive and pending endpoints filter on model (and,
 for archive, time) only.
 
@@ -239,10 +242,10 @@ seven days out you have around 5%.
 So by default a league filter returns fixtures you cannot act on yet:
 
 ```
-GET /v1/fixtures?filter[integration]=ext_country_ids:65
+GET /v1/football/fixtures?filter[integration]=ext_country_ids:65
     → the full schedule, including fixtures not yet on your platform
 
-GET /v1/fixtures?filter[integration]=ext_country_ids:65;mapped_only:1
+GET /v1/football/fixtures?filter[integration]=ext_country_ids:65;mapped_only:1
     → only the ones you carry
 ```
 
@@ -260,10 +263,10 @@ endpoint reports a `total`, it counts only what your filters let through, not ev
 
 | Endpoint | `has_more` | `total` / `total_pages` |
 |---|---|---|
-| `/insights`, `/insights/archive`, `/insights/pending` | exact | yes — counts insights, not fixtures |
-| `/bet-builders`, `/bet-builders/archive`, `/bet-builders/pending` | exact | yes — counts bet builders, not fixtures |
-| `/fixtures` | exact | yes — counts fixtures |
-| `/fixtures/search` | inferred from a full page | no |
+| `/football/insights`, `/football/insights/archive`, `/football/insights/pending` | exact | yes — counts insights, not fixtures |
+| `/football/bet-builders`, `/football/bet-builders/archive`, `/football/bet-builders/pending` | exact | yes — counts bet builders, not fixtures |
+| `/football/fixtures` | exact | yes — counts fixtures |
+| `/football/fixtures/search` | inferred from a full page | no |
 
 **Exact `has_more`** is `true` only when at least one more item exists past this page, so you can
 stop as soon as it is `false`. `total` is counted at the time of each request: insights and bet
@@ -271,7 +274,7 @@ builders are published, suspended and expire continuously, so `total` can change
 and an item can move across a page boundary. Narrow with `fixture_id`, a league filter or a time
 range when you need a complete, consistent view.
 
-**Inferred `has_more`** on `/fixtures/search` comes from whether the page came back
+**Inferred `has_more`** on `/football/fixtures/search` comes from whether the page came back
 full, not from a count. If your result is an exact multiple of `per_page`, the last page will
 report `has_more: true` and the next page will be empty. **Stop on an empty page, not only on
 `has_more: false`.**
@@ -281,7 +284,7 @@ report `has_more: true` and the next page will be empty. **Stop on an empty page
 Your league page, showing only what you can price, with your ids attached:
 
 ```
-GET /v1/fixtures
+GET /v1/football/fixtures
   ?filter[integration]=ext_master_league_ids:38;mapped_only:1
   &include=integration,odds
   &filter[odds]=bookmakers:<your bookmaker_id>
@@ -304,8 +307,8 @@ Unlike `integration`, `raw` needs no separate opt-in: it is part of the odd, and
 ## Requesting it
 
 ```
-GET /v1/fixtures?league_id=8&include=odds
-GET /v1/fixtures?league_id=8&include=odds&filter[odds]=bookmakers:<your bookmaker_id>
+GET /v1/football/fixtures?league_id=8&include=odds
+GET /v1/football/fixtures?league_id=8&include=odds&filter[odds]=bookmakers:<your bookmaker_id>
 ```
 
 **Scope to your own `bookmaker_id`.** Without `filter[odds]=bookmakers:…` you receive prices from
@@ -316,7 +319,7 @@ You can combine the two features on one call, which is usually what you want —
 `integration` gives you the event, and each odd's `raw` gives you the selection within it:
 
 ```
-GET /v1/fixtures?league_id=8&include=integration,odds&filter[odds]=bookmakers:<your bookmaker_id>
+GET /v1/football/fixtures?league_id=8&include=integration,odds&filter[odds]=bookmakers:<your bookmaker_id>
 ```
 
 ## What you get back
