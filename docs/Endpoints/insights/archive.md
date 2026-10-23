@@ -6,7 +6,7 @@ hidden: false
 metadata:
   robots: index
 ---
-# GET /insights/archive
+# GET /football/insights/archive
 
 Returns paginated insight history for the authenticated user.
 
@@ -123,21 +123,21 @@ Pagination operates at the **insight level**: `per_page` controls the maximum nu
 
 ### Latest 25 insights (default)
 ```
-GET /insights/archive
+GET /football/insights/archive
 ```
 
 ### Filter by model, last page of results before a date
 ```
-GET /insights/archive?model_id=2,5&time_to=2025-06-01T00:00:00Z&order=desc
+GET /football/insights/archive?model_id=2,5&time_to=2025-06-01T00:00:00Z&order=desc
 ```
 
 ### Specific date window, oldest first
 ```
-GET /insights/archive?time_from=2025-05-01T00:00:00Z&time_to=2025-05-31T23:59:59Z&order=asc&per_page=50
+GET /football/insights/archive?time_from=2025-05-01T00:00:00Z&time_to=2025-05-31T23:59:59Z&order=asc&per_page=50
 ```
 
 ### Page through all history
 ```
-GET /insights/archive?page=1&per_page=100&order=desc
-GET /insights/archive?page=2&per_page=100&order=desc
+GET /football/insights/archive?page=1&per_page=100&order=desc
+GET /football/insights/archive?page=2&per_page=100&order=desc
 ```
