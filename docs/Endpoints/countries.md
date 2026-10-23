@@ -6,13 +6,19 @@ hidden: false
 metadata:
   robots: index
 ---
+# GET /football/countries
+
+Returns a list of all countries.
+
+---
+
 ## Query Parameters
 
-| Parameter  | Type   | Required | Default | Description                        |
-| ---------- | ------ | -------- | ------- | ---------------------------------- |
+| Parameter  | Type   | Required | Default | Description |
+|------------|--------|----------|---------|-------------|
 | `language` | string | No       | `en`    | Language code for the country name |
 
-***
+---
 
 ## Response
 
@@ -39,20 +45,16 @@ metadata:
 { "error": "Internal Server Error" }
 ```
 
-***
+---
 
 ## Examples
 
 ### All countries (default language)
-
 ```
-GET /countries
+GET /football/countries
 ```
 
 ### All countries, Spanish names
-
 ```
-GET /countries?language=es
+GET /football/countries?language=es
 ```
-
-<br />
