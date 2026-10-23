@@ -17,12 +17,12 @@ The API supports translations for entities containing text, such as names. The l
 
 ## Which languages are supported?
 
-| Language Code | Language       |
-| ------------- | -------------- |
-| `en`          | English        |
-| `bg`          | Български      |
-| `es`          | Español        |
-| `es-pe`       | Español (Perú) |
+| Language Code | Language  |
+| ------------- | --------- |
+| `en`          | English   |
+| `bg`          | Български |
+| `es`          | Español   |
+| `es-pe`       | Español (Peru) |
 
 > Please note: if a translation is unavailable, the API defaults to English.
 
@@ -33,7 +33,5 @@ Integrating translations is straightforward. Use the **language** parameter with
 For example, to display league names in Spanish from the leagues endpoint:
 
 ```curl
-https://api.sstrader.com/v1/regions?language=es
+https://api.sstrader.com/v1/football/regions?language=es
 ```
-
-<br />
