@@ -9,12 +9,13 @@ hidden: false
 metadata:
   robots: index
 ---
+# Bet Builders
 
-`GET /bet-builders`
+`GET /football/bet-builders`
 
 A bet builder combines multiple selections from the **same match** into one bet (e.g. Match Winner + Over 2.5 Goals for the same fixture).
 
-Results use the same layout as `/insights`: a list of fixtures, where each fixture contains a `bet_builders` array. This lets you display bet builder suggestions directly alongside the relevant match data, team names, and live scores.
+Results use the same layout as `/football/insights`: a list of fixtures, where each fixture contains a `bet_builders` array. This lets you display bet builder suggestions directly alongside the relevant match data, team names, and live scores.
 
 ---
 
@@ -39,11 +40,11 @@ Results use the same layout as `/insights`: a list of fixtures, where each fixtu
 | `order`      | string  | `desc`  | Sort direction on `created_at` — `desc` (newest first) or `asc` |
 
 ```
-GET /bet-builders?model_id=12&language=en
-GET /bet-builders?model_id=12&page=2
-GET /bet-builders?market_id=1,53&value_from=2.00&value_to=5.00
-GET /bet-builders?legs_from=3&legs_to=4
-GET /bet-builders?filter[markets]=4:2;53;1&legs_match=all
+GET /football/bet-builders?model_id=12&language=en
+GET /football/bet-builders?model_id=12&page=2
+GET /football/bet-builders?market_id=1,53&value_from=2.00&value_to=5.00
+GET /football/bet-builders?legs_from=3&legs_to=4
+GET /football/bet-builders?filter[markets]=4:2;53;1&legs_match=all
 ```
 
 ### Market, odds and selection-count filters
@@ -79,7 +80,7 @@ inclusive; leave out `min` or `max` for no limit on that side.
   did not list, which is what you want when you can only offer certain markets.
 
 ```
-GET /bet-builders?filter[markets]=4:2@1.2-;53;1&legs_match=all&legs_to=3&value_from=3.00
+GET /football/bet-builders?filter[markets]=4:2@1.2-;53;1&legs_match=all&legs_to=3&value_from=3.00
 ```
 
 That request returns bet builders of at most 3 selections, combined price 3.00 or more, where every
@@ -91,7 +92,7 @@ outcome.
 - A malformed segment, the same market twice, a `legs_match` value other than `any`/`all`, or
   `legs_match` without `filter[markets]` returns `400`.
 
-> **Always active:** Results only ever include active, non-suspended bet builders — suspended and expired ones are never returned here. Use [`GET /bet-builders/archive`](/docs/bet-builders-archive) for those.
+> **Always active:** Results only ever include active, non-suspended bet builders — suspended and expired ones are never returned here. Use [`GET /football/bet-builders/archive`](/docs/bet-builders-archive) for those.
 
 ### Pagination notes
 
@@ -359,12 +360,12 @@ Each entry in `selections` follows the [Odd Object](/docs/odds) schema (`odd_id`
 
 ---
 
-## GET /bet-builders/:id
+## GET /football/bet-builders/:id
 
 Returns a single bet builder by id, as a flat object (not nested under a fixture). Includes expired/suspended bet builders regardless of the `expired`/`suspend` filters.
 
 ```
-GET /bet-builders/501?language=en
+GET /football/bet-builders/501?language=en
 ```
 
 ---
@@ -387,7 +388,7 @@ Same shape for `legs_from must not be greater than legs_to` and `legs_from and l
 { "error": "Unauthorized" }
 ```
 
-**404 Not Found** — `GET /bet-builders/:id` only, when the id doesn't exist or doesn't belong to you
+**404 Not Found** — `GET /football/bet-builders/:id` only, when the id doesn't exist or doesn't belong to you
 
 ```json
 { "error": "Bet builder not found" }
