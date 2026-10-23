@@ -9,6 +9,11 @@ hidden: false
 metadata:
   robots: index
 ---
+---
+title: Player Metrics
+description: Per-player numbers for every squad member in a fixture — position-relative 1-99 ratings for recent form, plus expected shots, shots on target, goals, assists, minutes and booking points predicted for the match itself.
+---
+
 # Player Metrics
 
 `include=player_metrics`
@@ -39,7 +44,7 @@ For the expected metrics it means the same thing and matters more, since they we
 
 > **Requires `squads`.** Request them together: `include=squads,player_metrics`. Metric rows identify players by `player_id` only; `squads` carries their names and positions.
 
-> **Availability:** Only returned when `include=player_metrics` is added to a request to `GET /fixtures`. Not available on `/fixtures/search` or `/livescores`.
+> **Availability:** Only returned when `include=player_metrics` is added to a request to `GET /football/fixtures`. Not available on `/football/fixtures/search` or `/football/livescores`.
 
 ---
 
@@ -416,7 +421,7 @@ Two properties hold across all of them and are worth relying on:
 
 ## Example
 
-`GET /fixtures?fixture_id=1078883&include=squads,player_metrics`
+`GET /football/fixtures?fixture_id=1078883&include=squads,player_metrics`
 
 ```json
 "player_metrics": [
