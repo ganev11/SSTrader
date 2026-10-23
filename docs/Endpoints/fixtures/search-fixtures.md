@@ -8,13 +8,14 @@ hidden: false
 metadata:
   robots: index
 ---
+
 # Search Fixtures
 
-`GET /fixtures/search`
+`GET /football/fixtures/search`
 
-A powerful query endpoint for discovering fixtures that match specific metric or statistic thresholds. Unlike `/fixtures`, which retrieves fixtures by date or ID, `/search` lets you filter by **calculated values** — for example, "find all upcoming matches where the home team's attack power is between 1100 and 1800."
+A powerful query endpoint for discovering fixtures that match specific metric or statistic thresholds. Unlike `/football/fixtures`, which retrieves fixtures by date or ID, `/football/search` lets you filter by **calculated values** — for example, "find all upcoming matches where the home team's attack power is between 1100 and 1800."
 
-Results are paginated and the response structure is identical to `/fixtures`.
+Results are paginated and the response structure is identical to `/football/fixtures`.
 
 ---
 
@@ -34,8 +35,8 @@ Results are paginated and the response structure is identical to `/fixtures`.
 | `3`–`168` | Matches fixtures from **now** up to **+N hours** from now. Defaults to live + `NOT_STARTED` statuses. |
 
 ```
-GET /fixtures/search?window=6
-GET /fixtures/search?window=live
+GET /football/fixtures/search?window=6
+GET /football/fixtures/search?window=live
 ```
 
 ---
@@ -47,7 +48,7 @@ GET /fixtures/search?window=live
 | `league_id` | string | —      | Comma-separated list of league IDs to restrict the search scope. |
 
 ```
-GET /fixtures/search?league_id=8,34,55
+GET /football/fixtures/search?league_id=8,34,55
 ```
 
 ---
@@ -63,7 +64,7 @@ When omitted:
 - Any numeric window → defaults to in-play statuses **plus** `NOT_STARTED`
 
 ```
-GET /fixtures/search?window=24&status=NOT_STARTED,HT
+GET /football/fixtures/search?window=24&status=NOT_STARTED,HT
 ```
 
 👉 **[View all status definitions](https://docs.sstrader.com/docs/states)**
@@ -94,19 +95,19 @@ where[DEVELOPER_NAME]=min:max[:location]
 | `AWAY`   | Apply the filter to the away team's value. |
 | `LEAGUE` | Apply the filter at league/match level (team_id = 0). |
 
-The `DEVELOPER_NAME` must match a value in the `developer_name` field of the `/types` endpoint.
+The `DEVELOPER_NAME` must match a value in the `developer_name` field of the `/football/types` endpoint.
 
 **Examples:**
 
 ```
 # Fixtures where home team goals classification is between 3000 and 3000 (3000 is top team)
-GET /fixtures/search?where[TEAM_GOALS_CLASSIFICATION]=3000:3000:HOME
+GET /football/fixtures/search?where[TEAM_GOALS_CLASSIFICATION]=3000:3000:HOME
 
 # Combine multiple filters (all must match)
-GET /fixtures/search?where[TEAM_GOALS_CLASSIFICATION]=3000:3000:HOME&where[TEAM_GOALS_CLASSIFICATION]=0:0:AWAY
+GET /football/fixtures/search?where[TEAM_GOALS_CLASSIFICATION]=3000:3000:HOME&where[TEAM_GOALS_CLASSIFICATION]=0:0:AWAY
 
 # League-level metric range (default location)
-GET /fixtures/search?where[OVERALL_GOALS_SCORED]=2300:3000
+GET /football/fixtures/search?where[OVERALL_GOALS_SCORED]=2300:3000
 ```
 
 > **Note:** Duplicate `where[X]` keys with different locations are fully supported — each is treated as a separate filter condition.
@@ -134,10 +135,10 @@ Only the **first** `order[...]` parameter is applied; subsequent ones are ignore
 
 ```
 # Sort by home team goals classification (highest first)
-GET /fixtures/search?order[TEAM_GOALS_CLASSIFICATION]=DESC:HOME
+GET /football/fixtures/search?order[TEAM_GOALS_CLASSIFICATION]=DESC:HOME
 
 # Sort by away team classification ascending
-GET /fixtures/search?order[TEAM_GOALS_CLASSIFICATION]=ASC:AWAY
+GET /football/fixtures/search?order[TEAM_GOALS_CLASSIFICATION]=ASC:AWAY
 ```
 
 ---
@@ -153,7 +154,7 @@ GET /fixtures/search?order[TEAM_GOALS_CLASSIFICATION]=ASC:AWAY
 > **Note:** `fair_odds` and `movement` are not available on this endpoint.
 
 ```
-GET /fixtures/search?window=24&include=odds,metrics
+GET /football/fixtures/search?window=24&include=odds,metrics
 ```
 
 Using an include unlocks the corresponding `filter[entity]` parameter (see below).
@@ -172,7 +173,7 @@ Refine which metrics are returned when `include=metrics`.
 | `developer_types:GROUP,...` | `developer_types:predictions,smart_money` | Return metrics belonging to these domain groups. |
 
 ```
-GET /fixtures/search?include=metrics&filter[metrics]=developer_types:predictions
+GET /football/fixtures/search?include=metrics&filter[metrics]=developer_types:predictions
 ```
 
 #### `filter[statistics]`
@@ -180,7 +181,7 @@ GET /fixtures/search?include=metrics&filter[metrics]=developer_types:predictions
 Refine which statistics are returned when `include=statistics`.
 
 ```
-GET /fixtures/search?include=statistics&filter[statistics]=types:5,6
+GET /football/fixtures/search?include=statistics&filter[statistics]=types:5,6
 ```
 
 #### `filter[odds]`
@@ -190,7 +191,7 @@ Refine which odds are returned when `include=odds`.
 Use a **comma (,)** for OR logic within a key and a **semicolon (;)** for AND logic between keys.
 
 ```
-GET /fixtures/search?include=odds&filter[odds]=bookmakers:2,3;markets:1,3
+GET /football/fixtures/search?include=odds&filter[odds]=bookmakers:2,3;markets:1,3
 ```
 
 | Key          | Description |
@@ -224,19 +225,19 @@ GET /fixtures/search?include=odds&filter[odds]=bookmakers:2,3;markets:1,3
 **Fixtures in the next 24 hours that haven't started yet:**
 
 ```
-GET /fixtures/search?window=24&status=NOT_STARTED
+GET /football/fixtures/search?window=24&status=NOT_STARTED
 ```
 
 **Live fixtures in specific leagues with odds:**
 
 ```
-GET /fixtures/search?window=live&league_id=8,34&include=odds&filter[odds]=bookmakers:2,3;markets:1
+GET /football/fixtures/search?window=live&league_id=8,34&include=odds&filter[odds]=bookmakers:2,3;markets:1
 ```
 
 **Upcoming fixtures where the home team's classification is in a high-value range, sorted by that value:**
 
 ```
-GET /fixtures/search?window=48
+GET /football/fixtures/search?window=48
   &where[TEAM_GOALS_CLASSIFICATION]=3000:3000:HOME
   &order[TEAM_GOALS_CLASSIFICATION]=DESC:HOME
   &include=metrics
@@ -246,7 +247,7 @@ GET /fixtures/search?window=48
 **Multi-condition search with full enrichment:**
 
 ```
-GET /fixtures/search?window=12
+GET /football/fixtures/search?window=12
   &where[TEAM_GOALS_CLASSIFICATION]=2000:3000:HOME
   &where[HOME_GOALS_ATTACK_POWER]=1200:2000:HOME
   &include=odds,metrics,statistics
