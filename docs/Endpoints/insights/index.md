@@ -14,7 +14,7 @@ metadata:
 
 Access a stream of AI-generated betting recommendations that combine real-time market data with natural language analysis to identify high-probability outcomes.
 
-## Insights Endpoint Documentation (/insights)
+## Insights Endpoint Documentation (/football/insights)
 
 The Insights endpoint returns AI-generated analysis and betting recommendations. Each insight pairs a natural language explanation with a specific market selection (the `bet`).
 
@@ -107,7 +107,7 @@ Every response is paged and carries a `pagination` object. To get more than `per
 
 ## Example JSON Response
 
-`GET /insights?page=1&per_page=100`
+`GET /football/insights?page=1&per_page=100`
 
 ```json
 {
