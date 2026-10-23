@@ -1,6 +1,6 @@
 ---
 api:
   file: openapi.yaml
-  operationId: get_bet-builders
+  operationId: get_football-bet-builders
 hidden: false
 ---

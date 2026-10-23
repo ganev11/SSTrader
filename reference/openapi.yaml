@@ -11,6 +11,16 @@ info:
 
 
     Not part of the public SSTrader API documentation.
+
+
+    Sport-specific content endpoints live under a sport prefix
+    (`/football/insights`,
+
+    `/football/bet-builders`). The unprefixed paths (`/insights`,
+    `/bet-builders`) are **deprecated
+
+    aliases** that return identical responses. `/integrations/*` has no sport
+    prefix.
 servers:
   - url: https://api.sstrader.com/v1
 security:
@@ -252,14 +262,14 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /insights:
+  /football/insights:
     get:
       tags:
         - Content
       summary: Insights for a brand
       description: >
         Only the brand-related parameter is described here; every other
-        parameter of `GET /insights`
+        parameter of `GET /football/insights`
 
         works as usual and is applied on top of the brand's configuration (it
         can only narrow it).
@@ -280,14 +290,14 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '403':
           $ref: '#/components/responses/Forbidden'
-  /bet-builders:
+  /football/bet-builders:
     get:
       tags:
         - Content
       summary: Bet builders for a brand
       description: >
         Only the brand-related parameter is described here; every other
-        parameter of `GET /bet-builders`
+        parameter of `GET /football/bet-builders`
 
         works as usual and is applied on top of the brand's configuration (it
         can only narrow it).

@@ -1,6 +1,6 @@
 ---
 api:
   file: openapi.yaml
-  operationId: get_insights
+  operationId: get_football-insights
 hidden: false
 ---
