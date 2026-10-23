@@ -6,12 +6,13 @@ hidden: false
 metadata:
   robots: index
 ---
+# Metadata
 
 `include=metadata`
 
 The `metadata` include attaches an array of fixture-level metadata entries to each fixture. The entries follow the same shape as other "type" based includes (`statistics`, `metrics`, `trends`) so they can be consumed with the same client-side logic.
 
-> **Availability:** Only returned when `include=metadata` is added to a request to `GET /fixtures` or `GET /fixtures/search`. When not requested, the field is omitted entirely.
+> **Availability:** Only returned when `include=metadata` is added to a request to `GET /football/fixtures` or `GET /football/fixtures/search`. When not requested, the field is omitted entirely.
 
 > **Scope:** Currently only **kit / participant colors** (`PARTICIPANT_COLORS`), **formations** (`FORMATION`) and **lineup confirmation** (`LINEUP_CONFIRMED`) are returned. Other raw metadata stored against a fixture (e.g. neutral venue, kickoff side, attendance) is not yet exposed via this include.
 
@@ -69,19 +70,19 @@ The `metadata` include attaches an array of fixture-level metadata entries to ea
 **Fixture with kit colors:**
 
 ```
-GET /fixtures?fixture_id=19609153&include=metadata
+GET /football/fixtures?fixture_id=19609153&include=metadata
 ```
 
 **Combine with participants and statistics:**
 
 ```
-GET /fixtures?fixture_id=19609153&include=metadata,statistics
+GET /football/fixtures?fixture_id=19609153&include=metadata,statistics
 ```
 
 **Search results with kit colors:**
 
 ```
-GET /fixtures/search?window=24&include=metadata
+GET /football/fixtures/search?window=24&include=metadata
 ```
 
 ---
