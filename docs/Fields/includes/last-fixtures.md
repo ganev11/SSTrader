@@ -8,11 +8,13 @@ hidden: false
 metadata:
   robots: index
 ---
+# Last Fixtures
+
 `include=last_fixtures`
 
 The `last_fixtures` include attaches a "form guide" to each fixture: the home team's most recent matches **played at home**, and the away team's most recent matches **played away**, both restricted to fixtures that took place before this fixture's kick-off. Each historical match is enriched with its own `statistics` and `metrics`, so you can analyse recent venue-specific performance without making additional requests.
 
-> **Availability:** Only returned when `include=last_fixtures` is added to a request to `GET /fixtures`. Not available on `/fixtures/search` or `/livescores`.
+> **Availability:** Only returned when `include=last_fixtures` is added to a request to `GET /football/fixtures`. Not available on `/football/fixtures/search` or `/football/livescores`.
 
 ---
 
@@ -25,7 +27,7 @@ The `last_fixtures` include attaches a "form guide" to each fixture: the home te
 | `home` | array | Up to 10 most recent fixtures where the home team played **at home**, ordered most recent first. |
 | `away` | array | Up to 10 most recent fixtures where the away team played **away**, ordered most recent first. |
 
-Each entry in `home` and `away` has the same shape as a fixture returned from `/fixtures` (`id`, `date_time`, `status`, `participants`, `scores`, `periods`, `league`, `season`, etc.), plus two additional fields:
+Each entry in `home` and `away` has the same shape as a fixture returned from `/football/fixtures` (`id`, `date_time`, `status`, `participants`, `scores`, `periods`, `league`, `season`, etc.), plus two additional fields:
 
 | Field        | Type  | Description |
 |--------------|-------|-------------|
@@ -47,13 +49,13 @@ Each entry in `home` and `away` has the same shape as a fixture returned from `/
 **Fixture with recent home/away form:**
 
 ```
-GET /fixtures?fixture_id=1063864&include=last_fixtures
+GET /football/fixtures?fixture_id=1063864&include=last_fixtures
 ```
 
 **Combine with the upcoming fixture's own statistics and metrics:**
 
 ```
-GET /fixtures?fixture_id=1063864&include=last_fixtures,statistics,metrics
+GET /football/fixtures?fixture_id=1063864&include=last_fixtures,statistics,metrics
 ```
 
 ---
