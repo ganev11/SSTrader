@@ -1284,6 +1284,16 @@ components:
 
             basketball type ids (e.g. `TWO_POINTS_MADE`, `FREE_THROW_PCT`,
             `TIMEOUTS_REMAINING`).
+
+            While a game is live it also carries `PERIOD_TEAM_FOULS` (2007, the
+            team's fouls in the
+
+            current period) and `IN_BONUS` (2008, 1 = the opponent's next common
+            foul sends this
+
+            team to the line) where the competition has live personal fouls; see
+
+            docs/basketball/statistics.md.
           items:
             $ref: '#/components/schemas/Statistic'
         odds:
