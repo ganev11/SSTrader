@@ -782,146 +782,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchCountryResult'
-        leagues:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchLeagueResult'
-        teams:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchTeamResult'
         fixtures:
           type: array
           items:
             $ref: '#/components/schemas/SearchFixtureResult'
-        players:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchPlayerResult'
-    SearchPlayerResult:
-      type: object
-      description: >
-        A player with a fixture in the search window. Name fields come from the
-        data feed as-is (any may be null).
-      properties:
-        id:
-          type: integer
-          description: Player ID.
-        display_name:
-          type: string
-          nullable: true
-        common_name:
-          type: string
-          nullable: true
-        fullname:
-          type: string
-          nullable: true
-        firstname:
-          type: string
-          nullable: true
-        lastname:
-          type: string
-          nullable: true
-        birthdate:
-          type: string
-          nullable: true
-          example: '1992-11-01'
-        position:
-          type: object
-          nullable: true
-          properties:
-            type_id:
-              type: integer
-            developer_name:
-              type: string
-              example: DEFENDER
-        teams:
-          type: array
-          description: >
-            Every team the player is linked to through a fixture in the window
-            (e.g. club and national team), soonest fixture first; then any other
-            current-season squad of his with `fixtures: []` (typically his club
-            during an international break). A team named in `q` is recognised
-            among all of these.
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              short_code:
-                type: string
-                nullable: true
-              national_team:
-                type: boolean
-              country:
-                type: object
-                nullable: true
-                properties:
-                  id:
-                    type: integer
-                  name:
-                    type: string
-                  alpha3:
-                    type: string
-              season_id:
-                type: integer
-              source:
-                type: string
-                enum:
-                  - squad
-                  - lineup
-                description: >-
-                  `lineup` when the player is known only from a published
-                  lineup, not the squad.
-              fixtures:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    date_time:
-                      type: string
-                      format: date-time
-                    status:
-                      type: string
-                    league:
-                      type: object
-                      properties:
-                        id:
-                          type: integer
-                        name:
-                          type: string
-                        level:
-                          type: integer
-                        sub_type:
-                          type: string
-                    location:
-                      type: string
-                      enum:
-                        - home
-                        - away
-                    opponent:
-                      type: object
-                      properties:
-                        id:
-                          type: integer
-                        name:
-                          type: string
-        matched_team_id:
-          type: integer
-          nullable: true
-          description: >-
-            The team recognised in `q`, when the query named one of this
-            player's teams.
-        score:
-          type: number
-          format: float
-          minimum: 0
-          maximum: 1
-          description: Name match confidence — higher means a closer match to `q`.
     SearchCountryResult:
       allOf:
         - $ref: '#/components/schemas/Country'
@@ -933,56 +797,9 @@ components:
               minimum: 0
               maximum: 1
               description: Match confidence — higher means a closer match to `q`.
-    SearchLeagueResult:
-      description: Same shape as a `GET /football/regions` item, with an added `score`.
-      allOf:
-        - $ref: '#/components/schemas/RegionItem'
-        - type: object
-          properties:
-            score:
-              type: number
-              format: float
-              minimum: 0
-              maximum: 1
-              description: Match confidence — higher means a closer match to `q`.
-    TeamEntity:
-      type: object
-      description: >
-        A team reference with localized name and country — richer than the
-        minimal `Team` schema used in Standings (id/name only).
-      properties:
-        id:
-          type: integer
-          description: Unique identifier for the team.
-        name:
-          type: string
-          description: Localized team name.
-        short_code:
-          type: string
-          nullable: true
-          description: Short code for the team (e.g. 'TOT').
-        national_team:
-          type: boolean
-          description: True if this is a national team rather than a club.
-        country:
-          nullable: true
-          description: The team's country. Null if not set.
-          allOf:
-            - $ref: '#/components/schemas/Country'
-    SearchTeamResult:
-      allOf:
-        - $ref: '#/components/schemas/TeamEntity'
-        - type: object
-          properties:
-            score:
-              type: number
-              format: float
-              minimum: 0
-              maximum: 1
-              description: Match confidence — higher means a closer match to `q`.
     SearchFixtureResult:
       description: >
-        Same base shape as a `GET /football/fixtures` item (without any
+        Same base shape as a `GET /basketball/fixtures` item (without any
         `include=` modules), plus a `score`. Reranked by relevance to `q`.
       allOf:
         - $ref: '#/components/schemas/FixtureBase'
@@ -1032,7 +849,7 @@ components:
           type: string
           format: date-time
         status:
-          type: string
+          $ref: '#/components/schemas/BasketballFixtureStatus'
         is_live:
           type: boolean
         language:
@@ -1047,7 +864,7 @@ components:
           $ref: '#/components/schemas/Season'
         group:
           nullable: true
-          description: The group this fixture belongs to. Null if not applicable.
+          description: 'Always null: basketball fixtures have no groups.'
           allOf:
             - $ref: '#/components/schemas/Group'
         stage:
@@ -1062,11 +879,11 @@ components:
         scores:
           type: array
           items:
-            $ref: '#/components/schemas/Score'
+            $ref: '#/components/schemas/BasketballScore'
         periods:
           type: array
           items:
-            $ref: '#/components/schemas/Period'
+            $ref: '#/components/schemas/BasketballPeriod'
     Sport:
       type: object
       properties:
@@ -1118,121 +935,33 @@ components:
           description: >-
             Indicates the venue role. `home` for the hosting team and `away` for
             the visiting team.
-    Score:
-      type: object
-      description: Detailed scoring breakdown for a specific team and match period.
-      properties:
-        fixture_id:
-          type: integer
-          description: Unique identifier for the match.
-        team_id:
-          type: integer
-          description: Unique identifier for the team.
-        value:
-          type: integer
-          description: The number of goals or points recorded.
-        developer_name:
-          type: string
-          description: The machine-readable identifier for the match period.
-          enum:
-            - 1ST_HALF
-            - 2ND_HALF
-            - ET
-            - PENALTY_SHOOTOUT
-            - ET_2ND_HALF
-            - CURRENT
-            - ET_1ST_HALF
-            - 2ND_HALF_ONLY
-      required:
-        - fixture_id
-        - team_id
-        - value
-        - developer_name
-      example:
-        fixture_id: 1033370
-        team_id: 3585
-        value: 2
-        developer_name: 1ST_HALF
-    Period:
-      type: object
-      description: Timing and clock details for a specific match segment.
-      properties:
-        period_id:
-          type: integer
-        fixture_id:
-          type: integer
-        started:
-          type: integer
-          description: Unix timestamp
-        ended:
-          type: integer
-          description: Unix timestamp
-        counts_from:
-          type: integer
-        ticking:
-          type: integer
-          enum:
-            - 0
-            - 1
-        sort_order:
-          type: integer
-        time_added:
-          type: integer
-        period_length:
-          type: integer
-        minutes:
-          type: integer
-        seconds:
-          type: integer
-        developer_name:
-          type: string
-          enum:
-            - 1ST_HALF
-            - 2ND_HALF
-            - ET
-            - PENALTY_SHOOTOUT
-            - ET_2ND_HALF
-            - ET_1ST_HALF
-      example:
-        period_id: 2045635
-        fixture_id: 1033370
-        started: 1776875170
-        ended: 1776878125
-        counts_from: 0
-        ticking: 0
-        sort_order: 1
-        time_added: 4
-        period_length: 45
-        minutes: 49
-        seconds: 15
-        developer_name: 1ST_HALF
     Odd:
       type: object
       description: >
         Core entity for pricing, settlement, and market data.  Note: Use
         `filter[odds]` in the query to refine this list.
       example:
-        odd_id: 72919503
-        fixture_id: 946305
-        market_id: 203
-        bookmaker_id: 2
+        odd_id: 1526890
+        fixture_id: 2085
+        market_id: 18003
+        bookmaker_id: 6
         is_live: 0
         label_id: 2
-        value: 2.1
-        handicap: 3.5
-        line: 3.5
-        last_update: 1768081284
-        suspend: 1
-        sp: 1.8
+        value: 1.9
+        handicap: 165.5
+        line: 165.5
+        last_update: 1772005284
+        suspend: 0
+        sp: 1.87
         home_score: 0
         away_score: 0
-        status: -1
+        status: 0
         raw: {}
         player_id: null
-        outcome: Lost
-        market_description: Total number of cards in the match
-        market_name: Asian Total Cards
-        label_name: Over 3.5
+        outcome: Pending
+        market_description: Total points scored in the game (incl. OT)
+        market_name: Total Points (incl. OT)
+        label_name: Over 165.5
       properties:
         odd_id:
           type: integer
@@ -1243,8 +972,8 @@ components:
         market_id:
           type: integer
           description: >-
-            The category of the bet (e.g., 1 for Match Winner, 22 for Next
-            Goal).
+            The category of the bet (e.g., 18001 Money Line, 18002 Handicap,
+            18003 Total Points). Full list in docs/basketball/markets.md.
         bookmaker_id:
           type: integer
           description: The ID of the bookmaker providing this price.
@@ -1255,9 +984,9 @@ components:
           type: integer
           nullable: true
           description: >-
-            Unique identifier for a player. Populated for player markets (e.g.,
-            Shots, Goalscorer); null on every team or match market (Match
-            Winner, totals, corners, ...).
+            Player markets (18100-18110) only, and null until the player is
+            mapped. Null on every team or game market (Money Line, Handicap,
+            Total Points, ...).
         value:
           type: number
           format: float
@@ -1266,12 +995,12 @@ components:
           type: number
           format: float
           description: >-
-            The numerical threshold for the bet (e.g., 2.5 in an Over/Under
+            The numerical threshold for the bet (e.g., 165.5 in a Total Points
             market).
         handicap:
           type: number
           format: float
-          description: The point spread or goal handicap (if applicable).
+          description: The point spread (if applicable).
         sp:
           type: number
           format: float
@@ -1290,14 +1019,10 @@ components:
           description: 1 for live/in-play events; 0 for pre-match.
         home_score:
           type: integer
-          description: >-
-            Home team score at generation. Used as 'base score' for Asian
-            markets.
+          description: Home team score when the price was generated.
         away_score:
           type: integer
-          description: >-
-            Away team score at generation. Used as 'base score' for Asian
-            markets.
+          description: Away team score when the price was generated.
         last_update:
           type: integer
           description: Unix timestamp of the last modification.
@@ -1350,55 +1075,57 @@ components:
 
             Filter to a single bookmaker (`filter[odds]=bookmakers:<id>`) before
             reading this — an unfiltered response mixes several bookmakers'
-            formats in one list. For the matching event-level ids, see
-            `include=integration` on the fixture.
+            formats in one list.
           example:
-            event_id: '881531765548929024'
-            market_id: 0QA883694268420845586
-            market_type_id: QA6431
-            selection_id: 0QA883694268420845586Q1Q250956
-            selection_type_id: 0
-            ext_player_id: 250956
-            player_name: Ricardo Pepi
+            event_id: '900140426512904192'
+            market_id: 0HC900140427695714337
+            selection_id: 0HC900140427695714337HM200
+            market_type_id: HC660
     Type:
       type: object
       properties:
         type_id:
           type: integer
-          example: 1
-          description: The unique ID for the type.
+          example: 55
+          description: >-
+            The unique ID for the type. Basketball type ids are not football
+            type ids.
         developer_name:
           type: string
-          example: 1ST_HALF
+          example: POINTS
           description: The unique, constant-style identifier.
         developer_description:
           type: string
-          example: First half of the match
+          example: Points
           description: A brief explanation of the type's purpose.
         developer_type:
           type: string
-          example: period
-          description: The category or domain this type belongs to.
+          nullable: true
+          description: >-
+            The category or domain this type belongs to. Not filled in yet for
+            basketball.
     Statistic:
       type: object
-      description: Represents a specific performance metric for a team during a match.
+      description: >-
+        One team total for one statistic type (see
+        docs/basketball/statistics.md).
       properties:
         team_id:
           type: integer
-          example: 108
+          example: 1767
           description: The unique ID of the team the statistic belongs to.
         value:
           type: number
-          example: 6
+          example: 84
           description: The numerical value of the metric.
         type_id:
           type: integer
-          example: 34
+          example: 55
           nullable: true
-          description: The unique ID associated with the statistic type.
+          description: The basketball type id (`GET /basketball/types`).
         developer_name:
           type: string
-          example: CORNERS
+          example: POINTS
           description: The unique, constant-style identifier used for programmatic logic.
     Group:
       type: object
@@ -1424,21 +1151,21 @@ components:
       properties:
         id:
           type: integer
-          example: 17760
+          example: 986
           description: The unique identifier for the season.
         name:
           type: string
-          example: '2026'
+          example: 2026-2027
           description: The name of the season, typically representing the year.
         starting_at:
           type: string
           format: date
-          example: '2026-03-13'
+          example: '2026-09-25'
           description: The official start date of the season.
         ending_at:
           type: string
           format: date
-          example: '2026-11-30'
+          example: '2027-04-18'
           description: The official end date of the season.
         is_current:
           type: boolean
@@ -1568,8 +1295,8 @@ components:
             $ref: '#/components/schemas/BasketballOdd'
     BasketballOdd:
       description: >
-        Football's Odd (including `raw`, the bookmaker's own reference data),
-        plus `player_name`.
+        `Odd` (including `raw`, the bookmaker's own reference data), plus
+        `player_name`.
 
         `label_name` signs handicaps (`+1.5`).
       allOf:
@@ -1734,9 +1461,7 @@ components:
             - $ref: '#/components/schemas/Stage'
         group:
           nullable: true
-          description: >-
-            The group within the stage (e.g. Group A in a cup competition). Null
-            if not applicable.
+          description: The group within the stage (e.g. Eastern Conference).
           allOf:
             - $ref: '#/components/schemas/Group'
         position:
@@ -1752,15 +1477,14 @@ components:
         result:
           type: string
           nullable: true
-          description: >-
-            Qualification/relegation note for this position (e.g. 'Champions
-            League', 'Relegation'), if any.
+          description: Qualification note for this position (e.g. 'Playoffs'), if any.
         statistics:
           type: array
           description: >
-            Breakdown stats for this team in this table (matches played,
-            won/drawn/lost, goals scored/against, etc.). Available
-            `developer_name` values can be discovered via `GET /football/types`.
+            Breakdown stats for this team in this table (`WON`, `LOST`,
+            `STREAK`, `HOME_WON`, ...). Types ending in `_X10` / `_X1000` are
+            scaled. Available `developer_name` values can be discovered via `GET
+            /basketball/types`.
           items:
             $ref: '#/components/schemas/Statistic'
     BasketballStandingsResponse:
