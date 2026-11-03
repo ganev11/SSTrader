@@ -184,19 +184,19 @@ to another, and there is nothing in the request to say which you meant.
 
 | | `/football/fixtures` | `/football/insights` | `/football/bet-builders` | `/football/fixtures/search` | archive & pending |
 |---|:--:|:--:|:--:|:--:|:--:|
-| `ext_event_ids` | ✓ | ✓ | ✓ | — | — |
+| `ext_event_ids` | ✓ | ✓ | ✓ | ✓ | — |
 | `ext_league_ids` | ✓ | ✓ | ✓ | ✓ | — |
 | `ext_master_league_ids` | ✓ | ✓ | ✓ | ✓ | — |
 | `ext_country_ids` | ✓ | ✓ | ✓ | ✓ | — |
-| `ext_team_ids` / `ext_home_ids` / `ext_away_ids` | ✓ | ✓ | ✓ | — | — |
-| `mapped_only` | ✓ | — | — | — | — |
+| `ext_team_ids` / `ext_home_ids` / `ext_away_ids` | ✓ | ✓ | ✓ | ✓ | — |
+| `mapped_only` | ✓ | — | — | ✓ | — |
 
 "Archive & pending" is `/football/insights/archive`, `/football/insights/pending`, `/football/bet-builders/archive` and
 `/football/bet-builders/pending`. They still accept `include=integration`; they just take no id filters.
 
-A dash is a `400`, never a silently ignored filter. `/football/fixtures/search` selects by metric value
-ranges and has no event or team predicate; the archive and pending endpoints filter on model (and,
-for archive, time) only.
+A dash is a `400`, never a silently ignored filter. The archive and pending endpoints filter on model
+(and, for archive, time) only. On `/football/fixtures/search`, `ext_event_ids` narrows the search to
+those events and the time selection still applies.
 
 ## Three things to handle
 
@@ -266,18 +266,13 @@ endpoint reports a `total`, it counts only what your filters let through, not ev
 | `/football/insights`, `/football/insights/archive`, `/football/insights/pending` | exact | yes — counts insights, not fixtures |
 | `/football/bet-builders`, `/football/bet-builders/archive`, `/football/bet-builders/pending` | exact | yes — counts bet builders, not fixtures |
 | `/football/fixtures` | exact | yes — counts fixtures |
-| `/football/fixtures/search` | inferred from a full page | no |
+| `/football/fixtures/search` | exact | no |
 
 **Exact `has_more`** is `true` only when at least one more item exists past this page, so you can
 stop as soon as it is `false`. `total` is counted at the time of each request: insights and bet
 builders are published, suspended and expire continuously, so `total` can change between two pages
 and an item can move across a page boundary. Narrow with `fixture_id`, a league filter or a time
 range when you need a complete, consistent view.
-
-**Inferred `has_more`** on `/football/fixtures/search` comes from whether the page came back
-full, not from a count. If your result is an exact multiple of `per_page`, the last page will
-report `has_more: true` and the next page will be empty. **Stop on an empty page, not only on
-`has_more: false`.**
 
 ## Worked example
 
