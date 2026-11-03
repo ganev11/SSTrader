@@ -1,266 +1,156 @@
 ---
 title: Search
 excerpt: >-
-  Query upcoming and live fixtures by time window, status, and value-based
-  metric or statistic filters.
+  Find fixtures by time, competition, team, bookmaker coverage and by metric or
+  statistic values
 deprecated: false
 hidden: false
 metadata:
   robots: index
 ---
-<Callout icon="🛑" theme="error">
-  ### **NB**
-
-  This endpoint is only for testing.
-</Callout>
-
 # Search Fixtures
 
-`GET /football/fixtures/search`
+`GET /football/fixtures/search` · basketball: `GET /basketball/fixtures/search` ([differences](./basketball/fixtures-search.md))
 
-A powerful query endpoint for discovering fixtures that match specific metric or statistic thresholds. Unlike `/football/fixtures`, which retrieves fixtures by date or ID, `/football/search` lets you filter by **calculated values** — for example, "find all upcoming matches where the home team's attack power is between 1100 and 1800."
+Finds fixtures by **values we store for them** — expected goals, power metrics, classifications,
+expected values, live statistics — together with the usual time, league and team filters. For
+example: "upcoming matches where both teams' expected goals are at least 1.8, highest total
+first", or "today's live matches with at least 3 corners in the last 10 minutes".
 
-Results are paginated and the response structure is identical to `/football/fixtures`.
+The fixture objects are the same as on `/football/fixtures`. Each one also carries
+[`search_values`](#search_values): the values that the request filtered or sorted on.
 
----
-
-## Query Parameters
-
-### Time Window
-
-| Parameter | Type   | Default | Description |
-|-----------|--------|---------|-------------|
-| `window`  | string | `24`    | Defines the time scope of the search. |
-
-**Valid values:** `live`, `3`, `6`, `12`, `24`, `48`, `168`
-
-| Value  | Behaviour |
-|--------|-----------|
-| `live` | No date range applied. Only the `status` filter drives results. Defaults to all in-play statuses. |
-| `3`–`168` | Matches fixtures from **now** up to **+N hours** from now. Defaults to live + `NOT_STARTED` statuses. |
-
-```
-GET /football/fixtures/search?window=6
-GET /football/fixtures/search?window=live
-```
+> **Old path.** `GET /fixtures/search` (without `/football`) is the previous version of this
+> endpoint. It keeps working unchanged for now but is deprecated: move to
+> `/football/fixtures/search`. Differences: hour windows here include matches in play, values are
+> in display units (not raw integers), every unknown parameter is a `400`, sorting puts missing
+> values last, and `has_more` is exact.
 
 ---
 
-### League Filter
+## Time
 
-| Parameter  | Type   | Default | Description |
-|------------|--------|---------|-------------|
-| `league_id` | string | —      | Comma-separated list of league IDs to restrict the search scope. |
+Use **one** of `window`, `for_date` or `from` + `to`. Without any of them, `window=24`.
 
-```
-GET /football/fixtures/search?league_id=8,34,55
-```
+| Parameter | Example | Selects |
+|---|---|---|
+| `window` | `48` | Matches kicking off in the next N hours (1–168), **plus the matches in play now**. Default statuses: in play + `NOT_STARTED`. |
+| `window` | `live` | Matches in play now. Default statuses: the in-play ones. |
+| `for_date` | `2026-11-07` | Kick-off on that UTC day, past or future. Default statuses: all except `DELETED`. |
+| `from`, `to` | `from=2026-11-05&to=2026-11-12` | Kick-off in that range (dates or ISO 8601 date-times, UTC unless a zone is given; a date in `to` means the end of that day). At most 14 days long, starting no more than 30 days ago. Default statuses as `for_date`. |
 
----
+A `NOT_STARTED` match whose kick-off passed less than 15 minutes ago is still in an hour window
+(its feed has not gone live yet).
 
-### Status Filter
+## Narrowing
 
-| Parameter | Type   | Default | Description |
-|-----------|--------|---------|-------------|
-| `status`  | string | See window | Comma-separated list of fixture statuses to include. |
+| Parameter | Example | Notes |
+|---|---|---|
+| `status` | `NOT_STARTED,HT` | Replaces the default statuses. Unknown statuses are a `400`. [Status list](https://docs.sstrader.com/docs/states). |
+| `league_id` | `8,564` | Our league ids. |
+| `country_id` | `41` | Our country ids (the league's country). |
+| `team_id` | `19` | Matches where the team plays home **or** away. |
+| `fixture_id` | `1177600,1129264` | Search only these fixtures (still inside the time selection). |
+| `league_level` | `1,2` or `all` | Default `1,2,3`, except when `league_id`, `team_id` or `fixture_id` is given: then every level. |
+| `has_odds` | `7` | Only matches with active (not suspended) odds from one of these bookmakers. |
+| `filter[integration]` | see [integration](./integration.md) | Your own platform's ids, including `mapped_only`. |
 
-When omitted:
-- `window=live` → defaults to all in-play statuses (`INPLAY_1ST_HALF`, `INPLAY_2ND_HALF`, `INPLAY_ET`, `INPLAY_PENALTIES`, `HT`, `EXTRA_TIME_BREAK`, `PEN_BREAK`)
-- Any numeric window → defaults to in-play statuses **plus** `NOT_STARTED`
+Every list takes at most 100 ids.
 
-```
-GET /football/fixtures/search?window=24&status=NOT_STARTED,HT
-```
-
-👉 **[View all status definitions](https://docs.sstrader.com/docs/states)**
-
----
-
-### Value Filters — `where[developer_name]`
-
-The most powerful feature of this endpoint. Each `where` filter narrows results to fixtures where the named metric or statistic falls within a given range. **All provided filters must match** (AND logic). Up to **10 filters** are allowed per request.
-
-**Format:**
+## Value filters — `where[NAME]`
 
 ```
-where[DEVELOPER_NAME]=min:max[:location]
+where[NAME]=min:max[:SIDE]
 ```
 
-| Part       | Type    | Required | Description |
-|------------|---------|----------|-------------|
-| `min`      | integer | Yes      | Minimum value (inclusive). |
-| `max`      | integer | Yes      | Maximum value (inclusive). |
-| `location` | string  | No       | Perspective for the filter. One of `HOME`, `AWAY`, `LEAGUE`. Default: `LEAGUE`. |
+- `NAME` is a `developer_name` from [`/football/types`](./types-league-average.md) (only types that
+  have a `type_id`, i.e. the ones the `metrics` and `statistics` includes return).
+- `min` and `max` are inclusive and may have decimals. Leave one empty for an open range:
+  `2.5:` is "at least 2.5", `:1` is "at most 1".
+- Values are in the **units the response shows**: metrics as returned by `include=metrics`,
+  statistics as returned by `include=statistics`.
+- Up to 10 filters; all must match.
 
-**Location values:**
+| `SIDE` | Tests |
+|---|---|
+| `MATCH` (default) | The match-level row (`team_id` 0), e.g. `FT_TOTAL_GOALS_V2`, expected values, league averages. Old name `LEAGUE` is not accepted. |
+| `HOME` / `AWAY` | That team's value. |
+| `TOTAL` | home + away |
+| `DIFF` | home − away |
+| `GAP` | \|home − away\| |
+| `MAX` / `MIN` | The larger / smaller of the two teams' values. |
+| `EITHER` | At least one team's value is in the range. |
+| `BOTH` | Both teams' values are in the range. |
 
-| Value    | Description |
-|----------|-------------|
-| `HOME`   | Apply the filter to the home team's value. |
-| `AWAY`   | Apply the filter to the away team's value. |
-| `LEAGUE` | Apply the filter at league/match level (team_id = 0). |
+**Statistics are stored per team only**, so `MATCH` is a `400` for a statistic — use `TOTAL`.
 
-The `DEVELOPER_NAME` must match a value in the `developer_name` field of the `/football/types` endpoint.
-
-**Examples:**
-
-```
-# Fixtures where home team goals classification is between 3000 and 3000 (3000 is top team)
-GET /football/fixtures/search?where[TEAM_GOALS_CLASSIFICATION]=3000:3000:HOME
-
-# Combine multiple filters (all must match)
-GET /football/fixtures/search?where[TEAM_GOALS_CLASSIFICATION]=3000:3000:HOME&where[TEAM_GOALS_CLASSIFICATION]=0:0:AWAY
-
-# League-level metric range (default location)
-GET /football/fixtures/search?where[OVERALL_GOALS_SCORED]=2300:3000
-```
-
-> **Note:** Duplicate `where[X]` keys with different locations are fully supported — each is treated as a separate filter condition.
-
----
-
-### Custom Ordering — `order[developer_name]`
-
-Sort results by any metric or statistic value instead of the default `date_time ASC`.
-
-**Format:**
+**A statistic the feed did not send counts as 0** once the match has feed statistics at all (the
+feed leaves out values still at 0, and `LAST_N_*` values are written only when not 0). So
+`where[GOALS]=0:0:BOTH` finds goalless matches. A match with no feed statistics has no value: it
+never matches a statistic filter. Metrics are never filled in: a match without that metric does
+not match.
 
 ```
-order[DEVELOPER_NAME]=DIR[:location]
+# Both teams expected to score at least 1.8 (V2 expected goals)
+where[FT_EXPECTED_GOALS_V2]=1.8::BOTH
+
+# Live: at least 3 corners in the last 10 minutes, either team
+window=live&where[LAST_10_CORNERS]=3::TOTAL
+
+# Big favourites: home goals classification 3 against an away team at 0
+where[TEAM_GOALS_CLASSIFICATION]=3:3:HOME&where[TEAM_GOALS_CLASSIFICATION]=0:0:AWAY
 ```
 
-| Part       | Type   | Required | Description |
-|------------|--------|----------|-------------|
-| `DIR`      | string | Yes      | Sort direction: `ASC` or `DESC`. |
-| `location` | string | No       | Which team's value to sort by. One of `HOME`, `AWAY`, `LEAGUE`. Default: `LEAGUE`. |
-
-Only the **first** `order[...]` parameter is applied; subsequent ones are ignored.
-
-**Examples:**
+## Sorting — `order[NAME]`
 
 ```
-# Sort by home team goals classification (highest first)
-GET /football/fixtures/search?order[TEAM_GOALS_CLASSIFICATION]=DESC:HOME
-
-# Sort by away team classification ascending
-GET /football/fixtures/search?order[TEAM_GOALS_CLASSIFICATION]=ASC:AWAY
+order[NAME]=ASC|DESC[:SIDE]
 ```
 
----
-
-### Data Enrichment — `include`
-
-| Parameter | Type   | Default | Description |
-|-----------|--------|---------|-------------|
-| `include` | string | —       | Comma-separated list of modules to attach to each fixture. |
-
-**Allowed values:** `odds`, `metrics`, `statistics`
-
-> **Note:** `fair_odds` and `movement` are not available on this endpoint.
+Up to 3 keys, applied in the order given. `SIDE` as above except `EITHER` / `BOTH` (default
+`MATCH`). `order[date_time]=ASC|DESC` sorts by kick-off. Matches without a value always come
+last, in both directions. Ties end with kick-off time and fixture id, so pages never overlap.
+Default: kick-off time ascending.
 
 ```
-GET /football/fixtures/search?window=24&include=odds,metrics
+order[FT_EXPECTED_GOALS_V2]=DESC:TOTAL
+order[EV_EUROPE_ML_HOME]=DESC
 ```
 
-Using an include unlocks the corresponding `filter[entity]` parameter (see below).
+## `search_values`
 
----
+Every fixture carries the values of each type named in `where[]` / `order[]`, so you can show
+why it matched:
 
-### Include Filters
-
-#### `filter[metrics]`
-
-Refine which metrics are returned when `include=metrics`.
-
-| Format | Example | Description |
-|--------|---------|-------------|
-| `types:ID,...` | `types:1,2,3` | Return only metrics matching these Type IDs. |
-| `developer_types:GROUP,...` | `developer_types:predictions,smart_money` | Return metrics belonging to these domain groups. |
-
-```
-GET /football/fixtures/search?include=metrics&filter[metrics]=developer_types:predictions
+```json
+"search_values": {
+  "FT_EXPECTED_GOALS_V2": { "home": 2.53, "away": 2.521, "match": null }
+}
 ```
 
-#### `filter[statistics]`
+`match` is the `team_id` 0 value (always `null` for statistics). Absent when no `where` / `order`
+is given.
 
-Refine which statistics are returned when `include=statistics`.
+## Includes
 
-```
-GET /football/fixtures/search?include=statistics&filter[statistics]=types:5,6
-```
+`include=odds,metrics,fair_odds,statistics,metadata,integration` — same as on
+`/football/fixtures`, with the same `filter[metrics]` (`types`, `developer_types`),
+`filter[statistics]` (`types`, `developer_types`) and `filter[odds]` (`bookmakers`, `markets`,
+`is_live`, `suspend`). A `filter[...]` needs its include. Any other include is a `400`
+(`lineups`, `squads` and the player includes are on `/football/fixtures` only).
 
-#### `filter[odds]`
+`fair_odds` is priced from the `FT_EXPECTED_GOALS` metrics and returned as `fairOdds` /
+`fairOddsV2`, as on `/football/fixtures`.
 
-Refine which odds are returned when `include=odds`.
+## Other parameters
 
-Use a **comma (,)** for OR logic within a key and a **semicolon (;)** for AND logic between keys.
+| Parameter | Default | Notes |
+|---|---|---|
+| `language` | `en` | Two-letter code for team, league and country names. |
+| `page` | `1` | 1–1000. |
+| `per_page` | `25` | 1–50. |
 
-```
-GET /football/fixtures/search?include=odds&filter[odds]=bookmakers:2,3;markets:1,3
-```
-
-| Key          | Description |
-|--------------|-------------|
-| `bookmakers` | Comma-separated bookmaker IDs. |
-| `markets`    | Comma-separated market IDs. |
-| `is_live`    | `1` for live odds, `0` for pre-match. |
-| `suspend`    | `1` for suspended odds, `0` for active. |
-
----
-
-### Pagination
-
-| Parameter  | Type    | Default | Constraints | Description |
-|------------|---------|---------|-------------|-------------|
-| `page`     | integer | `1`     | ≥ 1         | Page number. |
-| `per_page` | integer | `25`    | 1–50        | Results per page. Maximum is **50**. |
-
----
-
-### Localization
-
-| Parameter  | Type   | Default | Description |
-|------------|--------|---------|-------------|
-| `language` | string | `en`    | Language code for localized team, league, and country names. Alias: `lang`. |
-
----
-
-## Request Examples
-
-**Fixtures in the next 24 hours that haven't started yet:**
-
-```
-GET /football/fixtures/search?window=24&status=NOT_STARTED
-```
-
-**Live fixtures in specific leagues with odds:**
-
-```
-GET /football/fixtures/search?window=live&league_id=8,34&include=odds&filter[odds]=bookmakers:2,3;markets:1
-```
-
-**Upcoming fixtures where the home team's classification is in a high-value range, sorted by that value:**
-
-```
-GET /football/fixtures/search?window=48
-  &where[TEAM_GOALS_CLASSIFICATION]=3000:3000:HOME
-  &order[TEAM_GOALS_CLASSIFICATION]=DESC:HOME
-  &include=metrics
-  &filter[metrics]=developer_types:predictions
-```
-
-**Multi-condition search with full enrichment:**
-
-```
-GET /football/fixtures/search?window=12
-  &where[TEAM_GOALS_CLASSIFICATION]=2000:3000:HOME
-  &where[HOME_GOALS_ATTACK_POWER]=1200:2000:HOME
-  &include=odds,metrics,statistics
-  &per_page=50
-  &page=1
-```
-
----
+Anything else — including `sport_id` and `lang` — is a `400`.
 
 ## Response
 
@@ -268,73 +158,42 @@ GET /football/fixtures/search?window=12
 {
   "fixtures": [
     {
-      "id": 1033370,
-      "date_time": "2026-06-01T15:00:00.000Z",
+      "id": 1175258,
+      "date_time": "2026-11-03T12:00:00.000Z",
       "status": "NOT_STARTED",
-      "is_live": false,
-      "language": "en",
-      "sport": { "id": 1, "name": "Football" },
-      "country": { "id": 41, "name": "England", "alpha3": "ENG" },
-      "league": { "id": 8, "name": "Premier League", "level": 1 },
-      "season": {
-        "id": 17760,
-        "name": "2025/2026",
-        "starting_at": "2025-08-09",
-        "ending_at": "2026-05-24",
-        "is_current": true
-      },
+      "league": { "id": 1234, "name": "U18 Premier League", "level": 3 },
       "participants": [
-        { "id": 85, "name": "Manchester City", "position": 1, "location": "home" },
-        { "id": 33, "name": "Arsenal", "position": 2, "location": "away" }
+        { "id": 71, "name": "Leeds United U18", "location": "home" },
+        { "id": 72, "name": "Blackburn U18", "location": "away" }
       ],
-      "scores": [],
-      "periods": []
+      "search_values": {
+        "FT_EXPECTED_GOALS_V2": { "home": 2.53, "away": 2.521, "match": null }
+      }
     }
   ],
-  "pagination": {
-    "page": 1,
-    "per_page": 25,
-    "has_more": false
-  }
+  "pagination": { "page": 1, "per_page": 25, "has_more": false }
 }
 ```
 
-### Pagination Object
+`has_more` is exact: `true` only when the next page has at least one fixture.
 
-| Field      | Type    | Description |
-|------------|---------|-------------|
-| `page`     | integer | The current page number. |
-| `per_page` | integer | Results returned on this page. |
-| `has_more` | boolean | `true` if more pages exist (determined by whether the count of results equals `per_page`). |
+## Errors
 
-> **Note:** The `order` field is not included in the search endpoint's pagination object.
+`400` for any invalid or unknown parameter, include, filter key, status, side or type name — the
+message says which. `403` without a premium subscription.
 
-When no fixtures match the query, the endpoint returns immediately without querying enrichment modules:
+## Examples
 
-```json
-{ "fixtures": [], "pagination": { "page": 1, "per_page": 25, "has_more": false } }
 ```
+# Saturday, top-tier matches the sportsbook prices, highest expected total goals first
+GET /football/fixtures/search?for_date=2026-11-07&league_level=1&has_odds=7&order[FT_EXPECTED_GOALS_V2]=DESC:TOTAL
 
----
+# Arsenal's next matches
+GET /football/fixtures/search?window=168&team_id=19
 
-## Error Responses
+# Yesterday's matches with at least 14 corners
+GET /football/fixtures/search?for_date=2026-11-01&status=FT,FT_AET,FT_PEN&where[CORNERS]=14::TOTAL&order[CORNERS]=DESC:TOTAL
 
-| Status | Condition |
-|--------|-----------|
-| `400`  | Invalid `window` value. |
-| `400`  | Malformed `where[X]` filter (missing or non-numeric min/max). |
-| `400`  | More than 10 `where` filters provided. |
-| `403`  | Missing or insufficient authentication. |
-| `500`  | Internal server error. |
-
-**Example error:**
-
-```json
-{ "error": "Invalid window. Valid values: live, 3, 6, 12, 24, 48, 168" }
+# Best home expected value in the next 48 hours, with odds and metrics
+GET /football/fixtures/search?window=48&order[EV_EUROPE_ML_HOME]=DESC&include=odds,metrics&filter[odds]=bookmakers:2;markets:1
 ```
-
----
-
-## Notes
-
-- Value filters (`where[X]`) search across **fixture_metrics**, **fixture_stats**, and **fixture_stats_live** tables, so both pre-match metrics and in-play statistics can be used as filter criteria.
