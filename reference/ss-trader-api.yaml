@@ -3008,6 +3008,18 @@ components:
         player_id:
           type: integer
           description: The player's id. Stable across fixtures and seasons.
+        number:
+          type: integer
+          nullable: true
+          example: 10
+          description: >
+            Shirt number registered for this team and season. A player can wear
+            a different number at another team (e.g. club vs national team), so
+            read it from the squad of the team you are showing. `null` when the
+            provider has none, which is common outside the major leagues. For a
+            specific match the number in `lineups` is the more reliable one;
+            with `include=lineups,squads` a squad entry without a number takes
+            the team sheet's.
         in_squad:
           type: integer
           enum:
@@ -3089,6 +3101,7 @@ components:
         season_id: 25580
         player_id: 184521
         in_squad: 1
+        number: 9
         source: squad
         type_id: 375
         developer_name: ATTACKER
