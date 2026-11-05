@@ -51,6 +51,7 @@ Request both together (`include=lineups,squads`) when you want the full roster *
 | `season_id`      | integer | The season this entry belongs to. |
 | `player_id`      | integer | The player's id. Stable across fixtures and seasons. |
 | `in_squad`       | integer | `1` if currently part of the squad, `0` if no longer at the club. **See the note below.** |
+| `number`         | integer | Shirt number registered for this team and season. `null` when unavailable — see [Shirt numbers](#shirt-numbers). |
 | `source`         | string  | `squad` or `lineup` — see [`source`](#source). |
 | `type_id`        | integer | Type id of the registered position. `null` when unavailable — see [Positions](#positions). |
 | `developer_name` | string  | Developer name of the registered position. `null` under the same conditions. |
@@ -80,7 +81,13 @@ Every entry carries where it came from:
 
 `lineup` entries only appear when `include=lineups` is requested alongside `squads`. Without it, a brand-new signing may be missing from the array entirely even though he is playing.
 
-For a player present in both, the squad row wins: only its *empty* fields are filled in from the team sheet, so a name that differs between the two is never overwritten.
+For a player present in both, the squad row wins: only its *empty* fields are filled in from the team sheet (names, birthdate, position, shirt number), so a value that differs between the two is never overwritten.
+
+### Shirt numbers
+
+`number` is the shirt number the player is registered with **for this team and season**. The same player can wear a different number elsewhere — a club number and a national-team number are usually not the same, so always read it from the squad of the team you are showing.
+
+Not every squad carries numbers: they are present for most players in the major leagues and often missing lower down. Treat `null` as unknown. For a specific match, the number in [`lineups`](lineups.md) is the one printed on the team sheet and is the more reliable of the two; with `include=lineups,squads`, a squad row with no number of its own takes it from the team sheet.
 
 ### Positions
 
@@ -111,6 +118,7 @@ For a player present in both, the squad row wins: only its *empty* fields are fi
     "season_id": 25580,
     "player_id": 184521,
     "in_squad": 1,
+    "number": 9,
     "source": "squad",
     "type_id": 375,
     "developer_name": "ATTACKER",
@@ -126,6 +134,7 @@ For a player present in both, the squad row wins: only its *empty* fields are fi
     "season_id": 25580,
     "player_id": 512044,
     "in_squad": 1,
+    "number": 34,
     "source": "lineup",
     "type_id": 374,
     "developer_name": "MIDFIELDER",
