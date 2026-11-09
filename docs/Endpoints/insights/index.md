@@ -9,11 +9,6 @@ hidden: false
 metadata:
   robots: index
 ---
-
-# Insights
-
-Access a stream of AI-generated betting recommendations that combine real-time market data with natural language analysis to identify high-probability outcomes.
-
 ## Insights Endpoint Documentation (/football/insights)
 
 The Insights endpoint returns AI-generated analysis and betting recommendations. Each insight pairs a natural language explanation with a specific market selection (the `bet`).
@@ -71,7 +66,8 @@ Every response is paged and carries a `pagination` object. To get more than `per
   "per_page": 100,
   "total": 572,
   "total_pages": 6,
-  "has_more": true
+  "has_more": true,
+  "order": "desc"
 }
 ```
 
@@ -82,6 +78,7 @@ Every response is paged and carries a `pagination` object. To get more than `per
 | `total`       | integer | Number of insights matching your filters, across all pages (counted at the time of the request) |
 | `total_pages` | integer | `ceil(total / per_page)`; `0` when nothing matches                                              |
 | `has_more`    | boolean | `true` only when at least one more insight exists past this page                                |
+| `order`       | string  | Always `desc` (newest first); read-only, this endpoint has no `order` parameter                  |
 
 - Pages count **insights**, newest first, not fixtures. Insights are grouped by fixture in the response, so the number of fixtures per page varies and one fixture can span two pages.
 - `has_more` is exact: keep requesting `page + 1` while it is `true`.
@@ -208,7 +205,8 @@ Every response is paged and carries a `pagination` object. To get more than `per
     "per_page": 100,
     "total": 1,
     "total_pages": 1,
-    "has_more": false
+    "has_more": false,
+    "order": "desc"
   }
 }
 ```
