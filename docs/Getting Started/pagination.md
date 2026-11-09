@@ -5,69 +5,78 @@ hidden: false
 metadata:
   robots: index
 ---
-Responses from endpoints that return large datasets use pagination to keep requests fast and manageable. Instead of returning all results at once, data is split into pages of up to **50 results** per page.
+Endpoints that return large datasets are paginated to keep requests fast and manageable. Instead of returning every result at once, the data is split into pages, and each response tells you where you are and whether more pages remain.
 
 ***
 
-## Default Behavior
+## Request Parameters
 
-By default, every paginated request returns:
+| Parameter  | Default        | Description                                                                 |
+| ---------- | -------------- | --------------------------------------------------------------------------- |
+| `page`     | `1`            | The page to return, starting at `1`                                         |
+| `per_page` | endpoint-based | Results per page. The default and maximum are listed in each endpoint's reference |
 
-| Parameter  | Default | Description                         |
-| ---------- | ------- | ----------------------------------- |
-| `page`     | `1`     | The current page number             |
-| `per_page` | `25`    | Results returned per page (max: 50) |
-| `order`    | `asc`   | Sort order of results               |
+Some endpoints also accept an `order` parameter (`asc` or `desc`). Where an endpoint does not, its sort order is fixed, and the `order` field in the response tells you what it is.
 
 ***
 
 ## Pagination Response Object
 
-Every paginated response includes a `pagination` object at the end:
+Every paginated response includes a `pagination` object next to the results:
 
 ```json
 {
   "pagination": {
-      "page": 1,
-      "per_page": 25,
-      "has_more": true,
-      "order": "asc"
+    "page": 1,
+    "per_page": 25,
+    "total": 132,
+    "total_pages": 6,
+    "has_more": true,
+    "order": "desc"
   }
 }
 ```
 
-| Field      | Type    | Description                                                          |
-| ---------- | ------- | -------------------------------------------------------------------- |
-| `page`     | integer | The current page number                                              |
-| `per_page` | integer | Number of results returned on this page                              |
-| `has_more` | boolean | `true` if more pages are available, `false` if this is the last page |
-| `order`    | string  | Sort order — `asc` or `desc`                                         |
+| Field         | Type    | Description                                                                       |
+| ------------- | ------- | --------------------------------------------------------------------------------- |
+| `page`        | integer | The current page number                                                           |
+| `per_page`    | integer | The page size applied to this request                                             |
+| `total`       | integer | Number of results matching your request, across all pages                         |
+| `total_pages` | integer | `ceil(total / per_page)`; `0` when nothing matches                                |
+| `has_more`    | boolean | `true` only when at least one more result exists after this page                  |
+| `order`       | string  | Sort direction of the results — `asc` or `desc`                                   |
 
-> `has_more` is determined by whether the number of results returned equals `per_page`. If you receive fewer results than `per_page`, you've reached the last page.
+Notes:
+
+- **`has_more` is exact.** It is `true` only when the next page has at least one result, so you never need to request an empty page to find the end.
+- **`total` is counted at the time of the request.** Live data (fixtures starting, insights being published or expiring) can change it between pages, and a result can move across a page boundary. Narrow your filters when you need a complete, consistent snapshot.
+- **Every page is full except the last.**
+- **`order` is always present**, also on endpoints where you cannot set it.
+- Requesting a page past the last one returns an empty result list with `has_more: false`; it is not an error.
 
 ***
 
 ## Navigating Pages
 
-To move to the next page, add `&page=2` to your request:
+To move to the next page, increase `page`:
 
 ```
-GET /fixtures?page=2
+GET /football/fixtures?page=2
 ```
 
-Keep incrementing `page` and check `has_more` after each response. Once `has_more` is `false`, you've retrieved all available data.
+Keep requesting `page + 1` while `has_more` is `true`. Once it is `false`, you have retrieved all available data. Alternatively, use `total_pages` to know up front how many requests you will need.
 
 ***
 
 ## Controlling Results Per Page
 
-You can request between **1 and 50** results per page using the `per_page` parameter:
+Set the page size with `per_page`:
 
 ```
-GET /fixtures?per_page=25&page=1
+GET /football/fixtures?per_page=50&page=1
 ```
 
-The maximum value is **50**. Note that `per_page` only affects the base entity — included relations are not paginated.
+`per_page` must be between `1` and the endpoint's maximum. `per_page` only applies to the base entity — included relations (for example `include=odds`) are not paginated.
 
 ***
 
