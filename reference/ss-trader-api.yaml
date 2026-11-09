@@ -716,6 +716,8 @@ paths:
                     pagination:
                       page: 1
                       per_page: 25
+                      total: 0
+                      total_pages: 0
                       has_more: false
                       order: asc
         '400':
@@ -2526,6 +2528,8 @@ components:
       required:
         - page
         - per_page
+        - total
+        - total_pages
         - has_more
         - order
       properties:
@@ -2536,14 +2540,21 @@ components:
         per_page:
           type: integer
           example: 25
-          description: Number of results returned on this page.
+          description: The page size applied to this request.
+        total:
+          type: integer
+          example: 132
+          description: >-
+            Number of fixtures matching the search, across all pages. Counted at
+            the time of the request.
+        total_pages:
+          type: integer
+          example: 6
+          description: '`ceil(total / per_page)`; `0` when nothing matches.'
         has_more:
           type: boolean
-          example: false
-          description: >
-            `true` if more pages are available, `false` if this is the last
-            page. Determined by whether the number of results returned equals
-            `per_page`.
+          example: true
+          description: '`true` only when at least one more fixture exists after this page.'
         order:
           type: string
           enum:
