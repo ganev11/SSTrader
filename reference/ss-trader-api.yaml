@@ -717,6 +717,7 @@ paths:
                       page: 1
                       per_page: 25
                       has_more: false
+                      order: asc
         '400':
           description: >-
             Invalid or unknown parameter, include, filter key, status, side or
@@ -1975,6 +1976,7 @@ components:
         - total
         - total_pages
         - has_more
+        - order
       properties:
         page:
           type: integer
@@ -1998,6 +2000,14 @@ components:
           type: boolean
           example: true
           description: '`true` only when at least one more insight exists past this page.'
+        order:
+          type: string
+          enum:
+            - desc
+          example: desc
+          description: >-
+            Always `desc` (newest first). Read-only: this endpoint has no
+            `order` parameter.
     InsightsArchiveResponse:
       type: object
       required:
@@ -2517,6 +2527,7 @@ components:
         - page
         - per_page
         - has_more
+        - order
       properties:
         page:
           type: integer
@@ -2533,6 +2544,16 @@ components:
             `true` if more pages are available, `false` if this is the last
             page. Determined by whether the number of results returned equals
             `per_page`.
+        order:
+          type: string
+          enum:
+            - asc
+            - desc
+          example: asc
+          description: >
+            Direction of the primary sort: the first `order[]` key, or `asc`
+            (kickoff time) when none is given. Read-only: there is no `order`
+            parameter, sorting is set with `order[NAME]`.
     SearchFixture:
       allOf:
         - $ref: '#/components/schemas/FixtureBase'
