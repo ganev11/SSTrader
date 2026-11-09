@@ -171,11 +171,14 @@ Anything else — including `sport_id` and `lang` — is a `400`.
       }
     }
   ],
-  "pagination": { "page": 1, "per_page": 25, "has_more": false }
+  "pagination": { "page": 1, "per_page": 25, "has_more": false, "order": "asc" }
 }
 ```
 
 `has_more` is exact: `true` only when the next page has at least one fixture.
+
+`order` is the direction of the primary sort: the first `order[]` key, or `asc` (kickoff time) when
+none is given. It is read-only; there is no `order` parameter.
 
 ## Errors
 
