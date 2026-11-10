@@ -23,6 +23,7 @@ The `player_metrics` include returns two different kinds of number for every pla
 | Family | `type_id` | What it is | Scale |
 |---|---|---|---|
 | **Ratings** | 380–383 | How good the player had been going into this fixture | Integer 1–99, 50 = average |
+| **Card risk** | 420 | How likely the player is to be booked **in this fixture** | Integer 1–99, 50 = average player in the competition, higher = more risk |
 | **Expected metrics** | 384–394 | What the player is predicted to do **in this fixture** | Decimal count (shots, shots on target, goals, assists, involvements, minutes, fouls, tackles, passes, saves), or booking points |
 
 They live in the same array and share the same row shape, so the one thing to get right is telling them apart — use `developer_name`, or the `type_id` ranges above. Everything else follows from which family a row belongs to.
@@ -78,6 +79,8 @@ As a rough guide, about 10 points is a meaningful gap, and the middle 80% of pla
 
 > **Aggression and Discipline are separate on purpose.** A player can score high on *both*: he commits plenty of fouls but rarely gets carded for them. Reading a high Aggression as "dirty player" will mislead you — that is what Discipline is for, and on this scale a *low* Discipline is the one to watch.
 
+> **Discipline sits closer to 50 than the other ratings** — about 90% of players fall between 40 and 60. Whether a foul turns into a card depends mostly on the referee and the kind of foul, not on the player, so a player's own record only counts as far as there is enough of it to be reliable: a handful of unlucky bookings barely moves him, a long run of them does. Discipline is a trait; it is **not** a card probability. To show who is likely to be booked in a match, use [Card Risk](#card-risk).
+
 ### The Impact metric
 
 All four positions share one metric type, but it measures a different job for each. Derive which one applies from the player's position in `squads[]`:
@@ -90,6 +93,30 @@ All four positions share one metric type, but it measures a different job for ea
 | `GOALKEEPER` | Shield | Saves a high share of the shots faced |
 
 So an Impact of `73` on a defender means a strong defender, and `73` on a striker means a dangerous striker — both are "well above average at their own job". Because everything is position-relative, the two numbers are directly comparable even though they measure different things.
+
+## Card Risk
+
+`PLAYER_CARD_RISK` (420) is a single number for "how likely is this player to be booked in this match". It is built for displaying to users who do not want probabilities: an integer from **1 to 99**, where
+
+- **50 is the average player in the competition** — all positions together, not position-relative like the ratings, because defenders genuinely are booked more than forwards;
+- **higher means more likely to be booked** — the opposite direction from the ratings, which is why it is not one of them;
+- 100 would be twice the average chance, 25 half of it.
+
+| Card Risk | Booked in our testing* |
+|---|---|
+| 80–99 | about 22% |
+| 65–79 | about 19% |
+| 45–54 | about 12–13% (average) |
+| 20–34 | about 7% |
+| 1–19 | about 3% |
+
+\* Players who played, in 15,000 matches from August to November 2026, values as published before kick-off.
+
+It is the booking model behind [Expected Booking Points](#expected-booking-points) expressed on that scale: `meta.p_booked ÷ meta.p_play` (the chance of a yellow **if he plays**, so a doubtful starter is not marked down for that), divided by the same ratio for the competition's matches over the past year, times 50. So it moves when the referee is appointed, exactly like booking points, and freezes at kick-off like everything else. No `meta`.
+
+> **Read it as a ranking within a match, not as a forecast.** Bookings are largely luck: even the best-ranked six players in a match usually contain only one who is booked. Card Risk puts the likely ones at the top; for a price, use `p_booked` itself.
+
+A player missing from the booking model has no Card Risk row, and so does every player in a competition with too few matches behind it to set the average (fewer than 20 in the past year).
 
 ---
 
@@ -393,6 +420,7 @@ Two properties hold across all of them and are worth relying on:
 | `381` | `PLAYER_AGGRESSION_INDEX` | Rating | Competes physically: lots of fouls and tackles. |
 | `382` | `PLAYER_DISCIPLINE_INDEX` | Rating | Rarely booked for the fouls they commit. |
 | `383` | `PLAYER_SST_RATING` | Rating | Strong overall, combining the three above, weighted for their position. |
+| `420` | `PLAYER_CARD_RISK` | Card risk | Likely to be booked in this fixture. **Higher = more risk**; 50 = average player in the competition. See [Card Risk](#card-risk). |
 | `384` | `PLAYER_EXPECTED_SHOTS` | Expected | Shots attempted in this fixture, on target or not. |
 | `385` | `PLAYER_EXPECTED_MINUTES` | Expected | Minutes played in this fixture. |
 | `386` | `PLAYER_EXPECTED_GOALS` | Expected | Goals scored in this fixture. Never exceeds Expected Shots on Target. |
@@ -527,7 +555,7 @@ returns the expected metrics a player-props view usually needs: shots, minutes, 
 
 ### Player cards
 
-Join `player_metrics` to `squads` on `player_id` and render a card per player: the SST Rating as the headline number and the other three ratings as 1–99 bars. Since every rating shares one scale and one direction, a single bar component works for all four. Do **not** feed the expected metrics into that component — they are counts, not scores.
+Join `player_metrics` to `squads` on `player_id` and render a card per player: the SST Rating as the headline number and the other three ratings as 1–99 bars. Since every rating shares one scale and one direction, a single bar component works for all four. Do **not** feed the expected metrics into that component — they are counts, not scores. Card Risk is 1–99 too but runs the other way (higher = worse), so give it its own colour or label.
 
 ### Ranking a squad
 
@@ -559,7 +587,7 @@ Cross-check against `PLAYER_EXPECTED_MINUTES` before acting on a low number: a l
 
 Note the direction: it is a **low** Discipline that flags risk, not a high one. Weight the pair by `PLAYER_EXPECTED_MINUTES` — a reckless player expected to play 20 minutes is a smaller risk than a moderate one playing 90.
 
-**For an actual price, use `PLAYER_EXPECTED_BOOKING_POINTS` (390) instead.** The two indices are position-relative ratings that tell you *who* to look at; the expected metric is a number you can bet off, and it has already done the minutes weighting for you. Its `meta.p_booked` is the "to be carded" probability directly. The indices remain the better tool for scanning a squad, because they compare a player against his position rather than in absolute terms.
+**To rank who is likely to be booked, use `PLAYER_CARD_RISK` (420); for an actual price, use `PLAYER_EXPECTED_BOOKING_POINTS` (390).** The two indices are position-relative ratings that describe *how* a player plays; on their own they rank bookings poorly (in our testing Discipline alone did no better than chance, and position alone did better). Card Risk is the booking model on a plain 1–99 scale, and `meta.p_booked` on the booking-points row is the "to be carded" probability directly — both already include the fouls volume, the minutes and the referee.
 
 ### Shots on target markets
 
