@@ -3741,7 +3741,15 @@ components:
         is compared against other defenders, never against strikers — and
         **higher is always better**, Discipline included. Roughly 10 points is a
         meaningful gap; the middle 80% of players in a league typically fall
-        between 25 and 80. These carry no `meta`.
+        between 25 and 80 (Discipline is narrower, see below). These carry no
+        `meta`.
+
+
+        **Card risk** (`PLAYER_CARD_RISK`) is the one 1–99 value that is **not**
+        a rating: it is the chance of a yellow card **in this fixture, if the
+        player plays**, where **50 is the average player in the competition**
+        (all positions together) and **higher means more likely to be booked**.
+        No `meta`.
 
 
         **Expected metrics** (`PLAYER_EXPECTED_SHOTS`,
@@ -3828,6 +3836,7 @@ components:
             - PLAYER_AGGRESSION_INDEX
             - PLAYER_DISCIPLINE_INDEX
             - PLAYER_SST_RATING
+            - PLAYER_CARD_RISK
             - PLAYER_EXPECTED_SHOTS
             - PLAYER_EXPECTED_GOALS
             - PLAYER_EXPECTED_MINUTES
@@ -3854,11 +3863,30 @@ components:
             the referee's book
               relative to how often they foul. **A higher value means better discipline** — 99 is a
               player who is almost never booked, 1 is one who is booked constantly. A player can
-              score high on both Aggression and Discipline: plenty of fouls, few cards.
+              score high on both Aggression and Discipline: plenty of fouls, few cards. Cards per
+              foul is mostly down to the referee and the foul rather than the player, so a player's
+              own record is weighted in only as far as it is reliable and most players sit close
+              to 50 (90% between about 40 and 60). It describes a trait, not a card probability -
+              for "who is likely to be booked" use `PLAYER_CARD_RISK`.
 
             - `PLAYER_SST_RATING` (383) — a single overall rating combining the
             three above,
               weighted for the player's position.
+
+
+            **Card risk — integer 1–99, higher is MORE risk, no `meta`:**
+
+
+            - `PLAYER_CARD_RISK` (420) — the chance the player is shown a yellow
+            card in this
+              fixture if he plays, on a scale where **50 is the average player in the
+              competition**, 100 would be twice that average and 25 half of it. Not
+              position-relative: defenders are booked more than forwards, and the value shows it.
+              It is `PLAYER_EXPECTED_BOOKING_POINTS`' `meta.p_booked` divided by `meta.p_play`,
+              against the same ratio for the competition's matches over the past year, so it moves
+              with the officiating appointment too. Read it as a ranking within a match: in our
+              testing players scored 80+ were booked about 22% of the time and those under 20
+              about 3%. For a price, use `meta.p_booked` itself.
 
 
             **Expected metrics — decimal count for this fixture, always carries
