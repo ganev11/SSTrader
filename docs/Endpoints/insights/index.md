@@ -9,6 +9,11 @@ hidden: false
 metadata:
   robots: index
 ---
+
+# Insights
+
+Access a stream of AI-generated betting recommendations that combine real-time market data with natural language analysis to identify high-probability outcomes.
+
 ## Insights Endpoint Documentation (/football/insights)
 
 The Insights endpoint returns AI-generated analysis and betting recommendations. Each insight pairs a natural language explanation with a specific market selection (the `bet`).
@@ -55,6 +60,19 @@ One segment per market, separated by `;`: `market_id[:label_id,label_id...][@min
 | `58`           | Double Chance (58), every selection, any price             |
 
 An insight is returned when it matches **any** segment. Prices are decimal odds, inclusive; leave out `min` or `max` for no limit on that side. It combines with the other filters, which all still apply. A malformed segment, or the same market twice, returns `400`.
+
+## Fixture Metrics
+
+Unless `light=1`, each fixture carries `statistics` (live match statistics) and a `metrics` array with:
+
+| Metrics | What they are |
+| ------- | ------------- |
+| `HOME_/AWAY_GOALS_ATTACK_POWER`, `..._DEFENSE_POWER` (also `CORNERS`, `YELLOWCARDS`) | Each side's attack and defence strength for goals, corners and cards (1.0 = competition average) |
+| `FT_EXPECTED_GOALS`, `FT_EXPECTED_CORNERS`, `FT_EXPECTED_YELLOWCARDS` | Original expected metrics per side |
+| `FT_EXPECTED_GOALS_V2`, `FT_EXPECTED_CORNERS_V2`, `FT_EXPECTED_YELLOWCARDS_V2`, `FT_EXPECTED_REDCARDS_V2` | Team Expected Metrics (V2) per side, see [Team Expected Metrics (V2)](team-metrics-v2.md) |
+| `TEAM_GOALS_CLASSIFICATION` | Team goal-profile class |
+
+A metric can be missing for a fixture (corners and cards are not covered everywhere). Treat a missing row as absent, not zero.
 
 ## Pagination
 
