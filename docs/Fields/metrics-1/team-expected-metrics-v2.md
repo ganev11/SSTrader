@@ -23,9 +23,19 @@ side expected to produce in this match?**
 | `FT_EXPECTED_CORNERS_V2` | `396` | Corners won | Around `5` |
 | `FT_EXPECTED_YELLOWCARDS_V2` | `397` | Yellow cards shown to this side | Around `2` |
 | `FT_EXPECTED_REDCARDS_V2` | `401` | Red cards shown to this side | Around `0.11` |
+| `FT_EXPECTED_SHOTS_V2` | `421` | Shots attempted by this side (blocked included) | Around `11` |
+| `FT_EXPECTED_SHOTS_ON_TARGET_V2` | `422` | Shots on target by this side | Around `4.5` |
+| `FT_EXPECTED_PASSES_V2` | `423` | **Completed** passes by this side | Around `310`; `400+` for possession sides |
+| `FT_EXPECTED_TACKLES_V2` | `424` | Tackles by this side | Around `15` |
+| `FT_EXPECTED_SAVES_V2` | `425` | Saves by this side's goalkeeper(s) | Around `3` |
 
 Every value is a plain decimal count in the metric's own unit, published to **3 decimals**. All
-four are full-time figures and cover the whole match.
+are full-time figures and cover the whole match.
+
+The shot, pass, tackle and save metrics are also what the player metrics of the same names are
+tied to: a side's `PLAYER_EXPECTED_SHOTS`, `…_SHOTS_ON_TARGET`, `…_PASSES`, `…_TACKLES` and
+`…_SAVES` move toward these totals, as player goals and assists move toward
+`FT_EXPECTED_GOALS_V2` — see [Player Metrics](player-metrics.md).
 
 They are available from the moment a fixture is scheduled — no team sheet required — and they
 are pre-match statements throughout: nothing is revised once the match has started.
@@ -72,17 +82,19 @@ not assume every metric is present — see below.
 
 This is the single most important thing to handle, and the most likely source of a surprise.
 
-**Goals are near-universal; corners and cards are not.** Goals are derived from a feed that
-covers essentially every finished fixture, so `FT_EXPECTED_GOALS_V2` is available across roughly
-1,250 competitions. Corners and cards come from match statistics, which are reported on a little
-under half of fixtures — those three metrics cover roughly 600 competitions. **A fixture
+**Goals are near-universal; the rest are not.** Goals are derived from a feed that covers
+essentially every finished fixture, so `FT_EXPECTED_GOALS_V2` is available across roughly 1,250
+competitions. Corners, cards and shots come from match statistics, which are reported on a little
+under half of fixtures — those metrics cover roughly 600-700 competitions. Passes, tackles and
+saves are reported on fewer still: roughly 200 competitions for passes, 250 for saves and 100 for
+tackles, mostly the bigger leagues. **A fixture
 routinely carries `FT_EXPECTED_GOALS_V2` and no `FT_EXPECTED_CORNERS_V2`.** That is the shape of
 the data, not a failure.
 
 **Some competitions are skipped entirely.** The model measures how good a side is relative to
 the others it plays, which requires a competition where teams meet repeatedly. Leagues qualify.
 Friendlies buckets, and knockout cups where two teams meet once or twice, do not — those return
-**no V2 row at all**, for any of the four metrics.
+**no V2 row at all**, for any of the metrics.
 
 The practical consequences:
 
@@ -93,7 +105,7 @@ The practical consequences:
 > fixture can carry `FT_EXPECTED_GOALS` and no `FT_EXPECTED_GOALS_V2`, or the reverse. If you
 > need a value for every fixture, read V2 first and fall back to the original.
 
-> **Look rows up by name.** Never index into `metrics[]` by position, and never assume the four
+> **Look rows up by name.** Never index into `metrics[]` by position, and never assume the
 > metrics arrive as a set.
 
 ---
