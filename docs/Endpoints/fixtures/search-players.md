@@ -1,5 +1,9 @@
 ---
 title: Search Players
+excerpt: >-
+  Find players in upcoming fixtures by their player metrics — expected shots,
+  goals, booking points, card risk, ratings — with the usual time, league and
+  team filters.
 deprecated: false
 hidden: true
 metadata:
