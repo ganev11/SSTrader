@@ -1014,6 +1014,16 @@ paths:
             format: float
             minimum: 1
             maximum: 1000
+        - name: player_id
+          in: query
+          description: >
+            Comma-separated player IDs, at most 50. Keeps insights whose bet is
+            on one of these players (`bet.player_id`). Look players up by name
+            with `GET /search?types=player`. Anything other than positive
+            integer IDs returns 400.
+          schema:
+            type: string
+            example: 184798,37385
         - name: page
           in: query
           description: Page number.
@@ -1432,6 +1442,36 @@ paths:
               is on a market, outcome or price you did not list.
 
             Without `filter[markets]` it returns **400**.
+          schema:
+            type: string
+            enum:
+              - any
+              - all
+            default: any
+        - name: player_id
+          in: query
+          description: >
+            Comma-separated player IDs, at most 50. Keeps bet builders with a
+            selection on one of these players (`selections[].player_id`);
+            `players_match=all` asks for all of them. Look players up by name
+            with `GET /search?types=player`. Anything other than positive
+            integer IDs returns 400.
+          schema:
+            type: string
+            example: 184798,37385
+        - name: players_match
+          in: query
+          description: >
+            Used with `player_id`:
+
+            - `any` (default) — keeps bet builders with a selection on **at
+            least one** listed player;
+
+            - `all` — keeps bet builders with a selection on **every** listed
+            player.
+
+
+            Without `player_id` it returns **400**.
           schema:
             type: string
             enum:
