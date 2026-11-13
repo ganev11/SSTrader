@@ -9,6 +9,11 @@ hidden: false
 metadata:
   robots: index
 ---
+---
+title: Bet Builders
+description: AI-selected bet builder suggestions — multiple selections from the same match combined into a single bet, with a natural-language explanation for the combination.
+---
+
 # Bet Builders
 
 `GET /football/bet-builders`
@@ -35,6 +40,8 @@ Results use the same layout as `/football/insights`: a list of fixtures, where e
 | `legs_to`    | integer | —       | Maximum number of selections in the bet builder. Inclusive. `legs_from=3&legs_to=3` returns only 3-selection bet builders. |
 | `filter[markets]` | string | — | Markets with their selections and a per-selection price range, e.g. `4:2@1.2-;53`. See [Filtering by market, selection and price](#filtering-by-market-selection-and-price) |
 | `legs_match` | string  | `any`   | With `filter[markets]`: `any` = at least one selection matches, `all` = every selection matches |
+| `player_id`  | string  | —       | Comma-separated player IDs (max 50). Keeps bet builders with a selection on these players. See [Filtering by player](#filtering-by-player) |
+| `players_match` | string | `any` | With `player_id`: `any` = a selection on at least one listed player, `all` = a selection on every listed player |
 | `page`       | integer | `1`     | Page number (1-based) |
 | `per_page`   | integer | `100`   | Maximum number of bet builder records per page. Maximum is `100` |
 | `order`      | string  | `desc`  | Sort direction on `created_at` — `desc` (newest first) or `asc` |
@@ -91,6 +98,25 @@ outcome.
   apply to the combined price, and every other filter still applies too.
 - A malformed segment, the same market twice, a `legs_match` value other than `any`/`all`, or
   `legs_match` without `filter[markets]` returns `400`.
+
+### Filtering by player
+
+`player_id` keeps bet builders with a selection on one of the listed players — the `player_id` of
+the bet builder's [selections](#selection-object). Player IDs come from
+[`GET /search?types=player`](/docs/entity-search); this endpoint does not search by name.
+
+```
+GET /football/bet-builders?player_id=184798
+GET /football/bet-builders?player_id=184798,37385&players_match=all
+```
+
+- `players_match=any` (default): at least one selection is on a listed player.
+- `players_match=all`: every listed player has a selection in the same bet builder. The second
+  request above returns only bet builders that combine both players.
+- Selections on other players or on non-player markets do not stop a bet builder from matching;
+  combine with `legs_from` / `legs_to` or `filter[markets]` to narrow it further.
+- A value that is not a list of positive integer IDs, more than 50 IDs, a `players_match` other
+  than `any`/`all`, or `players_match` without `player_id` returns `400`.
 
 > **Always active:** Results only ever include active, non-suspended bet builders — suspended and expired ones are never returned here. Use [`GET /football/bet-builders/archive`](/docs/bet-builders-archive) for those.
 
