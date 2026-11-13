@@ -161,6 +161,23 @@ The two ratios in that chain are the two halves of finishing, and they answer di
 
 Their product, `xG / xSh`, is the overall strike rate, which across a squad typically lands somewhere around one goal in six to one in ten attempts. Splitting it in two is more informative than the single number: a player who shoots a lot from distance and one who gets fewer but better chances can share a strike rate while looking nothing alike here.
 
+### Goals, assists, shots, passes, tackles and saves follow the team forecast
+
+Expected Goals and Expected Assists are tied to the team's own expected goals (`FT_EXPECTED_GOALS_V2`
+in the fixture's `metrics`); Expected Shots, Shots on Target, Passes, Tackles and Saves to the team's
+own forecast of the same thing (`FT_EXPECTED_SHOTS_V2`, `FT_EXPECTED_SHOTS_ON_TARGET_V2`,
+`FT_EXPECTED_PASSES_V2`, `FT_EXPECTED_TACKLES_V2`, `FT_EXPECTED_SAVES_V2`). A player's record says how much of his
+team's attacking he accounts for; the team forecast says how much attacking the team will do in
+**this** match. Every player of a side is moved by the same factor, so his share of the team is
+unchanged and only the side's total moves toward the team forecast: a striker for a heavy underdog is
+priced lower than his club record alone would suggest, and the attackers of a strong favourite higher.
+
+`meta.team_anchor` is that factor (`1` = unchanged, below `1` = the team is expected to create less
+than its players' records suggest). It is absent when no team forecast was available or the team
+forecast is only a league baseline (`meta.estimated` on the team row) — the value then rests on the
+players' records alone. Expected Goal Involvements remains exactly Expected Goals + Expected
+Assists, and the shooting chain above still holds.
+
 > **Not on the 1–99 scale.** An Expected Shots of `1.29` is not "very poor". It is 1.29 shots. Applying the ratings scale to these values, or the reverse, is the one mistake worth guarding against, and it is why the two families are marked by `developer_name` rather than left to context.
 
 ### Expected Booking Points
@@ -325,7 +342,9 @@ reason is football rather than modelling. Saves are a low-frequency event driven
 by what the opposition happens to do on the day: most of the variation in a keeper's save count
 from match to match cannot be known in advance by anyone. The number is the average over how the
 match might go, and a realised `1` or a realised `6` against a published `3` are both completely
-ordinary outcomes. If you are pricing an over/under, size the spread generously.
+ordinary outcomes. If you are pricing an over/under, size the spread generously — and **do not
+price "makes at least one save" from the mean as a Poisson**: keepers finish on zero saves far more
+often than a Poisson with the same mean allows, so that probability comes out too high.
 
 **No referee term, and none is possible.** A referee decides whether a challenge is a foul; he has
 no influence over whether a shot is on target. We measured his effect on saves as indistinguishable
@@ -443,6 +462,7 @@ Two properties hold across all of them and are worth relying on:
 | `p_play` | number | Probability of taking any part in the match, `0`–`1`. Always ≥ `p_start`. |
 | `p_booked` | number | **`390` only.** Probability he is shown a yellow card, `0`–`1`. Blended over the team sheet, like `value`. |
 | `p_sent_off` | number | **`390` only.** Probability he is sent off by any route, `0`–`1`. Blended the same way. |
+| `team_anchor` | number | **`384`, `386`, `387`, `389`, `392`, `393` and `394` only.** The factor applied to tie the side's value to the team forecast — see *Goals, assists, shots, passes, tackles and saves follow the team forecast*. Absent when no team forecast was used. |
 | `referee_known` | boolean | **`390` and `391` only.** Whether the officiating appointment was published when this value was computed. `false` means the figure reflects the competition's average refereeing and will move once the official is named. Absent on `392`, `393` and `394`, none of which has a referee term. |
 
 ---
