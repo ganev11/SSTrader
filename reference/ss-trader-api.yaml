@@ -28,6 +28,8 @@ tags:
     description: AI-driven match insights and recommended bets
   - name: Types
     description: Domain-specific data types and metrics
+  - name: Players
+    description: Find players by the player metrics published for their upcoming fixtures.
   - name: Search
     description: >-
       Free-text lookup across entity types, tolerant of misspellings and
@@ -742,6 +744,254 @@ paths:
                     error: >-
                       where[CORNERS]: CORNERS is a statistic, stored per team.
                       Use HOME, AWAY, TOTAL, DIFF, GAP, MAX, MIN, EITHER or BOTH
+        '403':
+          description: Unauthorized — missing or insufficient permissions.
+  /football/players/search:
+    get:
+      tags:
+        - Players
+      summary: Search players by player metrics in upcoming fixtures
+      description: >
+        Finds players by the player metrics we publish for them (ratings, card
+        risk, expected metrics; see `include=player_metrics` on
+        `/football/fixtures`). The fixtures are selected as on
+        `/football/fixtures/search`, with the same parameters and defaults. One
+        result is one player in one fixture, so a player with two matches in the
+        time selection has two results unless `distinct=player` is given. Every
+        unknown parameter, include, position or metric name is a 400.
+      operationId: searchPlayers
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: window
+          schema:
+            type: string
+            default: '24'
+          description: >
+            `live`, or a number of hours from 1 to 168: matches kicking off in
+            the next N hours plus the matches in play now. Cannot be combined
+            with `for_date` or `from` / `to`.
+        - in: query
+          name: for_date
+          schema:
+            type: string
+            format: date
+          description: Kick-off on this UTC day (YYYY-MM-DD), past or future.
+        - in: query
+          name: from
+          schema:
+            type: string
+          description: >-
+            Start of a kick-off range (date or ISO 8601 date-time). Needs `to`.
+            At most 14 days long, starting no more than 30 days ago.
+        - in: query
+          name: to
+          schema:
+            type: string
+          description: End of the kick-off range; a date means the end of that day.
+        - in: query
+          name: status
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - ABANDONED
+                - AWAITING_UPDATES
+                - AWARDED
+                - BREAK
+                - CANCELLED
+                - DELAYED
+                - DELETED
+                - EXTRA_TIME_BREAK
+                - FT
+                - FT_AET
+                - FT_PEN
+                - FT_UNCONFIRMED
+                - HT
+                - INPLAY_1ST_HALF
+                - INPLAY_2ND_HALF
+                - INPLAY_ET
+                - INPLAY_PENALTIES
+                - INTERRUPTED
+                - NOT_STARTED
+                - PENDING
+                - PEN_BREAK
+                - POSTPONED
+                - SUSPENDED
+                - TBA
+                - WALKOVER
+          description: >
+            Replaces the default statuses: in play + `NOT_STARTED` for an hour
+            window, in play for `window=live`, everything except `DELETED` for
+            `for_date` / `from` / `to`.
+        - in: query
+          name: league_id
+          schema:
+            type: string
+          example: 8,564
+          description: Comma-separated league ids (max 100).
+        - in: query
+          name: country_id
+          schema:
+            type: string
+          description: Comma-separated country ids of the league (max 100).
+        - in: query
+          name: team_id
+          schema:
+            type: string
+          description: >-
+            Comma-separated team ids: players OF these teams (not their
+            opponents).
+        - in: query
+          name: fixture_id
+          schema:
+            type: string
+          description: Search only these fixtures (still inside the time selection).
+        - in: query
+          name: player_id
+          schema:
+            type: string
+          description: Comma-separated player ids (max 100).
+        - in: query
+          name: position
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - GOALKEEPER
+                - DEFENDER
+                - MIDFIELDER
+                - ATTACKER
+          description: The player's position in that team's squad for the season.
+        - in: query
+          name: league_level
+          schema:
+            type: string
+          description: >
+            Comma-separated league levels, or `all`. Default `1,2,3`, except
+            when `league_id`, `team_id`, `fixture_id` or `player_id` is given
+            (then every level).
+        - in: query
+          name: has_odds
+          schema:
+            type: string
+          example: '7'
+          description: >-
+            Only matches with active (not suspended) odds from one of these
+            bookmaker ids.
+        - in: query
+          name: where[DEVELOPER_NAME]
+          style: form
+          explode: true
+          schema:
+            type: string
+            pattern: ^(-?\d+(\.\d+)?)?:(-?\d+(\.\d+)?)?$
+          description: >
+            Value range on a player metric (`developer_name`, e.g.
+            `PLAYER_EXPECTED_SHOTS`), or on `P_START` / `P_PLAY` (the chance of
+            starting / of playing at all): `min:max`, inclusive, decimals
+            allowed, one bound may be empty. Values in the units of
+            `include=player_metrics`. No sides. A player without the value does
+            not match. Up to 10; all must match.
+        - in: query
+          name: order[DEVELOPER_NAME]
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+          description: >
+            Sort by a player metric, `P_START` / `P_PLAY`, or
+            `order[date_time]`. Up to 3 keys, in the order given. Players
+            without the value come last; ties end with kick-off time, fixture id
+            and player id. Default: kick-off ascending.
+        - in: query
+          name: basis
+          schema:
+            type: string
+            enum:
+              - value
+              - if_starts
+              - if_benched
+            default: value
+          description: >
+            Which number of the expected metrics `where[]`, `order[]` and
+            `search_values` use: the published value (weighted by the chance of
+            starting), or its `meta.if_starts` / `meta.if_benched` conditional.
+            Ratings and card risk have no conditional and always use their
+            value.
+        - in: query
+          name: distinct
+          schema:
+            type: string
+            enum:
+              - player
+          description: >
+            One result per player: his earliest fixture among those passing
+            `where[]`. `total` and `has_more` then count players.
+        - in: query
+          name: include
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - player_metrics
+          description: >-
+            `player_metrics`: every player metric row of that player in that
+            fixture.
+        - in: query
+          name: language
+          schema:
+            type: string
+            default: en
+          description: Two-letter code for team, league and country names.
+        - $ref: '#/components/parameters/pageParam'
+        - name: per_page
+          in: query
+          description: Results per page. Maximum is 50.
+          schema:
+            type: integer
+            default: 25
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: >-
+            Matching players, one entry per player and fixture (per player with
+            `distinct=player`). `has_more` is exact.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPlayersResponse'
+        '400':
+          description: >-
+            Invalid or unknown parameter, include, status, position or metric
+            name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                side:
+                  value:
+                    error: >-
+                      where[PLAYER_EXPECTED_GOALS]: a player has one value per
+                      fixture, so there is no side. Use min:max
         '403':
           description: Unauthorized — missing or insufficient permissions.
   /football/insights:
@@ -2563,6 +2813,101 @@ components:
             $ref: '#/components/schemas/SearchFixture'
         pagination:
           $ref: '#/components/schemas/SearchPaginationMetadata'
+    SearchPlayersResponse:
+      type: object
+      required:
+        - players
+        - pagination
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchPlayer'
+        pagination:
+          $ref: '#/components/schemas/SearchPaginationMetadata'
+    SearchPlayer:
+      type: object
+      properties:
+        player:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 203987
+            name:
+              type: string
+              nullable: true
+              example: Fahd El Khoumisti
+            common_name:
+              type: string
+              nullable: true
+            position:
+              type: string
+              nullable: true
+              enum:
+                - GOALKEEPER
+                - DEFENDER
+                - MIDFIELDER
+                - ATTACKER
+        team:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 854
+            name:
+              type: string
+              nullable: true
+              example: Caen
+        location:
+          type: string
+          enum:
+            - home
+            - away
+        p_start:
+          type: number
+          nullable: true
+          example: 0.88
+          description: >-
+            Chance of starting, from the expected metrics' meta. Null when the
+            player has no expected metrics.
+        p_play:
+          type: number
+          nullable: true
+          example: 0.926
+          description: Chance of playing at all.
+        search_values:
+          type: object
+          additionalProperties:
+            type: number
+            nullable: true
+          example:
+            PLAYER_EXPECTED_GOALS: 0.749
+          description: >-
+            The value of each name in where[] / order[], on the requested basis.
+            Absent when neither is given.
+        player_metrics:
+          type: array
+          description: Included when `include=player_metrics` is passed.
+          items:
+            type: object
+            properties:
+              type_id:
+                type: integer
+                example: 386
+              developer_name:
+                type: string
+                example: PLAYER_EXPECTED_GOALS
+              value:
+                type: number
+                example: 0.749
+              meta:
+                type: object
+                description: >-
+                  Expected metrics only: p_start, p_play, if_starts, if_benched
+                  (+ p_booked etc. for booking points).
+        fixture:
+          $ref: '#/components/schemas/FixtureBase'
     SearchPaginationMetadata:
       type: object
       required:
