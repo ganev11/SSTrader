@@ -5,7 +5,7 @@ excerpt: >-
   goals, booking points, card risk, ratings — with the usual time, league and
   team filters.
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
