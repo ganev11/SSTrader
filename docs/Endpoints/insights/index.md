@@ -9,6 +9,10 @@ hidden: false
 metadata:
   robots: index
 ---
+---
+title: Insights
+description: AI-generated betting recommendations — each insight pairs a natural-language explanation with a specific market selection, grouped by fixture.
+---
 
 # Insights
 
@@ -37,6 +41,7 @@ The Insights endpoint provides a list of match fixtures, where each fixture cont
 | `language`            | string  | en        | Language code for the generated content.                                                                |
 | `value_from`          | number  |           | Minimum decimal odd value.                                                                              |
 | `value_to`            | number  |           | Maximum decimal odd value.                                                                              |
+| `player_id`           | string  |           | Comma-separated player IDs (max 50). Only insights whose bet is on one of these players. See below.    |
 | `include`             | string  |           | `integration` attaches your platform's own event payload to each fixture (see the Integration guide).   |
 | `filter[integration]` | string  |           | Filter by your platform's own ids: events, leagues, countries, teams (see the Integration guide).       |
 | `light`               | integer | 0         | Use 1 to skip fixture statistics and metrics, for fast list views that only need the insights and bets. |
@@ -60,6 +65,17 @@ One segment per market, separated by `;`: `market_id[:label_id,label_id...][@min
 | `58`           | Double Chance (58), every selection, any price             |
 
 An insight is returned when it matches **any** segment. Prices are decimal odds, inclusive; leave out `min` or `max` for no limit on that side. It combines with the other filters, which all still apply. A malformed segment, or the same market twice, returns `400`.
+
+## Player Filter (`player_id`)
+
+```
+GET /football/insights?player_id=184798
+GET /football/insights?player_id=184798,37385&is_live=0
+```
+
+Keeps insights on player markets (goalscorer, shots, cards...) whose bet is on one of the listed players — the `player_id` returned in the insight's `bet`. Insights on other markets have no player and never match. Player IDs come from [`GET /search?types=player`](/docs/entity-search); this endpoint does not search by name. A value that is not a list of positive integer IDs, or more than 50 IDs, returns `400`.
+
+A model can publish one insight per player on the same market of a fixture (for example two anytime goalscorers). Each is returned as its own insight.
 
 ## Fixture Metrics
 
