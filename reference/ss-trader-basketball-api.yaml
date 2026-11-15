@@ -295,8 +295,10 @@ paths:
         Same parameters and response as `GET /football/regions`. `sport_id` is
         refused with 400.
 
-        `has_search` is always `false` (basketball leagues are not in free-text
-        search yet).
+        `has_search` = the league has a basketball league note, i.e. it is found
+        by
+
+        `GET /basketball/search?types=league`.
       operationId: getBasketballRegions
       security:
         - BearerAuth: []
@@ -404,24 +406,34 @@ paths:
     get:
       tags:
         - Search
-      summary: Search basketball fixtures and countries by free-text query
+      summary: >-
+        Search basketball countries, leagues, teams, fixtures and players by
+        free-text query
       description: >
         Same parameters and response shape as `GET /football/search`, for
         basketball. Supported
 
-        `types`: `fixture` and `country`. `team`, `league` and `player` are
-        refused with `400`
-
-        (no basketball search for them yet).
+        `types`: `country`, `league`, `team`, `fixture` and `player`.
 
 
         `fixture` covers basketball matches from a few hours ago to about a week
         ahead, in
 
-        top-tier leagues. Countries are the same as football's (same ids and
-        names), so `country`
+        top-tier leagues. `league` and `team` cover leagues and teams that
+        played in the last
 
-        returns the same results on both sports.
+        ~400 days or have a game in the next 60 (basketball ids, not
+        football's). `player` covers
+
+        the rosters (squad, else lineups of the last 60 days) of teams with a
+        game in the fixture
+
+        window; teams without roster data contribute no players. Countries are
+
+        the same as football's (same ids and names), so `country` returns the
+        same results on
+
+        both sports.
       operationId: searchBasketballEntities
       security:
         - BearerAuth: []
@@ -444,10 +456,13 @@ paths:
               type: string
               enum:
                 - country
+                - league
+                - team
                 - fixture
+                - player
           description: >-
-            Comma-separated list of entity types to search: `country`,
-            `fixture`.
+            Comma-separated list of entity types to search: `country`, `league`,
+            `team`, `fixture`, `player`.
           example: fixture
         - in: query
           name: limit
@@ -481,7 +496,9 @@ paths:
           content:
             application/json:
               example:
-                error: 'Unsupported type(s): team. Supported: country, fixture'
+                error: >-
+                  Unsupported type(s): coach. Supported: country, league, team,
+                  fixture, player
         '403':
           description: Unauthorized — missing or insufficient permissions.
         '500':
@@ -782,10 +799,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchCountryResult'
+        leagues:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchLeagueResult'
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchTeamResult'
         fixtures:
           type: array
           items:
             $ref: '#/components/schemas/SearchFixtureResult'
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchPlayerResult'
     SearchCountryResult:
       allOf:
         - $ref: '#/components/schemas/Country'
@@ -797,6 +826,177 @@ components:
               minimum: 0
               maximum: 1
               description: Match confidence — higher means a closer match to `q`.
+    SearchPlayerResult:
+      type: object
+      description: >
+        A basketball player of a team with a game in the search window
+        (basketball player and team ids). Name fields come from the data feed
+        as-is (any may be null).
+      properties:
+        id:
+          type: integer
+          description: Basketball player ID.
+        display_name:
+          type: string
+          nullable: true
+        common_name:
+          type: string
+          nullable: true
+          example: L.Doncic
+        fullname:
+          type: string
+          nullable: true
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        birthdate:
+          type: string
+          nullable: true
+          example: '1999-02-28'
+        position:
+          type: object
+          nullable: true
+          properties:
+            type_id:
+              type: integer
+              example: 507
+            developer_name:
+              type: string
+              enum:
+                - C
+                - PG
+                - SG
+                - SF
+                - PF
+                - G
+                - F
+              example: G
+        teams:
+          type: array
+          description: >
+            Every team the player is linked to through a game in the window,
+            soonest game first; then any other current-season squad of his with
+            `fixtures: []` (e.g. his national team). A team named in `q` is
+            recognised among all of these.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              short_code:
+                type: string
+                nullable: true
+              national_team:
+                type: boolean
+              country:
+                type: object
+                nullable: true
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  alpha3:
+                    type: string
+              season_id:
+                type: integer
+              source:
+                type: string
+                enum:
+                  - squad
+                  - lineup
+                description: >-
+                  `lineup` when the player is known from the team's lineups, not
+                  its squad.
+              fixtures:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    date_time:
+                      type: string
+                      format: date-time
+                    status:
+                      type: string
+                    league:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        level:
+                          type: integer
+                    location:
+                      type: string
+                      enum:
+                        - home
+                        - away
+                    opponent:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+        matched_team_id:
+          type: integer
+          nullable: true
+          description: >-
+            The team recognised in `q`, when the query named one of this
+            player's teams.
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Name match confidence — higher means a closer match to `q`.
+    SearchLeagueResult:
+      description: Same shape as a `GET /basketball/regions` item, with an added `score`.
+      allOf:
+        - $ref: '#/components/schemas/RegionItem'
+        - type: object
+          properties:
+            score:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              description: Match confidence — higher means a closer match to `q`.
+    SearchTeamResult:
+      type: object
+      description: A basketball team (basketball team id), with an added `score`.
+      properties:
+        id:
+          type: integer
+          description: Basketball team id.
+        name:
+          type: string
+          description: Team name.
+        short_code:
+          type: string
+          nullable: true
+        national_team:
+          type: boolean
+          description: True if this is a national team rather than a club.
+        country:
+          nullable: true
+          description: The team's country. Null if not set.
+          allOf:
+            - $ref: '#/components/schemas/Country'
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Match confidence — higher means a closer match to `q`.
     SearchFixtureResult:
       description: >
         Same base shape as a `GET /basketball/fixtures` item (without any
