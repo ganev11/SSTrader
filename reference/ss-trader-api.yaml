@@ -609,8 +609,7 @@ paths:
           explode: true
           schema:
             type: string
-            pattern: >-
-              ^(-?\d+(\.\d+)?)?:(-?\d+(\.\d+)?)?(:(MATCH|HOME|AWAY|TOTAL|DIFF|GAP|MAX|MIN|EITHER|BOTH))?$
+            pattern: ^(-?\d+(\.\d+)?)?:(-?\d+(\.\d+)?)?(:(MATCH|HOME|AWAY|TOTAL|DIFF|GAP|MAX|MIN|EITHER|BOTH))?$
           description: >
             Value range on a type from `/football/types` (by `developer_name`):
             `min:max[:SIDE]`, inclusive, decimals allowed, one bound may be
@@ -4068,8 +4067,12 @@ components:
 
             Known shapes:
 
-            - `EV_*` (Expected Value, e.g. `EV_EUROPE_ML_HOME`): `market_id`,
-            `label_id`, `line`, `bookmaker_id`.
+            - `EV_*` (Expected Value, e.g. `EV_EUROPE_ML_HOME`,
+            `EV_EUROPE_COR_UNDER_V2`): `market_id`,
+              `label_id`, `line`, `bookmaker_id`, `fair_odd`, `source`. Over/under EV is published only
+              under the `_V2` names (`EV_{EUROPE|ASIA}_{GL|COR|CARDS}_{OVER|UNDER}_V2`); the unsuffixed
+              `EV_*_GL_*`, `EV_*_COR_*` and `EV_*_YC_*` are retired and no longer published. See the
+              Expected values guide.
 
             - `SMARTMONEY_*` (e.g. `SMARTMONEY_GL_OVER`): `market_id`,
             `label_id`, `line` (no `bookmaker_id`).
@@ -4079,7 +4082,7 @@ components:
               description: >-
                 The betting market this metric relates to (e.g. 1 = Money Line,
                 2 = Asian Handicap, 3 = Goal Line, 5 = Corners Asian Handicap, 6
-                = Corners, 203 = Yellow Cards).
+                = Corners, 203 = Cards - settled as yellow + 2 x red).
             label_id:
               type: integer
               description: >-
@@ -4096,11 +4099,27 @@ components:
               description: >-
                 The bookmaker the price was sourced from (2 = Europe, 3 = Asia).
                 Present only on EV_* metrics.
+            fair_odd:
+              type: number
+              format: float
+              description: >-
+                EV_* only: the model's fair decimal price the EV was measured
+                against, so EV = round((bookmaker price - fair_odd) / fair_odd *
+                100).
+            source:
+              type: string
+              description: >-
+                EV_* only: the metric the fair price came from -
+                FT_EXPECTED_GOALS_V2 (Money Line, Asian Handicap) or
+                FT_TOTAL_GOALS_V2 / FT_TOTAL_CORNERS_V2 / FT_TOTAL_CARDS_V2
+                (over/under).
           example:
             market_id: 3
             label_id: 2
             line: 2.5
             bookmaker_id: 2
+            fair_odd: 1.94
+            source: FT_TOTAL_GOALS_V2
     PlayerMetric:
       type: object
       description: >
@@ -4561,8 +4580,7 @@ components:
           properties:
             kit:
               type: string
-              example: >-
-                #D6003D,#D6003D,#D6003D,#D6003D,#C40010,#0046A8,#C40010,#D6003D,#0A0A0A,#0A0A0A,#F0F0F0
+              example: '#D6003D,#D6003D,#D6003D,#D6003D,#C40010,#0046A8,#C40010,#D6003D,#0A0A0A,#0A0A0A,#F0F0F0'
               description: >-
                 Comma-separated list of hex colors describing the team's kit
                 (shirt, shorts, socks, sleeves, etc.).
