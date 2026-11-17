@@ -1,5 +1,9 @@
 ---
-title: Expected Value
+title: Expected Values
+excerpt: >-
+  EV metrics — the edge between a bookmaker's price and the model's fair price
+  on the main line of Money Line, Asian Handicap, goals, corners and cards, with
+  the fair price in meta.
 deprecated: false
 hidden: false
 metadata:
