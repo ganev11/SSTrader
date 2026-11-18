@@ -1,5 +1,8 @@
 ---
 title: Odds Alerts
+excerpt: >-
+  Sudden price drops, price spikes and line moves on a fixture's odds, with the
+  data to chart each move and the odd that triggered it.
 deprecated: false
 hidden: false
 metadata:
