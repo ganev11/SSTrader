@@ -290,11 +290,16 @@ paths:
                 - lineups
                 - squads
                 - metadata
+                - events
                 - integration
           description: >
             Comma-separated list of modules to include. Example:
             `include=odds,metrics`. Note: Using an include unlocks the
             corresponding `filter[entity]` parameter.
+
+
+            `events` (goals, cards, substitutions, VAR reviews) needs exactly
+            one `fixture_id`; any other request with it returns 400.
 
 
             `integration` attaches the bookmaker-integration mapping payload and
@@ -487,6 +492,23 @@ paths:
           schema:
             type: string
             example: bookmakers:2;markets:1,2,3;is_live:1;since:1763450000
+          style: form
+          explode: false
+        - name: filter[events]
+          in: query
+          description: >
+            Refine the `events` include. `types` = event or sub-event type ids
+            (`426`–`479`, see `GET
+            /football/types?developer_types=event,sub_event`); an event matches
+            when either its `type_id` or its `subtype_id` is listed, so
+            `types:426,437` returns every VAR review and `types:455` only the
+            disallowed goals. `since_event_id` = only events with an `id` above
+            this one, for fetching just the events after the last one you hold.
+            Unknown keys, unknown type ids or values that are not whole numbers
+            return 400. Needs `include=events`.
+          schema:
+            type: string
+            example: types:426,437;since_event_id:3553900
           style: form
           explode: false
         - $ref: '#/components/parameters/pageParam'
@@ -3211,6 +3233,122 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/MetadataEntry'
+            events:
+              description: >
+                Included when `include=events` is passed (single fixture only).
+                The match events: goals, cards, substitutions, missed penalties,
+                shootout kicks and VAR reviews, ordered by period, `minute`,
+                `extra_minute`, then `id`.
+
+
+                Events arrive during the match, usually a few seconds after the
+                score changes, and can be corrected afterwards: an event can be
+                replaced, removed or appear twice for a short time. A goal that
+                VAR disallows gets a `VAR` event with subtype `GOAL_DISALLOWED`,
+                and its goal event is usually removed. Read the score from
+                `scores`, not by counting events.
+              type: array
+              items:
+                $ref: '#/components/schemas/FixtureEvent'
+    FixtureEvent:
+      type: object
+      description: One match event. See docs/events.md.
+      properties:
+        id:
+          type: integer
+          example: 3553959
+          description: >-
+            The event's id. Increases as events are added; use it with
+            `filter[events]=since_event_id:`.
+        type_id:
+          type: integer
+          nullable: true
+          example: 426
+          description: >-
+            Event type (`developer_type` `event`, ids 426–437). Null for a type
+            not published yet.
+        developer_name:
+          type: string
+          nullable: true
+          example: VAR
+          description: >-
+            e.g. `GOAL`, `OWNGOAL`, `PENALTY`, `MISSED_PENALTY`, `SUBSTITUTION`,
+            `YELLOWCARD`, `REDCARD`, `YELLOWREDCARD`, `VAR`, `VAR_CARD`.
+        subtype_id:
+          type: integer
+          nullable: true
+          example: 455
+          description: >-
+            Detail of the event (`developer_type` `sub_event`, ids 438–479;
+            `PENALTY` and `OWNGOAL` also occur here): card reason, goal kind,
+            penalty outcome, substitution reason, VAR outcome. Often null.
+        subtype_developer_name:
+          type: string
+          nullable: true
+          example: GOAL_DISALLOWED
+        team_id:
+          type: integer
+          nullable: true
+          example: 23350
+          description: >-
+            The team of the event. For an `OWNGOAL`, the team credited with the
+            goal (the scorer's opponent).
+        side:
+          type: string
+          nullable: true
+          enum:
+            - home
+            - away
+          example: home
+          description: '`team_id` as home or away in this fixture.'
+        player_id:
+          type: integer
+          nullable: true
+          example: 158516
+          description: The player. For a substitution, the player coming on.
+        player_name:
+          type: string
+          nullable: true
+          example: Nguyễn Quang Hải
+          description: The player's name. Present even when the fixture has no lineups.
+        related_player_id:
+          type: integer
+          nullable: true
+          example: null
+          description: >-
+            Second player: the assist of a goal, the player going off in a
+            substitution.
+        related_player_name:
+          type: string
+          nullable: true
+          example: null
+          description: The second player's name.
+        period:
+          type: string
+          nullable: true
+          example: 2ND_HALF
+          description: '`1ST_HALF`, `2ND_HALF`, `ET` or `PENALTY_SHOOTOUT`.'
+        minute:
+          type: integer
+          nullable: true
+          example: 90
+        extra_minute:
+          type: integer
+          nullable: true
+          example: null
+          description: 'Added time: 3 in 45+3.'
+        result:
+          type: string
+          nullable: true
+          example: null
+          description: The score after a goal, home first (`2-1`); null on other events.
+        info:
+          type: string
+          nullable: true
+          example: Goal
+          description: >-
+            Free text from the data provider, e.g. `Offside`, `Penalty`, `Video
+            review`. May be empty; do not parse it.
     PlayerFormEntry:
       type: object
       description: One past appearance of a player, with his statistics in that game.
