@@ -66,6 +66,7 @@ An alert changes status only once, from `pending` to `confirmed` or `voided`. Li
 | `score` | `{ "home", "away" }`. |
 | `red_cards` | `{ "home", "away" }` red cards so far, when the statistics carry them. |
 | `penalties` | `{ "home", "away" }` penalties awarded so far, when the statistics carry them. |
+| `var` | Only in `at_confirmation` of an alert voided with `var`: the VAR outcome, as `subtype_developer_name` in [Match Events](./events.md) (e.g. `GOAL_DISALLOWED`, `REVIEW`). |
 
 Fields may be missing when the match has no data for them. Pre-match alerts have an empty `state`.
 
