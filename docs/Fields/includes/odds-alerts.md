@@ -36,6 +36,39 @@ An odds alert records one sudden move in a bookmaker's prices: a price that fell
 |---|---|---|
 | `money_burst` | `odds_drop` | The price zig-zagged on its way down (down, up, down) inside the window, a typical sign of repeated money hitting the selection. |
 
+## Status
+
+Bookmakers react to a goal, a penalty or a red card within seconds, often before the match statistics show the event. A sharp in-play move can therefore be the bookmaker's reaction to something that just happened on the pitch rather than a signal. In-play alerts are published at once as `pending` and checked against the match for a short time (`confirm_at`, about a minute; longer while a penalty is being taken). Then they are decided once:
+
+| `status` | Meaning |
+|---|---|
+| `pending` | In play, still being checked. Decided by `confirm_at`. |
+| `confirmed` | Nothing in the match explains the move. Pre-match alerts are confirmed at once. |
+| `voided` | An event explains the move; `void_reason` says which. Hidden from lists unless asked for. |
+| `expired` | Still pending ten minutes after `confirm_at`: the check never finished. Treat it as unconfirmed. |
+
+| `void_reason` | The move was explained by |
+|---|---|
+| `goal` | a goal |
+| `score_change` | a score correction, such as a goal taken back |
+| `penalty` | a penalty awarded |
+| `red_card` | a red card |
+| `var` | a VAR decision |
+
+An alert changes status only once, from `pending` to `confirmed` or `voided`. Lists and `include=odds_alerts` return `pending`, `confirmed` and `expired` alerts by default; add `status=voided` (or `status=all`) to see the voided ones.
+
+`state` holds the match state the alert was checked against, so you can judge it yourself: `state.at_detection` when the move was found, `state.at_confirmation` when it was decided. For football:
+
+| Field | Description |
+|---|---|
+| `minute` | Match minute. |
+| `period` | Period, e.g. `1ST_HALF`, `2ND_HALF`. |
+| `score` | `{ "home", "away" }`. |
+| `red_cards` | `{ "home", "away" }` red cards so far, when the statistics carry them. |
+| `penalties` | `{ "home", "away" }` penalties awarded so far, when the statistics carry them. |
+
+Fields may be missing when the match has no data for them. Pre-match alerts have an empty `state`.
+
 ## Alert object
 
 Alerts are always returned inside their fixture, as `fixture.odds_alerts`, so they carry no `fixture_id`.
@@ -62,6 +95,11 @@ Alerts are always returned inside their fixture, as `fixture.odds_alerts`, so th
 | `window_start_at` | integer \| null | Unix seconds: start of the window the move is measured over. `null` for `line_move_reference`. |
 | `detected_at` | integer | Unix seconds: when the triggering quote was received, on the same clock as `last_update` in `movement`. |
 | `created_at` | integer | Unix seconds: when the alert was stored. |
+| `status` | string | `pending`, `confirmed`, `voided` or `expired`, see [Status](#status). |
+| `confirm_at` | integer \| null | Unix seconds: when a `pending` alert is decided. `null` for alerts confirmed at once. |
+| `decided_at` | integer \| null | Unix seconds: when it was confirmed or voided. `null` while pending and for alerts confirmed at once. |
+| `void_reason` | string \| null | Why it was voided, see [Status](#status). |
+| `state` | object | Match state at detection and at the decision, see [Status](#status). |
 | `meta` | object | Chart data (below). Left out with `meta=0`. |
 
 ### Chart data
@@ -101,6 +139,7 @@ Returns fixtures, each with its alerts in `odds_alerts`. The full fixture object
 | `is_live` | `0` pre-match, `1` in play. |
 | `bookmaker_id`, `market_id` | Comma-separated ids. |
 | `from`, `to` | Unix seconds or ISO 8601 date-time, compared with `detected_at`. |
+| `status` | Comma-separated: `pending`, `confirmed`, `voided`, `expired`, or `all`. Default: all but `voided`. |
 | `language` | Language of team, league and market names. Default `en`. |
 | `meta` | `0` leaves out `meta` (smaller responses for a list view). Default `1`. |
 | `page`, `per_page` | Default `1` / `50`, `per_page` at most `100`. See [Pagination](./pagination.md). |
@@ -140,7 +179,15 @@ GET /football/odds-alerts?type=odds_drop&patterns=money_burst&is_live=1&meta=0&l
           "score": { "home": 1, "away": 0 },
           "window_start_at": 1776776527,
           "detected_at": 1776776759,
-          "created_at": 1776776761
+          "created_at": 1776776761,
+          "status": "confirmed",
+          "confirm_at": 1776776819,
+          "decided_at": 1776776820,
+          "void_reason": null,
+          "state": {
+            "at_detection": { "minute": 63, "period": "2ND_HALF", "score": { "home": 1, "away": 0 }, "red_cards": { "home": 0, "away": 0 }, "penalties": { "home": 0, "away": 0 } },
+            "at_confirmation": { "minute": 64, "period": "2ND_HALF", "score": { "home": 1, "away": 0 }, "red_cards": { "home": 0, "away": 0 }, "penalties": { "home": 0, "away": 0 } }
+          }
         }
       ]
     }
@@ -173,5 +220,6 @@ GET /football/fixtures?fixture_id=1208520&include=odds_alerts&filter[odds_alerts
 | `is_live` | `0` or `1` |
 | `since` | Unix seconds, alerts with `detected_at` at or after it |
 | `meta` | `0` leaves out `meta` |
+| `status` | `pending`, `confirmed`, `voided`, `expired` or `all`; default all but `voided` |
 
-New alerts also arrive on the live stream (SSE) as `odds_alerts` in the fixture's update. The same alert can be sent more than once, so keep them by `id`.
+New alerts also arrive on the live stream (SSE) as `odds_alerts` in the fixture's update, and so does an alert again when its status changes (including to `voided`). The same alert can be sent more than once, so keep alerts by `id` and replace the stored one with the newer copy.
