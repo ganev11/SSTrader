@@ -32,7 +32,7 @@ Results use the same layout as `/football/insights`: a list of fixtures, where e
 | `language`   | string  | `en`    | Language code for the generated content. Also accepted as `lang` |
 | `fixture_id` | integer | —       | Restrict results to a specific single fixture |
 | `league_id`  | string  | —       | Comma-separated list of League IDs |
-| `is_live`    | integer | —       | Use `1` to filter only for events currently in-play, `0` for events not yet started. Omitted by default — no filtering on match state. |
+| `is_live`    | integer | —       | Use `1` to filter only for events currently in-play, `0` for events not yet started. Omitted: both — bet builders of finished matches are never listed here (see the [archive](/docs/bet-builders-archive)). |
 | `market_id`  | string  | —       | Comma-separated list of Market IDs (e.g. `1,53`). Keeps bet builders with **at least one** selection on one of these markets — their other selections can be on any market. |
 | `value_from` | string  | —       | Minimum combined decimal odds, e.g. `2.00`. Inclusive. |
 | `value_to`   | string  | —       | Maximum combined decimal odds, e.g. `5.00`. Inclusive. |
