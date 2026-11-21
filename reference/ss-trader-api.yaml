@@ -1632,7 +1632,8 @@ paths:
           in: query
           description: >
             Use `1` to filter only for events currently in-play, `0` for events
-            not yet started. Omitted by default — no filtering on match state.
+            not yet started. Omitted: both — bet builders of finished matches
+            are never listed here (see `/football/bet-builders/archive`).
           schema:
             type: integer
             enum:
