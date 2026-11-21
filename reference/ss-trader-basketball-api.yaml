@@ -9,7 +9,7 @@ info:
     as football, read from basketball's own data. Read-only. Includes so far:
     `statistics`, `odds`, and
 
-    on the single fixture `squads`, `lineups`.
+    on the single fixture `squads`, `lineups`, `trends`.
 
 
     Basketball ids are **not** football ids: a basketball league, team, fixture
@@ -181,6 +181,7 @@ paths:
         - $ref: '#/components/parameters/basketballIncludeParam'
         - $ref: '#/components/parameters/basketballStatisticsFilterParam'
         - $ref: '#/components/parameters/basketballOddsFilterParam'
+        - $ref: '#/components/parameters/basketballTrendsFilterParam'
         - in: query
           name: language
           schema:
@@ -651,10 +652,12 @@ components:
       in: query
       description: >
         Comma-separated modules to attach: `statistics`, `odds`, and on the
-        single route only `squads` and `lineups` (400 on the list). On the list,
-        `odds` holds only markets 18001-18003 from bookmakers 2, 3, 6, 7,
-        current prices only (`suspend = 0`); the single route returns every
-        market, bookmaker and row. `squads` = both teams' season rosters;
+        single route only `squads`, `lineups` and `trends` (400 on the list).
+        `trends` = every change of a statistic through the game, by default the
+        Pressure Index and the main game totals (`docs/basketball/trends.md`).
+        On the list, `odds` holds only markets 18001-18003 from bookmakers 2, 3,
+        6, 7, current prices only (`suspend = 0`); the single route returns
+        every market, bookmaker and row. `squads` = both teams' season rosters;
         `lineups` = the players named for the game, `type_id` 701 STARTER / 702
         BENCH. Details: `docs/basketball/squads-lineups.md`.
       schema:
@@ -670,6 +673,18 @@ components:
       schema:
         type: string
       example: markets:18001,18100;bookmakers:6;suspend:0
+    basketballTrendsFilterParam:
+      name: filter[trends]
+      in: query
+      description: >
+        Single route only; requires `include=trends`. `developer_names:NAME,...`
+        or `types:ID,...` (one of the two, up to 20) picks the statistics;
+        without it a fixed default set: `PRESSURE_INDEX`, `POINTS`,
+        `TWO_POINTS_MADE`, `THREE_POINTS_MADE`, `FREE_THROWS_MADE`, `REBOUNDS`,
+        `ASSISTS`. See `docs/basketball/trends.md`.
+      schema:
+        type: string
+      example: developer_names:PRESSURE_INDEX,THREE_POINTS_MADE
     basketballStatisticsFilterParam:
       name: filter[statistics]
       in: query
@@ -1491,11 +1506,45 @@ components:
             current period) and `IN_BONUS` (2008, 1 = the opponent's next common
             foul sends this
 
-            team to the line) where the competition has live personal fouls; see
+            team to the line) where the competition has live personal fouls.
+            `PRESSURE_INDEX`
+
+            (2021, 0-100 per team, both together 100: who is on top in the last
+            game minutes) is
+
+            updated while the game is live and kept after it ends; see
 
             docs/basketball/statistics.md.
           items:
             $ref: '#/components/schemas/Statistic'
+        trends:
+          type: array
+          description: >
+            Single fixture only, with `include=trends`. One entry per team and
+            statistic for every
+
+            change, ordered by `clock` (fractional game minute; `minute` = the
+            whole game minute,
+
+            counted through the whole game). See docs/basketball/trends.md.
+          items:
+            type: object
+            properties:
+              team_id:
+                type: integer
+              period_id:
+                type: integer
+              minute:
+                type: integer
+              clock:
+                type: number
+                description: Fractional game minute of the change, e.g. 12.17
+              type_id:
+                type: integer
+              developer_name:
+                type: string
+              value:
+                type: number
         odds:
           type: array
           description: >-
