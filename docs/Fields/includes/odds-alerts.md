@@ -35,6 +35,7 @@ An odds alert records one sudden move in a bookmaker's prices: a price that fell
 | Pattern | On type | Meaning |
 |---|---|---|
 | `money_burst` | `odds_drop` | The price zig-zagged on its way down (down, up, down) inside the window, a typical sign of repeated money hitting the selection. |
+| `syndicate_betting` | `odds_drop` | An in-play drop in the first 6 minutes of the match. A move that early, before the game itself can explain it, points to large informed money. |
 
 ## Status
 
