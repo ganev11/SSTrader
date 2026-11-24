@@ -291,6 +291,7 @@ paths:
                 - squads
                 - metadata
                 - events
+                - odds_alerts
                 - integration
           description: >
             Comma-separated list of modules to include. Example:
@@ -300,6 +301,11 @@ paths:
 
             `events` (goals, cards, substitutions, VAR reviews) needs exactly
             one `fixture_id`; any other request with it returns 400.
+
+
+            `odds_alerts` (price drops, spikes and line moves, Premium plans)
+            also needs exactly one `fixture_id`; any other request with it
+            returns 400.
 
 
             `integration` attaches the bookmaker-integration mapping payload and
@@ -509,6 +515,22 @@ paths:
           schema:
             type: string
             example: types:426,437;since_event_id:3553900
+          style: form
+          explode: false
+        - name: filter[odds_alerts]
+          in: query
+          description: >
+            Refine the `odds_alerts` include, keys separated by `;`, values by
+            `,`. `types` = alert types; `patterns` = patterns, all must be
+            present; `bookmakers`, `markets` = ids; `is_live` = `0` or `1`;
+            `since` = Unix seconds, alerts with `detected_at` at or after it;
+            `meta` = `0` leaves out the chart data; `status` = `pending`,
+            `confirmed`, `voided`, `expired` or `all` (default every status
+            except `voided`). Unknown keys or values return 400. Needs
+            `include=odds_alerts`.
+          schema:
+            type: string
+            example: types:odds_drop,line_move;is_live:1;meta:0
           style: form
           explode: false
         - $ref: '#/components/parameters/pageParam'
@@ -3014,6 +3036,304 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/MetadataEntry'
+    OddsAlert:
+      type: object
+      description: >
+        One sudden move in a bookmaker's prices. Returned inside its fixture, so
+        it carries no `fixture_id`.
+
+
+        **Status.** Bookmakers react to a goal, a penalty or a red card within
+        seconds, often before the match statistics show the event. In-play
+        alerts are therefore published at once as `pending` and checked against
+        the match until `confirm_at` (about a minute; longer while a penalty is
+        being taken), then decided once: `confirmed` = nothing in the match
+        explains the move, `voided` = an event does (`void_reason`). `expired` =
+        still pending ten minutes after `confirm_at`, the check never finished;
+        treat it as unconfirmed. Pre-match alerts are `confirmed` at once. An
+        alert changes status only once; keep alerts by `id` and replace a stored
+        one with a newer copy.
+      properties:
+        id:
+          type: string
+          example: '41'
+          description: Alert id.
+        type:
+          type: string
+          enum:
+            - odds_drop
+            - odds_spike
+            - line_move
+            - line_move_reference
+          description: >
+            `odds_drop` = the price of one selection on one line fell sharply
+            within a short window. `odds_spike` = it rose sharply while the
+            score did not change. `line_move` = the main line of a market moved
+            compared with the start of the window. `line_move_reference` = the
+            main line moved compared with a reference point, such as its
+            pre-match peak, with no window.
+        patterns:
+          type: array
+          items:
+            type: string
+            enum:
+              - money_burst
+              - syndicate_betting
+          description: >
+            The shape of the move inside its type, often empty. `money_burst`
+            (odds_drop): the price zig-zagged on its way down (down, up, down)
+            inside the window, a typical sign of repeated money.
+            `syndicate_betting` (odds_drop): an in-play drop in the first 6
+            minutes of the match.
+        direction:
+          type: string
+          enum:
+            - up
+            - down
+          description: >-
+            Drops are `down`, spikes `up`; for line moves the direction of the
+            line.
+        is_live:
+          type: integer
+          enum:
+            - 0
+            - 1
+          description: '`1` = the move happened in play, `0` = pre-match.'
+        bookmaker_id:
+          type: integer
+          example: 2
+          description: Bookmaker whose prices moved.
+        market_id:
+          type: integer
+          example: 3
+          description: Market, as in the odds include.
+        market_name:
+          type: string
+          example: Over/Under
+          description: Market name in the requested `language`.
+        label_id:
+          type: integer
+          example: 2
+          description: >-
+            Selection, as in the odds include (on a goal line `2` = Over, `1` =
+            Under).
+        label_name:
+          type: string
+          example: Over 2.5
+          description: Selection name in the requested `language`, at `line_to`.
+        odd_id:
+          type: integer
+          example: 88782664
+          description: >
+            The odd whose quote triggered the alert; matches `odd_id` in the
+            `odds` and `movement` includes. For a line move, the odd of the new
+            line.
+        odd_id_from:
+          type: integer
+          nullable: true
+          description: >-
+            The odd the move is measured from: the same odd for a drop or spike,
+            the old line's odd for a line move.
+        line_from:
+          type: number
+          nullable: true
+          example: 2.5
+          description: Line before the move; `null` for markets without a line.
+        line_to:
+          type: number
+          nullable: true
+          example: 2.5
+          description: Line after the move. Equal to `line_from` for drops and spikes.
+        price_from:
+          type: number
+          example: 2.02
+          description: 'Decimal price before. For a line move: the price at the old line.'
+        price_to:
+          type: number
+          example: 1.9
+          description: 'Decimal price after. For a line move: the price at the new line.'
+        change:
+          type: object
+          properties:
+            price_pct:
+              type: number
+              example: -5.9
+              description: Price change in percent, one decimal.
+            line:
+              type: number
+              nullable: true
+              example: 0
+              description: '`line_to - line_from`.'
+        score:
+          type: object
+          nullable: true
+          description: Score at the moment of the alert; `null` pre-match.
+          properties:
+            home:
+              type: integer
+              example: 1
+            away:
+              type: integer
+              example: 0
+        window_start_at:
+          type: integer
+          nullable: true
+          example: 1776776527
+          description: >-
+            Unix seconds: start of the window the move is measured over. `null`
+            for `line_move_reference`.
+        detected_at:
+          type: integer
+          example: 1776776759
+          description: >-
+            Unix seconds: when the triggering quote was received, on the same
+            clock as `last_update` in `movement`.
+        created_at:
+          type: integer
+          example: 1776776761
+          description: 'Unix seconds: when the alert was stored.'
+        status:
+          type: string
+          enum:
+            - pending
+            - confirmed
+            - voided
+            - expired
+          description: See the status note above.
+        confirm_at:
+          type: integer
+          nullable: true
+          example: 1776776819
+          description: >-
+            Unix seconds: when a `pending` alert is decided. `null` for alerts
+            confirmed at once.
+        decided_at:
+          type: integer
+          nullable: true
+          example: 1776776820
+          description: >-
+            Unix seconds: when it was confirmed or voided. `null` while pending
+            and for alerts confirmed at once.
+        void_reason:
+          type: string
+          nullable: true
+          enum:
+            - goal
+            - score_change
+            - penalty
+            - red_card
+            - var
+            - null
+          description: >-
+            Why it was voided: a goal, a score correction (e.g. a goal taken
+            back), a penalty awarded, a red card, or a VAR decision.
+        state:
+          type: object
+          description: >-
+            The match state the alert was checked against. Empty for pre-match
+            alerts.
+          properties:
+            at_detection:
+              $ref: '#/components/schemas/OddsAlertMatchState'
+            at_confirmation:
+              $ref: '#/components/schemas/OddsAlertMatchState'
+        meta:
+          $ref: '#/components/schemas/OddsAlertMeta'
+    OddsAlertMatchState:
+      type: object
+      description: >-
+        Match state at one moment. Fields are left out when the match has no
+        data for them.
+      properties:
+        minute:
+          type: integer
+          example: 63
+          description: Match minute.
+        period:
+          type: string
+          example: 2ND_HALF
+          description: Period, e.g. `1ST_HALF`, `2ND_HALF`.
+        score:
+          type: object
+          properties:
+            home:
+              type: integer
+            away:
+              type: integer
+        red_cards:
+          type: object
+          description: Red cards so far, when the statistics carry them.
+          properties:
+            home:
+              type: integer
+            away:
+              type: integer
+        penalties:
+          type: object
+          description: Penalties awarded so far, when the statistics carry them.
+          properties:
+            home:
+              type: integer
+            away:
+              type: integer
+        var:
+          type: string
+          example: GOAL_DISALLOWED
+          description: >-
+            Only in `at_confirmation` of an alert voided with `var`: the VAR
+            outcome, as an event `subtype_developer_name` (e.g.
+            `GOAL_DISALLOWED`, `REVIEW`).
+    OddsAlertMeta:
+      type: object
+      description: Chart data. Left out with `meta=0`. Ignore keys you do not know.
+      additionalProperties: true
+      properties:
+        series:
+          type: object
+          description: >-
+            The price path that led to the alert, as columns of equal length,
+            oldest first.
+          required:
+            - t
+            - price
+          properties:
+            t:
+              type: array
+              items:
+                type: integer
+              description: Unix seconds.
+            price:
+              type: array
+              items:
+                type: number
+              description: Decimal price at `t`.
+            line:
+              type: array
+              items:
+                type: number
+                nullable: true
+              description: Line at `t` (optional).
+            odd_id:
+              type: array
+              items:
+                type: integer
+              description: >-
+                Odd quoted at `t` (optional; changes when the main line
+                switches).
+            suspended:
+              type: array
+              items:
+                type: integer
+                enum:
+                  - 0
+                  - 1
+              description: '`1` while the market was suspended (optional).'
+        marks:
+          type: array
+          description: Events to draw on the chart, such as goals.
+          items:
+            type: object
+            additionalProperties: true
     FixturesResponse:
       type: object
       required:
@@ -3251,6 +3571,14 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/FixtureEvent'
+            odds_alerts:
+              description: >
+                Included when `include=odds_alerts` is passed (single fixture
+                only). The fixture's odds alerts, oldest first; voided ones only
+                when `filter[odds_alerts]` asks for them.
+              type: array
+              items:
+                $ref: '#/components/schemas/OddsAlert'
     FixtureEvent:
       type: object
       description: One match event. See docs/events.md.
