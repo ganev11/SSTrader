@@ -6,6 +6,11 @@ hidden: false
 metadata:
   robots: index
 ---
+---
+title: Trends
+description: Per-minute time-series data for each team across the full duration of a match.
+---
+
 # Trends
 
 `include=trends`
@@ -30,6 +35,7 @@ Each entry in the `trends` array represents one stat for one team at one minute.
 | `type_id`        | integer | The external type ID of the stat. Use `/football/types` to look up names and IDs.   |
 | `developer_name` | string  | The constant-style identifier for the stat (e.g. `CORNERS`, `ATTACKS`).    |
 | `value`          | integer | The cumulative value of the stat at this minute. See [Value Encoding](#value-encoding) for `EXPECTED_GOALS`. |
+| `ts`             | integer \| null | Only with `filter[trends]=changes:all`: Unix time (seconds) the change was recorded. `null` for entries with minute precision only (some fixtures, and the computed `EXPECTED_GOALS` / `PRESSURE_INDEX`). |
 
 ---
 
@@ -152,6 +158,31 @@ Returns only the stats matching the listed external type IDs. Ignored when `deve
 filter[trends]=types:117,118
 ```
 
+### Every change — `changes`
+
+By default each stat has **one entry per minute**: its value at the end of that minute. `changes:all`
+returns **every change** instead, in time order, each with its `ts`. A stat that moves several times in
+one minute has several entries at that minute; the last one equals the per-minute value.
+
+```
+filter[trends]=changes:all
+filter[trends]=developer_names:DANGEROUS_ATTACKS,CORNERS;changes:all
+```
+
+| Value    | Result                                           |
+|----------|--------------------------------------------------|
+| `minute` | One entry per stat and minute (default).         |
+| `all`    | Every recorded change, with `ts`.                |
+
+Notes:
+
+- Combine with `developer_names` / `types` using `;`. With `changes` alone the default stats are returned.
+- Some fixtures only have minute-level history: they return one entry per minute with `ts: null` either way.
+- `EXPECTED_GOALS` and `PRESSURE_INDEX` stay one entry per minute (`ts: null`) and have the same values in both modes.
+- Values are reported as recorded, corrections included: a counter can briefly go up and back down within a
+  few seconds. Take the running maximum if you need a counter that never decreases.
+- Responses are several times larger than the default for busy stats (`ATTACKS`, `DANGEROUS_ATTACKS`).
+
 ---
 
 ## Request Examples
@@ -166,6 +197,12 @@ GET /football/fixtures?fixture_id=1063864&include=trends
 
 ```
 GET /football/fixtures?fixture_id=1063864&include=trends&filter[trends]=developer_names:GOALS,CORNERS
+```
+
+**Every change of dangerous attacks and corners, with timestamps:**
+
+```
+GET /football/fixtures?fixture_id=1063864&include=trends&filter[trends]=developer_names:DANGEROUS_ATTACKS,CORNERS;changes:all
 ```
 
 **Expected Goals and Pressure Index only:**
