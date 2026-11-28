@@ -430,11 +430,21 @@ paths:
                 description: >-
                   Filter by type ID (e.g., types:117,118). Ignored when
                   developer_names is set.
+              - pattern: ^((developer_names:[A-Z_]+(,[A-Z_]+)*|types:\d+(,\d+)*);)?changes:(all|minute)$
+                description: >-
+                  Every change instead of one entry per minute (e.g.,
+                  developer_names:CORNERS;changes:all).
           example: developer_names:GOALS,CORNERS,EXPECTED_GOALS,PRESSURE_INDEX
           description: >
             Optional filter for the included `trends` module. Use
             `developer_names` to select stats by name, or `types` to select by
             type ID. `developer_names` takes priority when both are provided.
+            `changes:all` returns every recorded change in time order, each with
+            `ts` (Unix seconds), instead of one entry per stat and minute
+            (`changes:minute`, the default); with `changes` alone the default
+            stats are returned. Fixtures with minute-level history only, and the
+            computed `EXPECTED_GOALS` / `PRESSURE_INDEX`, keep one entry per
+            minute with `ts: null`. Any other `changes` value is 400.
         - name: start_date
           in: query
           description: >
@@ -4080,6 +4090,14 @@ components:
             Cumulative value of the stat at this minute. For EXPECTED_GOALS
             (type_id 117), the value is scaled by 100 — divide by 100 to get the
             xG decimal (e.g. value 18 = 0.18 xG).
+        ts:
+          type: integer
+          nullable: true
+          description: >
+            Only with `filter[trends]=changes:all`: Unix time (seconds) the
+            change was recorded. `null` for entries with minute precision only
+            (minute-level fixtures, EXPECTED_GOALS, PRESSURE_INDEX).
+          example: 1795784393
     Insight:
       type: object
       properties:
